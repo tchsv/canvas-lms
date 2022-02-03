@@ -227,7 +227,7 @@ module CanvasSecurity
   # Returns the token as a string.
   def self.create_encrypted_jwt(payload, signing_secret, encryption_secret, alg = nil)
     puts "34343434"
-    puts " signing_secret: #{signing_secret} encryption_secret: #{encryption_secret}"
+    puts "34343434 signing_secret: #{signing_secret} encryption_secret: #{encryption_secret}"
     raise InvalidJwtKey unless signing_secret && encryption_secret
 
     jwt = JSON::JWT.new(payload)
