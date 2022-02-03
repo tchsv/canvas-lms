@@ -21,7 +21,7 @@ module Services
   class RichContent
     def self.env_for(user: nil, domain: nil, real_user: nil, context: nil)
       env_hash = service_settings.dup
-      puts "user: #{user} domain:#{domain}"
+      puts "34343434 user: #{user} domain:#{domain}"
       if user && domain
         begin
           env_hash[:JWT] = CanvasSecurity::ServicesJwt.for_user(
