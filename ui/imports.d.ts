@@ -22,7 +22,6 @@ import {HTMLElement, KeyboardEventHandler, MouseEventHandler} from 'react'
 // by default. Declaring them as wildcard modules allows TS to recognize them as
 // bare-bones interfaces with the `any` type.
 // See https://www.typescriptlang.org/docs/handbook/modules.html#wildcard-module-declarations
-declare module 'i18n!*'
 declare module '*.coffee'
 declare module '*.graphql'
 declare module '*.handlebars'
@@ -34,6 +33,7 @@ interface MissingInputProps {
   onClick?: MouseEventHandler<HTMLElement>
   onKeyDown?: KeyboardEventHandler<HTMLElement>
   role?: string
+  disabled?: boolean
 }
 
 interface MissingElementProps {
@@ -75,5 +75,23 @@ declare module '@instructure/ui-view' {
 declare module '@instructure/ui-buttons' {
   export interface ButtonProps {
     id?: string
+  }
+}
+
+declare module '@instructure/ui-menu' {
+  export interface Menu {
+    contentRef?: any
+  }
+}
+
+declare module '@instructure/ui-link' {
+  export interface Link {
+    size?: string
+  }
+}
+
+declare module '@instructure/ui-text' {
+  export interface Text {
+    tag?: string
   }
 }

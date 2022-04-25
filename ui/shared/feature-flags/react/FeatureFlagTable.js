@@ -16,18 +16,22 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React from 'react'
-import I18n from 'i18n!feature_flags'
+import React, {useState} from 'react'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import {ToggleDetails} from '@instructure/ui-toggle-details'
 import {Heading} from '@instructure/ui-heading'
 import {Table} from '@instructure/ui-table'
 import {Tooltip} from '@instructure/ui-tooltip'
 import {Pill} from '@instructure/ui-pill'
 import FeatureFlagButton from './FeatureFlagButton'
+import {View} from '@instructure/ui-view'
+
+const I18n = useI18nScope('feature_flags')
 
 const {Head, Body, ColHeader, Row, Cell} = Table
 
 function FeatureFlagFilterTable({title, rows, disableDefaults}) {
+  const [visibleTooltip, setVisibleTooltip] = useState(null)
   return (
     <>
       <Heading as="h2" level="h3" data-testid="ff-table-heading">
@@ -56,7 +60,23 @@ function FeatureFlagFilterTable({title, rows, disableDefaults}) {
               <Cell>
                 <>
                   {feature.feature_flag.hidden && (
-                    <Pill margin="0 x-small" text={I18n.t('Hidden')} />
+                    <Tooltip
+                      isShowingContent={feature.feature === visibleTooltip}
+                      onShowContent={() => setVisibleTooltip(feature.feature)}
+                      onHideContent={() => setVisibleTooltip(null)}
+                      renderTip={
+                        <View as="div" width="600px">
+                          {I18n.t(
+                            `This feature option is only visible to users with Site Admin access.
+                            End users will not see it until enabled by a Site Admin user.
+                            Before enabling for an institution, please be sure you fully understand
+                            the functionality and possible impacts to users.`
+                          )}
+                        </View>
+                      }
+                    >
+                      <Pill margin="0 x-small">{I18n.t('Hidden')}</Pill>
+                    </Tooltip>
                   )}
                   {feature.beta && (
                     <Tooltip
@@ -64,11 +84,9 @@ function FeatureFlagFilterTable({title, rows, disableDefaults}) {
                         'Feature preview — opting in includes ongoing updates outside the regular release schedule'
                       )}
                     >
-                      <Pill
-                        variant="primary"
-                        margin="0 0 0 x-small"
-                        text={I18n.t('Feature Preview')}
-                      />
+                      <Pill color="info" margin="0 0 0 x-small">
+                        {I18n.t('Feature Preview')}
+                      </Pill>
                     </Tooltip>
                   )}
                 </>
@@ -116,10 +134,12 @@ function FeatureFlagTable({title, rows, disableDefaults}) {
                     <>
                       {feature.display_name}
                       {feature.feature_flag.hidden && (
-                        <Pill margin="0 x-small" text={I18n.t('Hidden')} />
+                        <Pill margin="0 x-small">{I18n.t('Hidden')}</Pill>
                       )}
                       {feature.beta && (
-                        <Pill variant="primary" margin="0 0 0 x-small" text={I18n.t('Beta')} />
+                        <Pill color="info" margin="0 0 0 x-small">
+                          {I18n.t('Beta')}
+                        </Pill>
                       )}
                     </>
                   }

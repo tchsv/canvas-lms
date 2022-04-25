@@ -23,6 +23,8 @@ import {downloadToWrap, fixupFileUrl} from '../common/fileUrl'
 import formatMessage from '../format-message'
 import alertHandler from '../rce/alertHandler'
 import {RCS_MAX_BODY_SIZE, RCS_REQUEST_SIZE_BUFFER} from '../rce/plugins/shared/Upload/constants'
+import {DEFAULT_FILE_CATEGORY} from '../sidebar/containers/sidebarHandlers'
+import buildError from './buildError'
 
 export function headerFor(jwt) {
   return {Authorization: 'Bearer ' + jwt}
@@ -178,7 +180,7 @@ class RceApiSource {
 
   fetchMedia(props) {
     const media = props.media[props.contextType]
-    const uri = media.bookmark || this.uriFor('media_objects', props)
+    const uri = media.bookmark || this.uriFor('media', props)
     return this.apiFetch(uri, headerFor(this.jwt))
   }
 
@@ -241,17 +243,7 @@ class RceApiSource {
       maxBytes || RCS_MAX_BODY_SIZE - RCS_REQUEST_SIZE_BUFFER
     ).catch(e => {
       console.error('Failed saving CC', e)
-      const errorMessage =
-        e.name === 'FileSizeError'
-          ? formatMessage('Closed caption file must be less than {maxKb} kb', {
-              maxKb: e.maxBytes / 1000 // bytes to kb
-            })
-          : formatMessage('Uploading closed captions/subtitles failed.')
-
-      this.alertFunc({
-        text: errorMessage,
-        variant: 'error'
-      })
+      this.alertFunc(buildError({message: 'failed to save captions'}, e))
     })
   }
 
@@ -277,7 +269,10 @@ class RceApiSource {
 
     if (!bookmark) {
       const perPageQuery = props.perPage ? `per_page=${props.perPage}` : ''
-      uri = `${props.filesUrl}?${perPageQuery}${getSearchParam(props.searchString)}`
+      const categoryQuery = `category=${DEFAULT_FILE_CATEGORY}`
+      uri = `${props.filesUrl}?${perPageQuery}&${categoryQuery}${getSearchParam(
+        props.searchString
+      )}`
 
       if (props.sortBy) {
         uri += `${getSortParams(props.sortBy.sort, props.sortBy.order)}`
@@ -362,15 +357,8 @@ class RceApiSource {
       .then(uploadResults => {
         return this.finalizeUpload(preflightProps, uploadResults)
       })
-      .catch(_e => {
-        this.alertFunc({
-          text: formatMessage(
-            'Something went wrong uploading, check your connection and try again.'
-          ),
-          variant: 'error'
-        })
-
-        // console.error(e) // eslint-disable-line no-console
+      .catch(e => {
+        this.alertFunc(buildError({}, e))
       })
   }
 
@@ -432,11 +420,40 @@ class RceApiSource {
     return this.apiFetch(uri, headers, {skipParse: true})
   }
 
-  getFile(id) {
+  getFile(id, options = {}) {
     const headers = headerFor(this.jwt)
     const base = this.baseUri('file')
-    const uri = `${base}/${id}`
+
+    // Valid query parameters for getFile
+    const {replacement_chain_context_type, replacement_chain_context_id} = options
+
+    const uri = this.addParamsIfPresent(`${base}/${id}`, {
+      replacement_chain_context_type,
+      replacement_chain_context_id
+    })
+
     return this.apiFetch(uri, headers).then(normalizeFileData)
+  }
+
+  // @private
+  addParamsIfPresent(uri, params) {
+    let url
+
+    try {
+      url = new URL(uri)
+    } catch (e) {
+      // Just return the URI if it was invalid
+      return uri
+    }
+
+    // Add all truthy parameters to the URL
+    for (const [name, value] of Object.entries(params)) {
+      if (!value) continue
+
+      url.searchParams.append(name, value)
+    }
+
+    return url.toString()
   }
 
   // @private
@@ -466,10 +483,7 @@ class RceApiSource {
       .then(options.skipParse ? () => {} : res => res.json())
       .catch(throwConnectionError)
       .catch(e => {
-        this.alertFunc({
-          text: formatMessage('Something went wrong, try again after refreshing the page'),
-          variant: 'error'
-        })
+        this.alertFunc(buildError(e))
         throw e
       })
   }
@@ -502,14 +516,13 @@ class RceApiSource {
       .then(checkStatus)
       .then(res => res.json())
       .catch(throwConnectionError)
-      .catch(e => {
-        console.error(e) // eslint-disable-line no-console
-        this.alertFunc({
-          text: formatMessage('Something went wrong, check your connection and try again.'),
-          variant: 'error'
+      .catch(e =>
+        e.response.json().then(body => {
+          console.error(e) // eslint-disable-line no-console
+          this.alertFunc(buildError(body))
+          throw e
         })
-        throw e
-      })
+      )
   }
 
   // @private

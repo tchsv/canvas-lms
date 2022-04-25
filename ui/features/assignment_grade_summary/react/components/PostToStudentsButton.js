@@ -22,9 +22,11 @@ import {Button} from '@instructure/ui-buttons'
 import {IconCheckMarkSolid} from '@instructure/ui-icons'
 import {PresentationContent} from '@instructure/ui-a11y-content'
 import {Spinner} from '@instructure/ui-spinner'
-import I18n from 'i18n!assignment_grade_summary'
+import {useScope as useI18nScope} from '@canvas/i18n'
 
 import {FAILURE, STARTED, SUCCESS} from '../assignment/AssignmentActions'
+
+const I18n = useI18nScope('assignment_grade_summary')
 
 function readyButton(props) {
   return <Button {...props}>{I18n.t('Post to Students')}</Button>
@@ -34,7 +36,7 @@ function startedButton(props) {
   const title = I18n.t('Posting to Students')
 
   return (
-    <Button {...props} variant="light">
+    <Button {...props} color="primary-inverse">
       <Spinner size="x-small" renderTitle={title} />
       <PresentationContent>{title}</PresentationContent>
     </Button>
@@ -43,7 +45,7 @@ function startedButton(props) {
 
 function successButton(props) {
   return (
-    <Button {...props} icon={IconCheckMarkSolid} variant="light">
+    <Button {...props} renderIcon={IconCheckMarkSolid} color="primary-inverse">
       {I18n.t('Grades Posted to Students')}
     </Button>
   )

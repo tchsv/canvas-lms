@@ -71,7 +71,7 @@ describe "SpeedGrader" do
     it "student names are anonymous", priority: "1" do
       Speedgrader.students_dropdown_button.click
       student_names = Speedgrader.students_select_menu_list.map(&:text)
-      expect(student_names).to eql ["Student 1", "Student 2"]
+      expect(student_names).to match_array ["Student 1", "Student 2"]
     end
 
     context "given a specific student" do
@@ -113,7 +113,7 @@ describe "SpeedGrader" do
 
       user_session(@teacher1)
       ModeratePage.visit(@course.id, @moderated_assignment.id)
-      ModeratePage.select_provisional_grade_for_student_by_position(@student1, 1)
+      ModeratePage.select_provisional_grade_for_student_by_position(@student1, 0)
 
       Speedgrader.visit(@course.id, @moderated_assignment.id)
 
@@ -127,10 +127,10 @@ describe "SpeedGrader" do
 
       user_session(@teacher1)
       ModeratePage.visit(@course.id, @moderated_assignment.id)
-      ModeratePage.select_provisional_grade_for_student_by_position(@student1, 1)
+      ModeratePage.select_provisional_grade_for_student_by_position(@student1, 0)
 
       ModeratePage.click_release_grades_button
-      driver.switch_to.alert.accept
+      accept_alert
       wait_for_ajaximations
 
       Speedgrader.visit(@course.id, @moderated_assignment.id)

@@ -19,6 +19,7 @@ import {render, fireEvent} from '@testing-library/react'
 import React from 'react'
 import {MessageDetailHeader} from '../MessageDetailHeader'
 import {responsiveQuerySizes} from '../../../../util/utils'
+import {ConversationContext} from '../../../../util/constants'
 
 jest.mock('../../../../util/utils', () => ({
   ...jest.requireActual('../../../../util/utils'),
@@ -50,26 +51,70 @@ describe('MessageDetailHeader', () => {
     expect(getByText('Message Header Text')).toBeInTheDocument()
   })
 
-  it('sends the selected option to the provided callback function', () => {
+  it('does not render the more options menu when in submission comments scope', () => {
+    const props = {text: 'Message Header Text'}
+    const {getByText, queryByTestId} = render(
+      <ConversationContext.Provider value={{isSubmissionCommentsType: true}}>
+        <MessageDetailHeader {...props} />
+      </ConversationContext.Provider>
+    )
+    expect(getByText('Message Header Text')).toBeInTheDocument()
+    expect(queryByTestId('message-more-options')).not.toBeInTheDocument()
+  })
+
+  describe('sends the selected option to the provided callback function', () => {
     const props = {
-      text: 'Button Test',
-      onReply: jest.fn(),
-      onReplyAll: jest.fn()
+      text: 'Button Test'
     }
-    const {getByRole, getByText} = render(<MessageDetailHeader {...props} />)
+    it('sends the selected option to the onReply callback function', () => {
+      props.onReply = jest.fn()
+      const {getByRole} = render(<MessageDetailHeader {...props} />)
+      const replyButton = getByRole(
+        (role, element) => role === 'button' && element.textContent === 'Reply'
+      )
 
-    const replyButton = getByRole(
-      (role, element) => role === 'button' && element.textContent === 'Reply'
-    )
-    fireEvent.click(replyButton)
-    expect(props.onReply).toHaveBeenCalled()
+      fireEvent.click(replyButton)
 
-    const moreOptionsButton = getByRole(
-      (role, element) => role === 'button' && element.textContent === 'More options'
-    )
-    fireEvent.click(moreOptionsButton)
-    fireEvent.click(getByText('Reply All'))
-    expect(props.onReplyAll).toHaveBeenCalled()
+      expect(props.onReply).toHaveBeenCalled()
+    })
+
+    it('sends the selected option to the onReplyAll callback function', () => {
+      props.onReplyAll = jest.fn()
+      const {getByRole, getByText} = render(<MessageDetailHeader {...props} />)
+      const moreOptionsButton = getByRole(
+        (role, element) => role === 'button' && element.textContent === 'More options'
+      )
+
+      fireEvent.click(moreOptionsButton)
+      fireEvent.click(getByText('Reply All'))
+
+      expect(props.onReplyAll).toHaveBeenCalled()
+    })
+
+    it('sends the selected option to the onDelete callback function', () => {
+      props.onDelete = jest.fn()
+      const {getByRole, getByText} = render(<MessageDetailHeader {...props} />)
+      const moreOptionsButton = getByRole(
+        (role, element) => role === 'button' && element.textContent === 'More options'
+      )
+      fireEvent.click(moreOptionsButton)
+      fireEvent.click(getByText('Delete'))
+
+      expect(props.onDelete).toHaveBeenCalled()
+    })
+
+    it('sends the selected option to the onForward callback function', () => {
+      props.onForward = jest.fn()
+      const {getByRole, getByText} = render(<MessageDetailHeader {...props} />)
+      const moreOptionsButton = getByRole(
+        (role, element) => role === 'button' && element.textContent === 'More options'
+      )
+      fireEvent.click(moreOptionsButton)
+      fireEvent.click(getByText('Forward'))
+
+      expect(props.onForward).toHaveBeenCalled()
+      expect(props.onForward.mock.calls[0][0]).toBe(undefined)
+    })
   })
 
   describe('Responsive', () => {

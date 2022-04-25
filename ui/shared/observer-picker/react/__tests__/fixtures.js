@@ -16,7 +16,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-export const MOCK_OBSERVER_LIST = [
+export const MOCK_OBSERVED_USERS_LIST = [
   {
     id: '13',
     name: 'Zelda',
@@ -39,3 +39,8 @@ export const MOCK_OBSERVER_LIST = [
     avatar_url: 'http://canvas.instructure.com/images/messages/avatar-50.png'
   }
 ]
+
+export const SHOW_K5_DASHBOARD_ROUTE = /\/api\/v1\/users\/\d+\/show_k5_dashboard/
+export const showK5DashboardResponse = (k5User = true) => ({
+  k5_user: k5User
+})

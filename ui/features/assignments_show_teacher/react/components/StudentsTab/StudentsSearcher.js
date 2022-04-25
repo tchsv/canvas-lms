@@ -17,7 +17,7 @@
  */
 
 import React from 'react'
-import I18n from 'i18n!assignments_2'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import _ from 'lodash'
 import {func} from 'prop-types'
 
@@ -41,6 +41,8 @@ import StudentSearchQuery from './StudentSearchQuery'
 import StudentsTable from './StudentsTable'
 import Filters from './Filters'
 import {Flex} from '@instructure/ui-flex'
+
+const I18n = useI18nScope('assignments_2')
 
 const STUDENT_SEARCH_DELAY = 750
 const MIN_SEARCH_CHARS = 3
@@ -134,7 +136,7 @@ export default class StudentsSearcher extends React.Component {
         margin="0 small 0 0"
         formatOutput={this.readGradeableSubmissionsCount}
       >
-        <Button icon={IconSpeedGraderLine} href={speedgraderLink} target="_blank">
+        <Button renderIcon={IconSpeedGraderLine} href={speedgraderLink} target="_blank">
           {I18n.t('Speedgrader')}
         </Button>
       </Badge>
@@ -145,7 +147,7 @@ export default class StudentsSearcher extends React.Component {
     return (
       <Button
         disabled={this.props.assignment.anonymizeStudents}
-        icon={IconEmailLine}
+        renderIcon={IconEmailLine}
         key="messageStudentsWho"
         onClick={this.props.onMessageStudentsClick}
       >
@@ -200,7 +202,7 @@ export default class StudentsSearcher extends React.Component {
 
     return (
       <>
-        <Flex as="div" margin="0 0 medium 0" wrapItems>
+        <Flex as="div" margin="0 0 medium 0" wrap="wrap">
           <Flex.Item grow size="60%" margin="small 0 0 0">
             <TextInput
               renderLabel={
@@ -215,7 +217,7 @@ export default class StudentsSearcher extends React.Component {
               value={this.state.searchValue}
               renderAfterInput={<IconSearchLine />}
             />
-            <Button icon={IconFilterLine} margin="0 small" onClick={this.toggleFilters}>
+            <Button renderIcon={IconFilterLine} margin="0 small" onClick={this.toggleFilters}>
               <PresentationContent>{I18n.t('Filter')}</PresentationContent>
               <ScreenReaderContent>
                 {this.state.showFilters

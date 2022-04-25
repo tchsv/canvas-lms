@@ -142,6 +142,7 @@ module Api::V1::Assignment
 
     hash = api_json(assignment, user, session, fields)
     hash["secure_params"] = assignment.secure_params if assignment.has_attribute?(:lti_context_id)
+    hash["lti_context_id"] = assignment.lti_context_id if assignment.has_attribute?(:lti_context_id)
     hash["course_id"] = assignment.context_id
     hash["name"] = assignment.title
     hash["submission_types"] = assignment.submission_types_array
@@ -149,6 +150,8 @@ module Api::V1::Assignment
     hash["due_date_required"] = assignment.due_date_required?
     hash["max_name_length"] = assignment.max_name_length
     hash["allowed_attempts"] = -1 if assignment.allowed_attempts.nil?
+    paced_course = Course.find_by(id: assignment.context_id)&.enable_course_paces?
+    hash["in_paced_course"] = paced_course if paced_course
 
     unless opts[:exclude_response_fields].include?("in_closed_grading_period")
       hash["in_closed_grading_period"] = assignment.in_closed_grading_period?
@@ -188,6 +191,7 @@ module Api::V1::Assignment
     hash["can_duplicate"] = assignment.can_duplicate?
     hash["original_course_id"] = assignment.duplicate_of&.course&.id
     hash["original_assignment_id"] = assignment.duplicate_of&.id
+    hash["original_lti_resource_link_id"] = assignment.duplicate_of&.lti_resource_link_id
     hash["original_assignment_name"] = assignment.duplicate_of&.name
     hash["original_quiz_id"] = assignment.migrate_from_id
     hash["workflow_state"] = assignment.workflow_state
@@ -574,9 +578,6 @@ module Api::V1::Assignment
   rescue ActiveRecord::RecordInvalid => e
     assignment.errors.add("invalid_record", e)
     false
-  rescue Lti::AssignmentSubscriptionsHelper::AssignmentSubscriptionError => e
-    assignment.errors.add("plagiarism_tool_subscription", e)
-    false
   end
 
   API_ALLOWED_SUBMISSION_TYPES = [
@@ -602,7 +603,7 @@ module Api::V1::Assignment
 
     if assignment_params["submission_types"].present? &&
        !assignment_params["submission_types"].all? do |s|
-         return false if s == "wiki_page" && !context.try(:feature_enabled?, :conditional_release)
+         return false if s == "wiki_page" && !context.try(:conditional_release?)
 
          API_ALLOWED_SUBMISSION_TYPES.include?(s) || (s == "default_external_tool" && assignment.unpublished?)
        end
@@ -830,7 +831,7 @@ module Api::V1::Assignment
       update_params.delete("allowed_attempts")
     end
 
-    if update_params.key?("important_dates") && Account.site_admin.feature_enabled?(:important_dates)
+    if update_params.key?("important_dates")
       update_params["important_dates"] = value_to_boolean(update_params["important_dates"])
     end
 

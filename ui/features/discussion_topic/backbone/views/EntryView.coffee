@@ -17,7 +17,7 @@
 
 import $ from 'jquery'
 import _ from 'underscore'
-import I18n from 'i18n!discussions'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import MarkAsReadWatcher from '../MarkAsReadWatcher'
 import walk from '../../array-walk'
 import Backbone from '@canvas/backbone'
@@ -35,6 +35,8 @@ import {isRTL} from '@canvas/i18n/rtlHelper'
 import mathml from 'mathml'
 import '@canvas/avatar/jst/_avatar.handlebars'
 import '../../jst/_reply_form.handlebars'
+
+I18n = useI18nScope('discussions')
 
 class EntryView extends Backbone.View
 
@@ -271,10 +273,11 @@ class EntryView extends Backbone.View
   toggleLike: (e) ->
     e.preventDefault()
     @model.toggleLike()
+    
 
   renderRating: =>
     @$rateLink.toggleClass('discussion-rate-action--checked', !!@model.get('rating'))
-    @$rateLink.attr('aria-checked', if @model.get('rating') then 'true' else 'false')
+    @$rateLink.attr('aria-label', if @model.get('rating') then I18n.t('Unlike this Entry') else I18n.t('Like this Entry'))
 
   renderRatingSum: =>
     @$ratingSum.text(@model.ratingString())

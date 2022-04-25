@@ -24,7 +24,7 @@ import {Flex} from '@instructure/ui-flex'
 import {Text} from '@instructure/ui-text'
 import {Heading} from '@instructure/ui-heading'
 
-import I18n from 'i18n!assignment_grade_summary'
+import {useScope as useI18nScope} from '@canvas/i18n'
 
 import * as AssignmentActions from '../assignment/AssignmentActions'
 import GradersTable from './GradersTable/index'
@@ -34,6 +34,8 @@ import {
   SELECTED_GRADES_FROM_UNAVAILABLE_GRADERS,
   setReleaseGradesStatus
 } from '../assignment/AssignmentActions'
+
+const I18n = useI18nScope('assignment_grade_summary')
 
 /* eslint-disable no-alert */
 
@@ -97,16 +99,24 @@ class Header extends Component {
     const message = I18n.t(
       'Are you sure you want to do this? It cannot be undone and will override existing grades in the gradebook.'
     )
-    if (window.confirm(message)) {
-      this.props.releaseGrades()
-    }
+
+    // This is stupid, but Chrome has an issue whereby confirm alerts sometimes just
+    // cancel themselves in certain cases.
+    // See https://stackoverflow.com/questions/51250430/chrome-dismisses-confirm-promps-immediately-without-any-user-interaction
+    setTimeout(() => {
+      if (window.confirm(message)) this.props.releaseGrades()
+    }, 100)
   }
 
   handleUnmuteClick = () => {
     const message = I18n.t('Are you sure you want to post grades for this assignment to students?')
-    if (window.confirm(message)) {
-      this.props.unmuteAssignment()
-    }
+
+    // This is stupid, but Chrome has an issue whereby confirm alerts sometimes just
+    // cancel themselves in certain cases.
+    // See https://stackoverflow.com/questions/51250430/chrome-dismisses-confirm-promps-immediately-without-any-user-interaction
+    setTimeout(() => {
+      if (window.confirm(message)) this.props.unmuteAssignment()
+    }, 100)
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {

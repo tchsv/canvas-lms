@@ -200,6 +200,11 @@
 #               "unread"
 #             ]
 #           }
+#         },
+#         "redo_request" : {
+#           "description": "This indicates whether the submission has been reassigned by the instructor.",
+#           "example": "true",
+#           "type": "boolean"
 #         }
 #       }
 #     }
@@ -237,6 +242,7 @@ class SubmissionsApiController < ApplicationController
   # @response_field grade The grade for the submission, translated into the assignment grading scheme (so a letter grade, for example).
   # @response_field grade_matches_current_submission A boolean flag which is false if the student has re-submitted since the submission was last graded.
   # @response_field preview_url Link to the URL in canvas where the submission can be previewed. This will require the user to log in.
+  # @response_field redo_request If the submission was reassigned
   # @response_field url If the submission was made as a URL.
   # @response_field late Whether the submission was made after the applicable due date.
   # @response_field assignment_visible Whether this assignment is visible to the user who submitted the assignment.
@@ -725,6 +731,9 @@ class SubmissionsApiController < ApplicationController
   # @argument include[visibility] [String]
   #   Whether this assignment is visible to the owner of the submission
   #
+  # @argument prefer_points_over_scheme [Boolean]
+  #   Treat posted_grade as points if the value matches a grading scheme value
+  #
   # @argument submission[posted_grade] [String]
   #   Assign a score to the submission, updating both the "score" and "grade"
   #   fields on the submission record. This parameter can be passed in a few
@@ -841,6 +850,7 @@ class SubmissionsApiController < ApplicationController
           submission[:submission_type] = params[:submission][:submission_type]
           submission[:url] = params[:submission][:url]
         end
+        submission[:prefer_points_over_scheme] = value_to_boolean(params[:prefer_points_over_scheme])
       end
 
       if submission[:grade] || submission[:excuse]
@@ -1124,7 +1134,7 @@ class SubmissionsApiController < ApplicationController
       end
       submissions = Api.paginate(submission_scope, self, api_v1_course_assignment_gradeable_students_url(@context, @assignment))
       render json: submissions.map { |submission|
-        json = can_view_student_names ? user_display_json(submission.user, @context) : anonymous_user_display_json(submission.anonymous_id)
+        json = can_view_student_names ? user_display_json(submission.user, @context) : anonymous_user_display_json(submission, @assignment)
         if include_pg
           selection = submission.provisional_grades.find(&:selection)
           json[:in_moderation_set] = selection.present?
@@ -1237,9 +1247,9 @@ class SubmissionsApiController < ApplicationController
   #
   # @returns Progress
   def bulk_update
-    grade_data = params[:grade_data].to_unsafe_h
+    grade_data = params[:grade_data]&.to_unsafe_h
     unless grade_data.is_a?(Hash) && grade_data.present?
-      return render json: "'grade_data' parameter required", status: :bad_request
+      return render json: { error: "'grade_data' parameter required" }, status: :bad_request
     end
 
     # singular case doesn't require the user to pass an assignment_id in

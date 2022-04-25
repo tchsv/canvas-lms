@@ -50,7 +50,10 @@ class LiveEventsObserver < ActiveRecord::Observer
           :submission,
           :user_account_association,
           :user,
-          :wiki_page
+          :wiki_page,
+          "MasterCourses::MasterTemplate",
+          "MasterCourses::MasterMigration",
+          "MasterCourses::ChildSubscription"
 
   NOP_UPDATE_FIELDS = ["updated_at", "sis_batch_id"].freeze
   def after_update(obj)

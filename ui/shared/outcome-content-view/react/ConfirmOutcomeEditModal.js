@@ -16,13 +16,15 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import I18n from 'i18n!confirmOutcomeEditModal'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import React, {Component} from 'react'
 import ReactDOM from 'react-dom'
 import {func, shape, bool} from 'prop-types'
 import {Button} from '@instructure/ui-buttons'
 
 import Modal from '@canvas/instui-bindings/react/InstuiModal'
+
+const I18n = useI18nScope('confirmOutcomeEditModal')
 
 const willUpdateRubrics = ({changed, hasUpdateableRubrics}) => changed && hasUpdateableRubrics
 
@@ -120,7 +122,7 @@ export default class ConfirmOutcomeEditModal extends Component {
             {I18n.t('Cancel')}
           </Button>
           &nbsp;
-          <Button onClick={this.onConfirm} id="confirm-outcome-edit-modal" variant="primary">
+          <Button onClick={this.onConfirm} id="confirm-outcome-edit-modal" color="primary">
             {I18n.t('Save')}
           </Button>
         </Modal.Footer>

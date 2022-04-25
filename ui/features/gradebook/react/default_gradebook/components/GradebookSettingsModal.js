@@ -24,7 +24,7 @@ import {Flex} from '@instructure/ui-flex'
 import {Heading} from '@instructure/ui-heading'
 import {Tabs} from '@instructure/ui-tabs'
 import {Tray} from '@instructure/ui-tray'
-import I18n from 'i18n!gradebook'
+import {useScope as useI18nScope} from '@canvas/i18n'
 
 import AdvancedTabPanel from './AdvancedTabPanel'
 import {
@@ -39,6 +39,8 @@ import GradePostingPolicyTabPanel from './GradePostingPolicyTabPanel'
 import ViewOptionsTabPanel from './ViewOptionsTabPanel'
 import {showFlashAlert} from '@canvas/alerts/react/FlashAlert'
 import {confirmViewUngradedAsZero} from '../Gradebook.utils'
+
+const I18n = useI18nScope('gradebook')
 
 function isLatePolicySaveable({latePolicy: {changes, validationErrors}}) {
   return !_.isEmpty(changes) && _.isEmpty(validationErrors)
@@ -317,9 +319,11 @@ export default class GradebookSettingsModal extends React.Component {
               </Flex.Item>
 
               <Flex.Item>
-                <CloseButton placement="static" variant="icon" onClick={this.close}>
-                  {I18n.t('Close')}
-                </CloseButton>
+                <CloseButton
+                  placement="static"
+                  onClick={this.close}
+                  screenReaderLabel={I18n.t('Close')}
+                />
               </Flex.Item>
             </Flex>
           </Flex.Item>
@@ -406,6 +410,18 @@ export default class GradebookSettingsModal extends React.Component {
                         this.setViewOption('showSeparateFirstLastNames', value)
                       }
                     }}
+                    hideAssignmentGroupTotals={{
+                      checked: this.state.viewOptions.hideAssignmentGroupTotals,
+                      onChange: value => {
+                        this.setViewOption('hideAssignmentGroupTotals', value)
+                      }
+                    }}
+                    hideTotal={{
+                      checked: this.state.viewOptions.hideTotal,
+                      onChange: value => {
+                        this.setViewOption('hideTotal', value)
+                      }
+                    }}
                     viewUngradedAsZero={{
                       allowed: this.props.allowViewUngradedAsZero,
                       checked: this.state.viewOptions.viewUngradedAsZero,
@@ -437,7 +453,7 @@ export default class GradebookSettingsModal extends React.Component {
               id="gradebook-settings-update-button"
               onClick={this.handleUpdateButtonClicked}
               disabled={!this.isUpdateButtonEnabled()}
-              variant="primary"
+              color="primary"
             >
               {I18n.t('Apply Settings')}
             </Button>

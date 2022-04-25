@@ -16,14 +16,16 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import I18n from 'i18n!blueprint_coursesBlueprintLocks'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import React from 'react'
 import {Tooltip} from '@instructure/ui-tooltip'
 import {ScreenReaderContent} from '@instructure/ui-a11y-content'
 import {IconBlueprintLockSolid, IconBlueprintSolid} from '@instructure/ui-icons'
 
+const I18n = useI18nScope('blueprint_coursesBlueprintLocks')
+
 export const IconLock = () => (
-  <Tooltip placement="start" variant="inverse" tip={I18n.t('Locked')}>
+  <Tooltip placement="start" color="primary" renderTip={I18n.t('Locked')}>
     <span>
       <IconBlueprintLockSolid />
       <ScreenReaderContent>{I18n.t('Locked')}</ScreenReaderContent>
@@ -32,7 +34,7 @@ export const IconLock = () => (
 )
 
 export const IconUnlock = () => (
-  <Tooltip placement="start" variant="inverse" tip={I18n.t('Unlocked')}>
+  <Tooltip placement="start" color="primary" renderTip={I18n.t('Unlocked')}>
     <span>
       <IconBlueprintSolid />
       <ScreenReaderContent>{I18n.t('Unlocked')}</ScreenReaderContent>

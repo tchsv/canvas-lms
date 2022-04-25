@@ -20,6 +20,7 @@ import React from 'react'
 import {fireEvent, render} from '@testing-library/react'
 
 import ModeSelect from '../ModeSelect'
+import {actions} from '../../../../reducers/imageSection'
 
 describe('ModeSelect', () => {
   const defaultProps = {dispatch: jest.fn()}
@@ -36,7 +37,7 @@ describe('ModeSelect', () => {
     let getByText
 
     beforeEach(() => {
-      const rendered = subject()
+      const rendered = subject({rcsConfig: {features: {buttons_and_icons_cropper: true}}})
       getByText = rendered.getByText
       fireEvent.click(getByText('Add Image'))
     })
@@ -60,6 +61,10 @@ describe('ModeSelect', () => {
     const sharedExamplesForMenuItemClick = type => {
       it('dispatches the correct action', () => {
         expect(defaultProps.dispatch).toHaveBeenCalledWith({type})
+        expect(defaultProps.dispatch).toHaveBeenCalledWith({
+          ...actions.SET_IMAGE_COLLECTION_OPEN,
+          payload: true
+        })
       })
     }
 

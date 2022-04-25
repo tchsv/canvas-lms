@@ -17,7 +17,7 @@
  */
 
 import React, {Component, Suspense} from 'react'
-import I18n from 'i18n!security_panel'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import {connect} from 'react-redux'
 import {arrayOf, bool, func, objectOf, oneOf, shape, string, number, element} from 'prop-types'
 import {Alert} from '@instructure/ui-alerts'
@@ -28,7 +28,7 @@ import {Table} from '@instructure/ui-table'
 import {TextInput} from '@instructure/ui-text-input'
 import {View} from '@instructure/ui-view'
 import {Flex} from '@instructure/ui-flex'
-import {Button} from '@instructure/ui-buttons'
+import {Button, IconButton} from '@instructure/ui-buttons'
 import {Tray} from '@instructure/ui-tray'
 import {IconPlusSolid, IconTrashLine} from '@instructure/ui-icons'
 import {ScreenReaderContent} from '@instructure/ui-a11y-content'
@@ -38,6 +38,8 @@ import isValidDomain from 'is-valid-domain'
 import EmptyDesert from '@canvas/images/react/EmptyDesert'
 
 import {addDomain, removeDomain, copyInheritedIfNeeded} from '../actions'
+
+const I18n = useI18nScope('security_panel')
 
 const ViolationTray = React.lazy(() => import('./ViolationTray'))
 
@@ -196,7 +198,7 @@ export class Whitelist extends Component {
           <Flex>
             <Flex.Item grow shrink padding="0 medium 0 0">
               <TextInput
-                label={I18n.t('Domain Name')}
+                renderLabel={I18n.t('Domain Name')}
                 placeholder="http://somedomain.com"
                 value={this.state.addDomainInputValue}
                 messages={this.state.errors}
@@ -212,7 +214,7 @@ export class Whitelist extends Component {
                 ref={c => (this.addDomainBtn = c)}
                 type="submit"
                 margin="0 x-small 0 0"
-                icon={IconPlusSolid}
+                renderIcon={IconPlusSolid}
                 disabled={(this.props.inherited && this.props.isSubAccount) || domainLimitReached}
               >
                 {I18n.t('Domain')}
@@ -239,18 +241,16 @@ export class Whitelist extends Component {
                 <Table.Row key={domain}>
                   <Table.Cell>{domain}</Table.Cell>
                   <Table.Cell textAlign="end">
-                    <Button
+                    <IconButton
                       ref={c => (this.deleteButtons[domain] = c)}
-                      variant="icon"
-                      icon={IconTrashLine}
+                      renderIcon={IconTrashLine}
+                      withBackground={false}
+                      withBorder={false}
                       onClick={() => this.handleRemoveDomain(domain)}
                       data-testid={`delete-button-${domain}`}
                       disabled={this.props.inherited && this.props.isSubAccount}
-                    >
-                      <ScreenReaderContent>
-                        {I18n.t('Remove %{domain} as an allowed domain', {domain})}
-                      </ScreenReaderContent>
-                    </Button>
+                      screenReaderLabel={I18n.t('Remove %{domain} as an allowed domain', {domain})}
+                    />
                   </Table.Cell>
                 </Table.Row>
               ))}

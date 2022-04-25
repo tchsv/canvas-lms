@@ -22,8 +22,7 @@ require_relative "../graphql_spec_helper"
 
 RSpec.shared_examples "DiscussionType" do
   let(:discussion_type) { GraphQLTypeTester.new(discussion, current_user: @teacher) }
-
-  let(:permissions) do
+  let(:default_permissions) do
     [
       {
         value: "attach",
@@ -60,10 +59,6 @@ RSpec.shared_examples "DiscussionType" do
       {
         value: "studentReporting",
         allowed: ->(_user) { discussion.course.student_reporting? }
-      },
-      {
-        value: "manageContent",
-        allowed: ->(user) { discussion.context.grants_right?(user, :manage_content) }
       },
       {
         value: "readReplies",
@@ -131,6 +126,37 @@ RSpec.shared_examples "DiscussionType" do
         allowed: ->(user) { discussion.context.grants_right?(user, :read_as_admin) }
       }
     ]
+  end
+  let(:manage_course_content_permissions) do
+    [
+      {
+        value: "manageCourseContentAdd",
+        allowed: ->(user) { discussion.context.grants_right?(user, :manage_course_content_add) }
+      },
+      {
+        value: "manageCourseContentEdit",
+        allowed: ->(user) { discussion.context.grants_right?(user, :manage_course_content_edit) }
+      },
+      {
+        value: "manageCourseContentDelete",
+        allowed: ->(user) { discussion.context.grants_right?(user, :manage_course_content_delete) }
+      }
+    ]
+  end
+  let(:manage_content_permission) do
+    [
+      {
+        value: "manageContent",
+        allowed: ->(user) { discussion.context.grants_right?(user, :manage_content) }
+      }
+    ]
+  end
+  let(:permissions) do
+    if Account.default.feature_enabled?(:granular_permissions_manage_course_content)
+      default_permissions.concat(manage_course_content_permissions)
+    else
+      default_permissions.concat(manage_content_permission)
+    end
   end
 
   it "works" do
@@ -335,6 +361,48 @@ RSpec.shared_examples "DiscussionType" do
         @anon_student_discussion_with_non_anonymous_author,
         current_user: @teacher
       )
+
+      @custom_teacher = user_factory(name: "custom teacher")
+      teacher_role_custom = custom_teacher_role("CustomTeacherRole", account: @course.account)
+      course_with_user("TeacherEnrollment", course: @course, user: @custom_teacher, active_all: true, role: teacher_role_custom)
+      @anon_custom_teacher_discussion = DiscussionTopic.create!(title: "Welcome whoever you are",
+                                                                message: "anonymous discussion",
+                                                                anonymous_state: "full_anonymity",
+                                                                context: @course,
+                                                                user: @custom_teacher,
+                                                                editor: @custom_teacher)
+      @anon_custom_teacher_discussion_type = GraphQLTypeTester.new(
+        @anon_custom_teacher_discussion,
+        current_user: @teacher
+      )
+
+      @custom_ta = user_factory(name: "custom ta")
+      ta_role_custom = custom_ta_role("CustomTARole", account: @course.account)
+      course_with_user("TaEnrollment", course: @course, user: @custom_ta, active_all: true, role: ta_role_custom)
+      @anon_custom_ta_discussion = DiscussionTopic.create!(title: "Welcome whoever you are",
+                                                           message: "anonymous discussion",
+                                                           anonymous_state: "full_anonymity",
+                                                           context: @course,
+                                                           user: @custom_ta,
+                                                           editor: @custom_ta)
+      @anon_custom_ta_discussion_type = GraphQLTypeTester.new(
+        @anon_custom_ta_discussion,
+        current_user: @teacher
+      )
+
+      @custom_designer = user_factory(name: "custom designer")
+      designer_role_custom = custom_designer_role("CustomDesignerRole", account: @course.account)
+      course_with_user("DesignerEnrollment", course: @course, user: @custom_designer, active_all: true, role: designer_role_custom)
+      @anon_custom_designer_discussion = DiscussionTopic.create!(title: "Welcome whoever you are",
+                                                                 message: "anonymous discussion",
+                                                                 anonymous_state: "full_anonymity",
+                                                                 context: @course,
+                                                                 user: @custom_designer,
+                                                                 editor: @custom_designer)
+      @anon_custom_designer_discussion_type = GraphQLTypeTester.new(
+        @anon_custom_designer_discussion,
+        current_user: @teacher
+      )
     end
 
     it "author is nil" do
@@ -354,41 +422,53 @@ RSpec.shared_examples "DiscussionType" do
     end
 
     it "returns the teacher author if a course id is provided" do
-      expect(@anon_discussion_type.resolve("author(courseId: #{@course.id}) { shortName }")).to eq @teacher.short_name
+      expect(@anon_discussion_type.resolve("author(courseId: \"#{@course.id}\") { shortName }")).to eq @teacher.short_name
+    end
+
+    it "returns the author of custom teacher post" do
+      expect(@anon_custom_teacher_discussion_type.resolve("author(courseId: \"#{@course.id}\") { shortName }")).to eq @custom_teacher.short_name
+    end
+
+    it "returns the author of custom TA post" do
+      expect(@anon_custom_ta_discussion_type.resolve("author(courseId: \"#{@course.id}\") { shortName }")).to eq @custom_ta.short_name
+    end
+
+    it "returns the author of custom designer post" do
+      expect(@anon_custom_designer_discussion_type.resolve("author(courseId: \"#{@course.id}\") { shortName }")).to eq @custom_designer.short_name
     end
 
     it "returns the teacher editor if a course id is provided" do
-      expect(@anon_discussion_type.resolve("editor(courseId: #{@course.id}) { shortName }")).to eq @teacher.short_name
+      expect(@anon_discussion_type.resolve("editor(courseId: \"#{@course.id}\") { shortName }")).to eq @teacher.short_name
     end
 
     it "returns the designer author if a course id is provided" do
-      expect(@anon_designer_discussion_type.resolve("author(courseId: #{@course.id}) { shortName }")).to eq @designer.short_name
+      expect(@anon_designer_discussion_type.resolve("author(courseId: \"#{@course.id}\") { shortName }")).to eq @designer.short_name
     end
 
     it "returns the designer editor if a course id is provided" do
-      expect(@anon_designer_discussion_type.resolve("editor(courseId: #{@course.id}) { shortName }")).to eq @designer.short_name
+      expect(@anon_designer_discussion_type.resolve("editor(courseId: \"#{@course.id}\") { shortName }")).to eq @designer.short_name
     end
 
     it "does not return the student author if a course id is provided" do
-      expect(@anon_student_discussion_type.resolve("author(courseId: #{@course.id}) { shortName }")).to eq nil
+      expect(@anon_student_discussion_type.resolve("author(courseId: \"#{@course.id}\") { shortName }")).to eq nil
     end
 
     it "does not return the student editor if a course id is provided" do
-      expect(@anon_student_discussion_type.resolve("editor(courseId: #{@course.id}) { shortName }")).to eq nil
+      expect(@anon_student_discussion_type.resolve("editor(courseId: \"#{@course.id}\") { shortName }")).to eq nil
     end
 
     context "partial anonymity" do
       context "when is_anonymous_author is true" do
         it "returns teacher as author" do
-          expect(@anon_teacher_discussion_with_anonymous_author_type.resolve("author(courseId: #{@course.id}) { shortName }")).to eq @teacher.short_name
+          expect(@anon_teacher_discussion_with_anonymous_author_type.resolve("author(courseId: \"#{@course.id}\") { shortName }")).to eq @teacher.short_name
         end
 
         it "does not return as student author" do
-          expect(@anon_student_discussion_with_anonymous_author_type.resolve("author(courseId: #{@course.id}) { shortName }")).to eq nil
+          expect(@anon_student_discussion_with_anonymous_author_type.resolve("author(courseId: \"#{@course.id}\") { shortName }")).to eq nil
         end
 
         it "does not return as student editor" do
-          expect(@anon_student_discussion_with_anonymous_author_type.resolve("editor(courseId: #{@course.id}) { shortName }")).to eq nil
+          expect(@anon_student_discussion_with_anonymous_author_type.resolve("editor(courseId: \"#{@course.id}\") { shortName }")).to eq nil
         end
 
         it "returns student's anonymousAuthor" do
@@ -398,15 +478,15 @@ RSpec.shared_examples "DiscussionType" do
 
       context "when is_anonymous_author is false" do
         it "returns teacher as author" do
-          expect(@anon_teacher_discussion_with_non_anonymous_author_type.resolve("author(courseId: #{@course.id}) { shortName }")).to eq @teacher.short_name
+          expect(@anon_teacher_discussion_with_non_anonymous_author_type.resolve("author(courseId: \"#{@course.id}\") { shortName }")).to eq @teacher.short_name
         end
 
         it "returns student as author" do
-          expect(@anon_student_discussion_with_non_anonymous_author_type.resolve("author(courseId: #{@course.id}) { shortName }")).to eq @student.short_name
+          expect(@anon_student_discussion_with_non_anonymous_author_type.resolve("author(courseId: \"#{@course.id}\") { shortName }")).to eq @student.short_name
         end
 
         it "returns student as editor" do
-          expect(@anon_student_discussion_with_non_anonymous_author_type.resolve("editor(courseId: #{@course.id}) { shortName }")).to eq @student.short_name
+          expect(@anon_student_discussion_with_non_anonymous_author_type.resolve("editor(courseId: \"#{@course.id}\") { shortName }")).to eq @student.short_name
         end
 
         it "does not return student's anonymousAuthor" do
@@ -455,10 +535,10 @@ RSpec.shared_examples "DiscussionType" do
     end
 
     it "only counts entries that match the search term" do
-      entryCount = discussion_type.resolve('searchEntryCount(filter: all, searchTerm: "boo")')
+      entry_count = discussion_type.resolve('searchEntryCount(filter: all, searchTerm: "boo")')
       result = discussion_type.resolve('discussionEntriesConnection(searchTerm:"boo") { nodes { message } }')
       expect(result.count).to be 1
-      expect(entryCount).to be 1
+      expect(entry_count).to be 1
     end
   end
 
@@ -491,6 +571,19 @@ RSpec.shared_examples "DiscussionType" do
   end
 
   it "returns the current user permissions" do
+    Account.default.disable_feature!(:granular_permissions_manage_course_content)
+    student_in_course(active_all: true)
+    type_with_student = GraphQLTypeTester.new(discussion, current_user: @student)
+
+    permissions.each do |permission|
+      expect(discussion_type.resolve("permissions { #{permission[:value]} }")).to eq permission[:allowed].call(@teacher)
+
+      expect(type_with_student.resolve("permissions { #{permission[:value]} }")).to eq permission[:allowed].call(@student)
+    end
+  end
+
+  it "returns the current user permissions (granular permissions)" do
+    Account.default.enable_feature!(:granular_permissions_manage_course_content)
     student_in_course(active_all: true)
     type_with_student = GraphQLTypeTester.new(discussion, current_user: @student)
 
@@ -641,6 +734,15 @@ describe Types::DiscussionType do
       it "finds lists the user" do
         expect(discussion_type.resolve("mentionableUsersConnection { nodes { _id } }")).to eq(discussion.context.participating_users_in_context.map(&:id).map(&:to_s))
       end
+    end
+  end
+
+  context "groups discussion" do
+    let_once(:discussion) { group_discussion_with_deleted_group }
+    include_examples "DiscussionType"
+
+    it "doesn't show child topic associated to a deleted group" do
+      expect(discussion_type.resolve("childTopics { contextName }")).to match_array(["group 1", "group 2"])
     end
   end
 

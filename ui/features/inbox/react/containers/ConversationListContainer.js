@@ -17,19 +17,25 @@
  */
 
 import {AlertManagerContext} from '@canvas/alerts/react/AlertManager'
-import {CONVERSATIONS_QUERY} from '../../graphql/Queries'
+import {ConversationContext} from '../../util/constants'
+import {CONVERSATIONS_QUERY, VIEWABLE_SUBMISSIONS_QUERY} from '../../graphql/Queries'
 import {UPDATE_CONVERSATION_PARTICIPANTS} from '../../graphql/Mutations'
 import {ConversationListHolder} from '../components/ConversationListHolder/ConversationListHolder'
-import I18n from 'i18n!conversations_2'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import {Mask} from '@instructure/ui-overlays'
 import PropTypes from 'prop-types'
-import React, {useContext} from 'react'
+import React, {useContext, useMemo} from 'react'
 import {Spinner} from '@instructure/ui-spinner'
 import {useQuery, useMutation} from 'react-apollo'
 import {View} from '@instructure/ui-view'
+import {inboxConversationsWrapper} from '../../util/utils'
+
+const I18n = useI18nScope('conversations_2')
 
 const ConversationListContainer = ({course, scope, onSelectConversation, userFilter}) => {
   const {setOnFailure, setOnSuccess} = useContext(AlertManagerContext)
+  const {isSubmissionCommentsType} = useContext(ConversationContext)
+
   const userID = ENV.current_user_id?.toString()
 
   const [starChangeConversationParticipants] = useMutation(UPDATE_CONVERSATION_PARTICIPANTS, {
@@ -61,12 +67,25 @@ const ConversationListContainer = ({course, scope, onSelectConversation, userFil
     })
   }
 
-  const {loading, error, data} = useQuery(CONVERSATIONS_QUERY, {
+  const conversationsQuery = useQuery(CONVERSATIONS_QUERY, {
     variables: {userID, scope, filter: [userFilter, course]},
-    fetchPolicy: 'cache-and-network'
+    fetchPolicy: 'cache-and-network',
+    skip: isSubmissionCommentsType
   })
 
-  if (loading) {
+  const submissionCommentsQuery = useQuery(VIEWABLE_SUBMISSIONS_QUERY, {
+    variables: {userID, sort: 'desc'},
+    skip: !isSubmissionCommentsType
+  })
+
+  const inboxItemData = useMemo(() => {
+    const data = isSubmissionCommentsType
+      ? submissionCommentsQuery.data?.legacyNode?.viewableSubmissionsConnection?.nodes
+      : conversationsQuery.data?.legacyNode?.conversationsConnection?.nodes
+    return inboxConversationsWrapper(data, isSubmissionCommentsType)
+  }, [conversationsQuery.data, isSubmissionCommentsType, submissionCommentsQuery.data])
+
+  if (conversationsQuery.loading || submissionCommentsQuery.loading) {
     return (
       <View as="div" style={{position: 'relative'}} height="100%">
         <Mask>
@@ -76,13 +95,13 @@ const ConversationListContainer = ({course, scope, onSelectConversation, userFil
     )
   }
 
-  if (error) {
+  if (conversationsQuery.error || submissionCommentsQuery.error) {
     setOnFailure(I18n.t('Unable to load messages.'))
   }
 
   return (
     <ConversationListHolder
-      conversations={data?.legacyNode?.conversationsConnection?.nodes}
+      conversations={inboxItemData}
       onOpen={() => {}}
       onSelect={onSelectConversation}
       onStar={handleStar}

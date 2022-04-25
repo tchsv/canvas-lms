@@ -167,8 +167,26 @@ describe ContentMigration do
       expect(@copy_to.attachments.where(migration_id: mig_id(att1)).first.usage_rights).to eq(usage_rights)
     end
 
+    it "preservs 'category' on export/import" do
+      att = Attachment.create!(
+        filename: "1.txt",
+        uploaded_data: StringIO.new("1"),
+        folder: Folder.root_folders(@copy_from).first,
+        context: @copy_from,
+        category: Attachment::BUTTONS_AND_ICONS
+      )
+
+      run_export_and_import
+
+      copy = @copy_to.attachments.find_by(migration_id: mig_id(att))
+      expect(copy.category).to eq Attachment::BUTTONS_AND_ICONS
+    end
+
     it "preserves locked date restrictions on export/import" do
-      att = Attachment.create!(filename: "1.txt", uploaded_data: StringIO.new("1"), folder: Folder.root_folders(@copy_from).first, context: @copy_from)
+      att = Attachment.create!(filename: "1.txt",
+                               uploaded_data: StringIO.new("1"),
+                               folder: Folder.root_folders(@copy_from).first,
+                               context: @copy_from)
       att.unlock_at = 2.days.from_now
       att.lock_at = 3.days.from_now
       att.save!
@@ -236,6 +254,11 @@ describe ContentMigration do
     end
 
     describe "usage rights required" do
+      before do
+        @copy_from.account.settings[:usage_rights_required] = true
+        @copy_from.account.save!
+      end
+
       def test_usage_rights_over_migration
         attN = Attachment.create!(filename: "normal.txt", uploaded_data: StringIO.new("1"), folder: Folder.root_folders(@copy_from).first, context: @copy_from)
         attL = Attachment.create!(filename: "locked.txt", uploaded_data: StringIO.new("2"), folder: Folder.root_folders(@copy_from).first, context: @copy_from, locked: true)
@@ -244,8 +267,6 @@ describe ContentMigration do
         ur = @copy_from.usage_rights.create! use_justification: "used_by_permission", legal_copyright: "(C) 2015 Wyndham Systems"
         Attachment.where(id: [attNU.id, attLU.id]).update_all(usage_rights_id: ur.id)
 
-        @copy_to.usage_rights_required = true
-        @copy_to.save!
         yield
 
         expect(@copy_to.attachments.where(migration_id: mig_id(attN)).first).not_to be_published
@@ -254,11 +275,22 @@ describe ContentMigration do
         expect(@copy_to.attachments.where(migration_id: mig_id(attLU)).first).not_to be_published
       end
 
-      it "imports files as unpublished unless the cartridge provides usage rights" do
+      it "imports files as published if the parent course does not require usage rights" do
+        @copy_from.usage_rights_required = false
+
+        @copy_from.save!
+        @copy_to.save!
+
+        att = Attachment.create!(filename: "normal.txt", uploaded_data: StringIO.new("1"), folder: Folder.root_folders(@copy_from).first, context: @copy_from)
+        run_course_copy
+        expect(@copy_to.attachments.where(migration_id: mig_id(att)).first).to be_published
+      end
+
+      it "imports files as published if the cartridge provides usage rights" do
         test_usage_rights_over_migration { run_export_and_import }
       end
 
-      it "imports files as unpublished unless the course copy source provides usage rights" do
+      it "imports files as published i the course copy source provides usage rights" do
         test_usage_rights_over_migration { run_course_copy }
       end
     end

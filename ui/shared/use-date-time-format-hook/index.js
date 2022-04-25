@@ -59,6 +59,16 @@ const optionsList = {
     month: 'long',
     day: 'numeric'
   },
+  'date.formats.full_with_weekday': {
+    // MMM D, YYYY h:mma
+    name: 'date.formats.full_with_weekday',
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric'
+  },
   'date.formats.medium_with_weekday': {
     // ddd MMM D, YYYY
     weekday: 'short',
@@ -76,6 +86,17 @@ const optionsList = {
     // MMM D
     month: 'short',
     day: 'numeric'
+  },
+  'date.formats.full_compact': {
+    // M/D/YY, H:M a
+    dateStyle: 'short',
+    timeStyle: 'short'
+  },
+  'date.formats.compact': {
+    // MM/DD/YYYY
+    day: 'numeric',
+    month: 'numeric',
+    year: 'numeric'
   }
 }
 

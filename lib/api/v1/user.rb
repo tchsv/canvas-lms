@@ -91,8 +91,9 @@ module Api::V1::User
 
       json[:merged_into_user_id] = user.merged_into_user_id if user.deleted? && user.merged_into_user_id
 
-      if includes.include?("avatar_url") && user.account.service_enabled?(:avatars)
-        json[:avatar_url] = avatar_url_for_user(user)
+      if user.account.service_enabled?(:avatars)
+        json[:avatar_url] = avatar_url_for_user(user) if includes.include?("avatar_url")
+        json[:avatar_state] = user.avatar_state if includes.include?("avatar_state") && user.grants_right?(current_user, :manage_user_details)
       end
 
       json[:last_name] = user.last_name if includes.include?("last_name")
@@ -226,10 +227,11 @@ module Api::V1::User
     hash
   end
 
-  def anonymous_user_display_json(anonymous_id)
+  def anonymous_user_display_json(submission, assignment)
     {
-      anonymous_id: anonymous_id,
-      avatar_image_url: User.default_avatar_fallback
+      anonymous_id: submission.anonymous_id,
+      avatar_image_url: User.default_avatar_fallback,
+      display_name: assignment.anonymous_student_identities.dig(submission.user_id, :name)
     }
   end
 
@@ -403,7 +405,7 @@ module Api::V1::User
 
   def group_ids(user)
     if user.group_memberships.loaded?
-      user.group_memberships.reject(&:deleted?).map(&:group_id)
+      GroupMembership.where(user: user).active.pluck(:group_id)
     else
       user.group_memberships.active.pluck(:group_id)
     end

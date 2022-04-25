@@ -16,7 +16,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import I18n from 'i18n!gradebookHeaderMenu'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import $ from 'jquery'
 import messageStudents from '@canvas/message-students-dialog/jquery/message_students'
 import AssignmentDetailsDialog from './AssignmentDetailsDialog'
@@ -31,11 +31,15 @@ import MessageStudentsWhoHelper from '@canvas/grading/messageStudentsWhoHelper'
 import React from 'react'
 import ReactDOM from 'react-dom'
 import MessageStudentsWithObserversDialog from '@canvas/message-students-dialog/react/MessageStudentsWhoDialog'
+import {ApolloProvider} from 'react-apollo'
+import {createClient} from '@canvas/apollo'
 import '@canvas/forms/jquery/jquery.instructure_forms'
 import 'jqueryui/dialog'
 import '@canvas/jquery/jquery.instructure_misc_helpers'
 import '@canvas/jquery/jquery.instructure_misc_plugins'
 import 'jquery-kyle-menu'
+
+const I18n = useI18nScope('gradebookHeaderMenu')
 
 const isAdmin = function () {
   return ENV.current_user_roles.includes('admin')
@@ -176,29 +180,36 @@ export default class GradebookHeaderMenu {
     return dialog.show()
   }
 
+  // TODO(EVAL): This needs to be implemented in EVAL-2064.
+  handleSendMessageStudentsWho = () => {}
+
   messageStudentsWho(
     opts = {
       assignment: this.assignment,
       students: this.gradebook.studentsThatCanSeeAssignment(
         this.gradebook.students,
         this.assignment
-      )
+      ),
+      onSend: this.handleSendMessageStudentsWho
     }
   ) {
     let {students} = opts
     const {assignment} = opts
+    const {onSend} = opts
     students = _.filter(students, student => {
       return !student.is_inactive
     })
     students = _.map(students, student => {
       const sub = student[`assignment_${assignment.id}`]
       return {
+        grade: sub.grade,
         id: student.id,
         name: student.name,
+        redoRequest: sub.redo_request,
         score: sub != null ? sub.score : undefined,
         // Both gradebooks share the Message Students dialog; prefer New Gradebook's casing
         sortableName: student.sortable_name,
-        submitted_at: sub != null ? sub.submitted_at : undefined
+        submittedAt: sub != null ? sub.submitted_at : undefined
       }
     })
 
@@ -206,14 +217,25 @@ export default class GradebookHeaderMenu {
       const mountPoint = document.querySelector(
         "[data-component='MessageStudentsWithObserversModal']"
       )
-      const dialog = React.createElement(MessageStudentsWithObserversDialog, {
-        assignment,
+      const props = {
+        assignment: {
+          gradingType: assignment.grading_type,
+          id: assignment.id,
+          name: assignment.name,
+          submissionTypes: assignment.submission_types
+        },
         onClose: () => {
           ReactDOM.unmountComponentAtNode(mountPoint)
         },
+        onSend,
         students
-      })
-      ReactDOM.render(dialog, mountPoint)
+      }
+      ReactDOM.render(
+        <ApolloProvider client={createClient()}>
+          <MessageStudentsWithObserversDialog {...props} />
+        </ApolloProvider>,
+        mountPoint
+      )
     } else {
       const settings = MessageStudentsWhoHelper.settings(assignment, students)
       return messageStudents(settings)

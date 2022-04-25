@@ -19,8 +19,8 @@
 import {
   createGradebook,
   setFixtureHtml
-} from 'ui/features/gradebook/react/default_gradebook/__tests__/GradebookSpecHelper.js'
-import TotalGradeCellFormatter from 'ui/features/gradebook/react/default_gradebook/GradebookGrid/formatters/TotalGradeCellFormatter.js'
+} from 'ui/features/gradebook/react/default_gradebook/__tests__/GradebookSpecHelper'
+import TotalGradeCellFormatter from 'ui/features/gradebook/react/default_gradebook/GradebookGrid/formatters/TotalGradeCellFormatter'
 
 QUnit.module('GradebookGrid TotalGradeCellFormatter', hooks => {
   let $fixture

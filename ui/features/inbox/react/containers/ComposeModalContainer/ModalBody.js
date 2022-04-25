@@ -16,19 +16,25 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {AttachmentDisplay} from '../../components/AttachmentDisplay/AttachmentDisplay'
 import {ConversationMessage} from '../../../graphql/ConversationMessage'
 import {MessageBody} from '../../components/MessageBody/MessageBody'
 import {PastMessages} from '../../components/PastMessages/PastMessages'
 import PropTypes from 'prop-types'
 import React from 'react'
 
+import {AttachmentDisplay} from '@canvas/message-attachments'
 import {Flex} from '@instructure/ui-flex'
 import {Modal} from '@instructure/ui-modal'
 import {View} from '@instructure/ui-view'
+import {Alert} from '@instructure/ui-alerts'
 
-const ModalBody = (props) => (
+const ModalBody = props => (
   <Modal.Body padding="none">
+    {props.modalError && (
+      <Alert margin="small" variant="error" timeout={2500}>
+        {props.modalError}
+      </Alert>
+    )}
     <Flex direction="column" width="100%" height="100%">
       {props.children}
       <View borderWidth="small none none none" padding="x-small">
@@ -53,7 +59,7 @@ ModalBody.propTypes = {
   bodyMessages: PropTypes.arrayOf(
     PropTypes.shape({
       text: PropTypes.string,
-      type: PropTypes.string,
+      type: PropTypes.string
     })
   ),
   children: PropTypes.element,
@@ -61,6 +67,7 @@ ModalBody.propTypes = {
   pastMessages: PropTypes.arrayOf(ConversationMessage.shape),
   removeAttachment: PropTypes.func,
   replaceAttachment: PropTypes.func,
+  modalError: PropTypes.string
 }
 
 export default ModalBody

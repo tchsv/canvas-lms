@@ -18,7 +18,7 @@
 
 import React from 'react'
 import {bool, string, element, func, arrayOf} from 'prop-types'
-import I18n from 'i18n!assignments_2'
+import {useScope as useI18nScope} from '@canvas/i18n'
 
 import {View} from '@instructure/ui-view'
 import {Flex} from '@instructure/ui-flex'
@@ -27,6 +27,8 @@ import {Button} from '@instructure/ui-buttons'
 import {IconTrashLine} from '@instructure/ui-icons'
 import {Select} from '@instructure/ui-select'
 import SubmitOptionShape from './SubmitOptionShape'
+
+const I18n = useI18nScope('assignments_2')
 
 /*
  *  CAUTION: The InstUI Select component is greatly changed in v7.
@@ -109,7 +111,7 @@ export default class NonCanvasType extends React.Component {
             )}
             {this.props.readOnly ? null : (
               <Flex.Item margin="0 0 0 small" grow textAlign="end">
-                <Button icon={IconTrashLine} onClick={this.onDelete}>
+                <Button renderIcon={IconTrashLine} onClick={this.onDelete}>
                   <ScreenReaderContent>{I18n.t('Delete this submission type')}</ScreenReaderContent>
                 </Button>
               </Flex.Item>

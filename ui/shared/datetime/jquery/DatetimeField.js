@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License along
 // with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import I18n from 'i18n!datepicker'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import $ from 'jquery'
 import {debounce} from 'underscore'
 import tz from '@canvas/timezone'
@@ -24,6 +24,8 @@ import {isRTL} from '@canvas/i18n/rtlHelper'
 
 import moment from 'moment'
 import '@canvas/rails-flash-notifications'
+
+const I18n = useI18nScope('datepicker')
 
 const TIME_FORMAT_OPTIONS = {
   hour: 'numeric',
@@ -52,7 +54,9 @@ function formatter(zone, formatOptions = DATETIME_FORMAT_OPTIONS) {
   return new Intl.DateTimeFormat(ENV.LOCALE || navigator.language, options)
 }
 
-const datepickerDefaults = {
+let datepickerDefaults
+
+const computeDatepickerDefaults = () => ({
   constrainInput: false,
   dateFormat: datePickerFormat(I18n.lookup('date.formats.medium')),
   showOn: 'button',
@@ -79,7 +83,7 @@ const datepickerDefaults = {
   get showMonthAfterYear() {
     return I18n.t('#date.formats.medium_month').slice(0, 2) === '%Y'
   } // "month year" or "year month"
-}
+})
 
 // adds datepicker and suggest functionality to the specified $field
 export default class DatetimeField {
@@ -153,7 +157,7 @@ export default class DatetimeField {
     if (!this.isReadonly()) {
       const datepickerOptions = $.extend(
         {},
-        this.datepickerDefaults(),
+        this.getDatepickerDefaults(),
         {
           timePicker: this.allowTime,
           beforeShow: () => this.$field.trigger('detachTooltip'),
@@ -396,7 +400,11 @@ export default class DatetimeField {
     return !!this.$field.attr('readonly')
   }
 
-  datepickerDefaults() {
+  getDatepickerDefaults() {
+    if (!datepickerDefaults) {
+      datepickerDefaults = computeDatepickerDefaults()
+    }
+
     return datepickerDefaults
   }
 

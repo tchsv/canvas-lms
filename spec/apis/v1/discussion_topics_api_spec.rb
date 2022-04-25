@@ -19,7 +19,7 @@
 #
 
 require_relative "../api_spec_helper"
-require_relative "../locked_spec"
+require_relative "../locked_examples"
 
 require "nokogiri"
 
@@ -117,6 +117,24 @@ describe Api::V1::DiscussionTopics do
     expect(
       @test_api.discussion_topic_api_json(@topic, @topic.context, @me, nil)["user_pronouns"]
     ).to eq "she/her"
+  end
+
+  describe "includes 'in_paced_course' if enabled" do
+    it "says yes if course has enable_course_paces enabled" do
+      @course.enable_course_paces = true
+      @course.save!
+      expect(
+        @test_api.discussion_topic_api_json(@topic, @topic.context, @me, nil)[:in_paced_course]
+      ).to be true
+    end
+
+    it "says no if course has enable_course_paces disabled" do
+      @course.enable_course_paces = false
+      @course.save!
+      expect(
+        @test_api.discussion_topic_api_json(@topic, @topic.context, @me, nil)[:in_paced_course]
+      ).to be nil
+    end
   end
 
   it "renders a podcast_url using the discussion topic's context if there is no @context_enrollment/@context" do
@@ -413,7 +431,6 @@ describe DiscussionTopicsController, type: :request do
 
   context "anonymous discussions" do
     before do
-      Account.site_admin.enable_feature! :discussion_anonymity
       Account.site_admin.enable_feature! :react_discussions_post
       api_call(:post, "/api/v1/courses/#{@course.id}/discussion_topics",
                { controller: "discussion_topics", action: "create", format: "json",
@@ -442,7 +459,6 @@ describe DiscussionTopicsController, type: :request do
 
     context "student permissions" do
       before do
-        allow(Account.site_admin).to receive(:feature_enabled?).with(:discussion_anonymity).and_return(true)
         allow(Account.site_admin).to receive(:feature_enabled?).with(:react_discussions_post).and_return(true)
       end
 

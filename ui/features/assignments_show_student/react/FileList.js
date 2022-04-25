@@ -17,18 +17,20 @@
  */
 
 import {getIconByType} from '@canvas/mime/react/mimeClassIconHelper'
-import I18n from 'i18n!assignments_2'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import mimeClass from '@canvas/mime/mimeClass'
 import PropTypes from 'prop-types'
 import React from 'react'
 
-import {Button} from '@instructure/ui-buttons'
+import {Button, IconButton} from '@instructure/ui-buttons'
 import {Flex} from '@instructure/ui-flex'
 import {IconTrashLine} from '@instructure/ui-icons'
 import {Text} from '@instructure/ui-text'
 import {List} from '@instructure/ui-list'
 import {Link} from '@instructure/ui-link'
 import {ScreenReaderContent} from '@instructure/ui-a11y-content'
+
+const I18n = useI18nScope('assignments_2')
 
 const getIcon = file => {
   if (mimeClass(file.type) === 'image') {
@@ -79,20 +81,18 @@ const FileList = props => {
             )}
             {canRemove && (
               <Flex.Item padding="0 small 0 x-small">
-                <Button
-                  icon={IconTrashLine}
+                <IconButton
+                  renderIcon={IconTrashLine}
                   id={file.id}
                   onClick={removeFileHandler(refsMap)}
                   ref={element => {
                     refsMap[file.id] = element
                   }}
                   size="small"
-                  variant="icon"
-                >
-                  <ScreenReaderContent>
-                    {I18n.t('Remove %{filename}', {filename: file.name})}
-                  </ScreenReaderContent>
-                </Button>
+                  screenReaderLabel={I18n.t('Remove %{filename}', {filename: file.name})}
+                  withBackground={false}
+                  withBorder={false}
+                />
               </Flex.Item>
             )}
           </Flex>

@@ -728,19 +728,19 @@ describe Types::UserType do
 
     it "correctly returns default teacher role" do
       expect(
-        user_teacher_type.resolve(%|courseRoles(courseId: #{@course.id}, roleTypes: ["TaEnrollment","TeacherEnrollment"])|)
+        user_teacher_type.resolve(%|courseRoles(courseId: "#{@course.id}", roleTypes: ["TaEnrollment","TeacherEnrollment"])|)
       ).to eq ["TeacherEnrollment"]
     end
 
     it "correctly returns default TA role" do
       expect(
-        user_ta_type.resolve(%|courseRoles(courseId: #{@course.id}, roleTypes: ["TaEnrollment","TeacherEnrollment"])|)
+        user_ta_type.resolve(%|courseRoles(courseId: "#{@course.id}", roleTypes: ["TaEnrollment","TeacherEnrollment"])|)
       ).to eq ["TaEnrollment"]
     end
 
     it "does not return student role" do
       expect(
-        user_type.resolve(%|courseRoles(courseId: #{@course.id}, roleTypes: ["TaEnrollment","TeacherEnrollment"])|)
+        user_type.resolve(%|courseRoles(courseId: "#{@course.id}", roleTypes: ["TaEnrollment","TeacherEnrollment"])|)
       ).to be_nil
     end
 
@@ -758,115 +758,101 @@ describe Types::UserType do
 
     it "does not return custom roles based on teacher" do
       expect(
-        custom_teacher_type.resolve(%|courseRoles(courseId: #{@course.id}, roleTypes: ["TaEnrollment","TeacherEnrollment"])|)
+        custom_teacher_type.resolve(%|courseRoles(courseId: "#{@course.id}", roleTypes: ["TaEnrollment","TeacherEnrollment"])|)
       ).to be_nil
     end
 
     it "Returns multiple roles when mutiple enrollments exist" do
       expect(
-        teacher_ta_type.resolve(%|courseRoles(courseId: #{@course.id}, roleTypes: ["TaEnrollment","TeacherEnrollment"])|)
+        teacher_ta_type.resolve(%|courseRoles(courseId: "#{@course.id}", roleTypes: ["TaEnrollment","TeacherEnrollment"])|)
       ).to include("TaEnrollment", "TeacherEnrollment")
     end
 
     it "does not return duplicate roles when mutiple enrollments exist" do
       expect(
-        teacher_with_duplicate_role_types.resolve(%|courseRoles(courseId: #{@course.id}, roleTypes: ["TaEnrollment","TeacherEnrollment"])|)
+        teacher_with_duplicate_role_types.resolve(%|courseRoles(courseId: "#{@course.id}", roleTypes: ["TaEnrollment","TeacherEnrollment"])|)
       ).to eq ["TeacherEnrollment"]
     end
 
     it "returns all roles if no role types are specified" do
       expect(
-        teacher_ta_type.resolve(%|courseRoles(courseId: #{@course.id})|)
+        teacher_ta_type.resolve(%|courseRoles(courseId: "#{@course.id}")|)
       ).to include("TaEnrollment", "TeacherEnrollment")
     end
 
     it "returns only the role specified" do
       expect(
-        teacher_ta_type.resolve(%|courseRoles(courseId: #{@course.id}, roleTypes: ["TaEnrollment"])|)
+        teacher_ta_type.resolve(%|courseRoles(courseId: "#{@course.id}", roleTypes: ["TaEnrollment"])|)
       ).to eq ["TaEnrollment"]
     end
 
     it "returns custom role's base_type if built_in_only is set to false" do
       expect(
-        custom_teacher_type.resolve(%|courseRoles(courseId: #{@course.id}, roleTypes: ["TeacherEnrollment"], builtInOnly: false)|)
+        custom_teacher_type.resolve(%|courseRoles(courseId: "#{@course.id}", roleTypes: ["TeacherEnrollment"], builtInOnly: false)|)
       ).to eq ["TeacherEnrollment"]
     end
   end
 
-  def submission_comments_mutation_str(teacher_id)
-    <<~GQL
-      {
-        legacyNode(_id: \"#{teacher_id}\", type: User) {
-          ... on User {
-            submissionCommentsConnection(first: 10) {
-              nodes {
-                comment
-                assignment {
-                  name
-                }
-                course {
-                  name
-                }
-              }
-            }
-          }
-        }
-      }
-    GQL
-  end
-
   describe "submission comments" do
     before(:once) do
-      course = Course.create! name: "TEST"
+      @course = Course.create! name: "TEST"
 
-      @teacher = course_with_user("TeacherEnrollment", course: course, name: "Mr Teacher", active_all: true).user
-      student = course_with_user("StudentEnrollment", course: course, name: "Mr Student 1", active_all: true).user
+      @teacher = course_with_user("TeacherEnrollment", course: @course, name: "Mr Teacher", active_all: true).user
+      @student = course_with_user("StudentEnrollment", course: @course, name: "Mr Student 1", active_all: true).user
 
-      assignment = course.assignments.create!(
+      assignment = @course.assignments.create!(
         name: "Test Assignment",
         moderated_grading: true,
         grader_count: 10,
         final_grader: @teacher
       )
-      assignment.grade_student(student, grade: 1, grader: @teacher, provisional: true)
-      submission = assignment.submissions.find_by(user: student)
-
-      submission.add_comment(author: student, comment: "First comment")
-      submission.add_comment(author: @teacher, comment: "Second comment")
-      submission.add_comment(author: @teacher, comment: "Third comment")
-    end
-
-    it "can get comments" do
-      result = CanvasSchema.execute(
-        submission_comments_mutation_str(@teacher.id),
-        context: { current_user: @teacher }
+      assignment2 = @course.assignments.create!(
+        name: "Assignment without Comments",
+        moderated_grading: true,
+        grader_count: 10,
+        final_grader: @teacher
       )
 
-      nodes = result.dig("data", "legacyNode", "submissionCommentsConnection", "nodes")
+      assignment.grade_student(@student, grade: 1, grader: @teacher, provisional: true)
+      assignment2.grade_student(@student, grade: 1, grader: @teacher, provisional: true)
 
-      expect(nodes.map { |c| c["comment"] }).to match_array ["First comment", "Second comment", "Third comment"]
+      @student_submission_1 = assignment.submissions.find_by(user: @student)
+
+      @sc1 = @student_submission_1.add_comment(author: @student, comment: "First comment")
+      @sc2 = @student_submission_1.add_comment(author: @teacher, comment: "Second comment")
+      @sc3 = @student_submission_1.add_comment(author: @teacher, comment: "Third comment")
     end
 
-    it "can get assignment names" do
-      result = CanvasSchema.execute(
-        submission_comments_mutation_str(@teacher.id),
-        context: { current_user: @teacher }
-      )
-
-      nodes = result.dig("data", "legacyNode", "submissionCommentsConnection", "nodes")
-
-      expect(nodes.map { |c| c["assignment"]["name"] }).to match_array ["Test Assignment", "Test Assignment", "Test Assignment"]
+    let(:teacher_type) do
+      GraphQLTypeTester.new(@teacher, current_user: @teacher, domain_root_account: @course.account.root_account, request: ActionDispatch::TestRequest.create)
     end
 
-    it "can get course names" do
-      result = CanvasSchema.execute(
-        submission_comments_mutation_str(@teacher.id),
-        context: { current_user: @teacher }
-      )
+    describe "viewableSubmissionsConnection field" do
+      it "only gets submissions with comments" do
+        query_result = teacher_type.resolve("viewableSubmissionsConnection { nodes { _id }  }")
+        expect(query_result.count).to eq 1
+        expect(query_result[0].to_i).to eq @student_submission_1.id
+      end
 
-      nodes = result.dig("data", "legacyNode", "submissionCommentsConnection", "nodes")
+      it "can retrieve submission comments" do
+        query_result = teacher_type.resolve("viewableSubmissionsConnection { nodes { commentsConnection { nodes { comment }} }  }")
+        expect(query_result[0].count).to eq 3
+        expect(query_result[0]).to match_array ["First comment", "Second comment", "Third comment"]
+      end
 
-      expect(nodes.map { |c| c["course"]["name"] }).to match_array %w[TEST TEST TEST]
+      it "can get createdAt" do
+        query_result = teacher_type.resolve("viewableSubmissionsConnection { nodes { commentsConnection { nodes { createdAt }} }  }")
+        retrieved_values = query_result[0].map { |string_date| Time.parse(string_date) }
+        expect(retrieved_values).to all(be_within(1.minute).of(@sc1.created_at))
+      end
+
+      it "can get assignment names" do
+        expect(teacher_type.resolve("viewableSubmissionsConnection { nodes { assignment { name }  }  }")[0]).to eq @student_submission_1.assignment.name
+      end
+
+      it "can get course names" do
+        expect(teacher_type.resolve("viewableSubmissionsConnection { nodes { commentsConnection { nodes { course { name } } }  }  }")[0]).to match_array %w[TEST TEST TEST]
+      end
     end
   end
 end

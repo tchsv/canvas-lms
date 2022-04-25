@@ -26,7 +26,8 @@ import {findOutcomesMocks} from '@canvas/outcomes/mocks/Management'
 import {
   IMPORT_NOT_STARTED,
   IMPORT_FAILED,
-  IMPORT_PENDING
+  IMPORT_PENDING,
+  IMPORT_COMPLETED
 } from '@canvas/outcomes/react/hooks/useOutcomesImport'
 
 jest.useFakeTimers()
@@ -238,6 +239,81 @@ describe('FindOutcomesView', () => {
     expect(getByText('Add All Outcomes').closest('button')).toBeDisabled()
   })
 
+  it('enables "Add All Outcomes" button if there are multiple outcomes that are not imported and one gets imported', () => {
+    const {getByText} = render(
+      <FindOutcomesView
+        {...defaultProps({
+          importOutcomesStatus: {11: IMPORT_COMPLETED},
+          outcomesGroup: {
+            ...defaultProps().outcomesGroup,
+            notImportedOutcomesCount: 2
+          }
+        })}
+      />
+    )
+    expect(getByText('Add All Outcomes').closest('button')).toBeEnabled()
+  })
+
+  it('disables "Add All Outcomes" button if the remaining outcome is getting imported', () => {
+    const {getByText} = render(
+      <FindOutcomesView
+        {...defaultProps({
+          importOutcomesStatus: {11: IMPORT_PENDING},
+          outcomesGroup: {
+            ...defaultProps().outcomesGroup,
+            notImportedOutcomesCount: 1
+          }
+        })}
+      />
+    )
+    expect(getByText('Add All Outcomes').closest('button')).toBeDisabled()
+  })
+
+  it('disables "Add All Outcomes" button if the remaining outcome is imported', () => {
+    const {getByText} = render(
+      <FindOutcomesView
+        {...defaultProps({
+          importOutcomesStatus: {11: IMPORT_COMPLETED},
+          outcomesGroup: {
+            ...defaultProps().outcomesGroup,
+            notImportedOutcomesCount: 1
+          }
+        })}
+      />
+    )
+    expect(getByText('Add All Outcomes').closest('button')).toBeDisabled()
+  })
+
+  it('enables "Add All Outcomes" button if the remaining outcome imports and fails', () => {
+    const {getByText} = render(
+      <FindOutcomesView
+        {...defaultProps({
+          importOutcomesStatus: {11: IMPORT_FAILED},
+          outcomesGroup: {
+            ...defaultProps().outcomesGroup,
+            notImportedOutcomesCount: 1
+          }
+        })}
+      />
+    )
+    expect(getByText('Add All Outcomes').closest('button')).toBeEnabled()
+  })
+
+  it('enables "Add All Outcomes" button if no outcomes from the current group were importedr', () => {
+    const {getByText} = render(
+      <FindOutcomesView
+        {...defaultProps({
+          importOutcomesStatus: {0: IMPORT_COMPLETED},
+          outcomesGroup: {
+            ...defaultProps().outcomesGroup,
+            notImportedOutcomesCount: 1
+          }
+        })}
+      />
+    )
+    expect(getByText('Add All Outcomes').closest('button')).toBeEnabled()
+  })
+
   it('displays outcome as not added when outcome has not been imported', () => {
     const {getAllByText} = render(<FindOutcomesView {...defaultProps()} />)
     const addButton = getAllByText('Add')[0].closest('button')
@@ -313,6 +389,28 @@ describe('FindOutcomesView', () => {
   it('shows small loader if there are more outcomes and data is loading', () => {
     const {getByTestId} = render(<FindOutcomesView {...defaultProps({loading: true})} />)
     expect(getByTestId('load-more-loading')).toBeInTheDocument()
+  })
+
+  it('disables the search bar when the "Add All Outcomes" button is pressed', () => {
+    const {getByPlaceholderText} = render(
+      <FindOutcomesView
+        {...defaultProps({
+          importGroupStatus: IMPORT_PENDING
+        })}
+      />
+    )
+    expect(getByPlaceholderText('Search within State Standards').closest('input')).toBeDisabled()
+  })
+
+  it('enables the search bar after an "Add All Outcomes" import is completed', () => {
+    const {getByPlaceholderText} = render(
+      <FindOutcomesView
+        {...defaultProps({
+          importGroupStatus: IMPORT_COMPLETED
+        })}
+      />
+    )
+    expect(getByPlaceholderText('Search within State Standards').closest('input')).toBeEnabled()
   })
 
   describe('mobile view', () => {

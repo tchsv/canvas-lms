@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import I18n from 'i18n!permissions_role_tray'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import $ from 'jquery'
 
 import {connect} from 'react-redux'
@@ -42,6 +42,8 @@ import RoleTrayTableRow from './RoleTrayTableRow'
 import permissionPropTypes from '@canvas/permissions/react/propTypes'
 
 import {getPermissionsWithLabels, roleIsBaseRole} from '@canvas/permissions/util'
+
+const I18n = useI18nScope('permissions_role_tray')
 
 export default class RoleTray extends Component {
   static propTypes = {
@@ -248,7 +250,7 @@ export default class RoleTray extends Component {
                 <ScreenReaderContent>{children}</ScreenReaderContent>
                 {I18n.t('Cancel')}
               </Button>
-              <Button onClick={onOk} id="confirm-delete-role" variant="primary">
+              <Button onClick={onOk} id="confirm-delete-role" color="primary">
                 {I18n.t('Ok')}
               </Button>
             </View>
@@ -292,7 +294,7 @@ export default class RoleTray extends Component {
       size="small"
       margin="small 0 0 xx-small"
       onClick={this.state.editTrayVisable ? this.hideEditTray : this.hideTray}
-      buttonRef={c => (this.closeButton = c)}
+      elementRef={c => (this.closeButton = c)}
     >
       {this.state.editTrayVisable ? (
         <IconArrowStartSolid title={I18n.t('Back')} />
@@ -346,7 +348,7 @@ export default class RoleTray extends Component {
       size="medium"
       id="edit_button"
       onClick={this.showEditTray}
-      buttonRef={c => (this.editButton = c)}
+      elementRef={c => (this.editButton = c)}
     >
       <Text color="brand">
         <IconEditLine title={I18n.t('Edit')} />
@@ -360,7 +362,7 @@ export default class RoleTray extends Component {
       variant="icon"
       size="medium"
       onClick={this.showDeleteAlert}
-      buttonRef={c => (this.deleteButton = c)}
+      elementRef={c => (this.deleteButton = c)}
     >
       <Text color="brand">
         <IconTrashLine title={I18n.t('Delete')} />
@@ -433,7 +435,7 @@ export default class RoleTray extends Component {
 
       <View as="div" margin="medium 0 large 0">
         <TextInput
-          label={I18n.t('Role Name')}
+          renderLabel={I18n.t('Role Name')}
           name="edit_name_box"
           value={this.state.editRoleLabelInput}
           messages={this.state.editRoleLabelErrorMessages}
@@ -526,8 +528,8 @@ function mapStateToProps(state, ownProps) {
     basedOn: isBaseRole ? null : getBaseRoleLabel(role, state),
     baseRoleLabels: allBaseRoles.map(r => r.label),
     allRoleLabels,
-    deletable: !isBaseRole,
-    editable: !isBaseRole,
+    deletable: !isBaseRole && role.account?.id === state.contextId,
+    editable: !isBaseRole && role.account?.id === state.contextId,
     label: role.label,
     id: role.id,
     lastChanged: role.last_updated_at,

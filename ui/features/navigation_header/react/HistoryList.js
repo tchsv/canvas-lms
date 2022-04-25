@@ -16,7 +16,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import I18n from 'i18n!new_nav'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import React from 'react'
 import {bool} from 'prop-types'
 import {Link} from '@instructure/ui-link'
@@ -26,7 +26,9 @@ import {Spinner} from '@instructure/ui-spinner'
 import {Text} from '@instructure/ui-text'
 import {HistoryShape} from './HistoryShape'
 import _ from 'lodash'
-import {formatTimeAgoDate, formatTimeAgoTitle} from '../jquery/instructure'
+import {formatTimeAgoDate, formatTimeAgoTitle} from '@canvas/enhanced-user-content'
+
+const I18n = useI18nScope('new_nav')
 
 HistoryList.propTypes = {
   history: HistoryShape.isRequired,
@@ -74,7 +76,7 @@ export default function HistoryList({hasLoaded, history}) {
         ))
       ) : (
         <List.Item>
-          <Spinner size="small" title={I18n.t('Loading')} />
+          <Spinner size="small" renderTitle={I18n.t('Loading')} />
         </List.Item>
       )}
     </List>

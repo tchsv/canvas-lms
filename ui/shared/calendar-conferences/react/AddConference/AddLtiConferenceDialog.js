@@ -18,10 +18,12 @@
 
 import React, {useEffect, useCallback} from 'react'
 import PropTypes from 'prop-types'
-import I18n from 'i18n!conferences'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import ExternalToolModalLauncher from '@canvas/external-tools/react/components/ExternalToolModalLauncher'
 import {showFlashError} from '@canvas/alerts/react/FlashAlert'
 import webConferenceType from '../proptypes/webConferenceType'
+
+const I18n = useI18nScope('conferences')
 
 const LTI_DATA_TYPES = ['link', 'html']
 
@@ -46,7 +48,7 @@ const AddLtiConferenceDialog = ({context, conferenceType, isOpen, onRequestClose
       if (
         event.origin === ENV.DEEP_LINKING_POST_MESSAGE_ORIGIN &&
         event.data &&
-        event.data.messageType === 'LtiDeepLinkingResponse'
+        event.data.subject === 'LtiDeepLinkingResponse'
       ) {
         addContentItems(event.data)
       }

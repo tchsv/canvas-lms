@@ -24,9 +24,11 @@ import {Button} from '@instructure/ui-buttons'
 import {ScreenReaderContent} from '@instructure/ui-a11y-content'
 import {IconPlusLine} from '@instructure/ui-icons'
 
-import I18n from 'i18n!react_developer_keys'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import React from 'react'
 import PropTypes from 'prop-types'
+
+const I18n = useI18nScope('react_developer_keys')
 
 export default class DeveloperKeyModalTrigger extends React.Component {
   showCreateDeveloperKey = () => {
@@ -56,7 +58,7 @@ export default class DeveloperKeyModalTrigger extends React.Component {
 
   triggerButton() {
     return (
-      <Button variant="primary" buttonRef={this.props.setAddKeyButtonRef} icon={IconPlusLine}>
+      <Button color="primary" elementRef={this.props.setAddKeyButtonRef} renderIcon={IconPlusLine}>
         <ScreenReaderContent>{I18n.t('Create a')}</ScreenReaderContent>
         {I18n.t('Developer Key')}
       </Button>

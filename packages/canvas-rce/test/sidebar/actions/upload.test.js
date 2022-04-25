@@ -231,7 +231,7 @@ describe('Upload data actions', () => {
         contextId: 101,
         contextType: 'course',
         onDuplicate: undefined,
-        category: 'buttons_and_icons'
+        category: 'icon_maker_icons'
       }
 
       return store.dispatch(actions.uploadToButtonsAndIconsFolder(svg)).then(() => {
@@ -274,7 +274,7 @@ describe('Upload data actions', () => {
             parentFolderId: 2
           },
           {
-            category: 'buttons_and_icons',
+            category: 'icon_maker_icons',
             contextId: 101,
             contextType: 'course',
             host: 'http://host:port',
@@ -444,6 +444,76 @@ describe('Upload data actions', () => {
       if (Bridge.insertLink.restore) {
         Bridge.insertLink.restore()
       }
+    })
+
+    describe('when the file is svg', () => {
+      let fileText
+
+      const file = () => ({
+        slice: () => ({
+          text: async () => fileText
+        }),
+        type: 'image/svg'
+      })
+
+      const fileProps = () => ({
+        domObject: file()
+      })
+
+      const subject = () => store.dispatch(actions.uploadPreflight('files', fileProps()))
+
+      describe('when the file is a button & icon svg', () => {
+        beforeEach(() => {
+          fileText = 'something something image/svg+xml-icon-maker-icons'
+        })
+
+        it('sets the category to "icon_maker_icons"', () => {
+          subject().then(() => {
+            sinon.assert.calledWith(successStore.preflightUpload, {
+              category: 'icon_maker_icons'
+            })
+          })
+        })
+      })
+
+      describe('when the file is not a button & icon svg', () => {
+        beforeEach(() => {
+          fileText = 'something something not buttons & icons'
+        })
+
+        it('sets the category to undefined', () => {
+          subject().then(() => {
+            sinon.assert.calledWith(successStore.preflightUpload, {
+              category: undefined
+            })
+          })
+        })
+      })
+    })
+
+    describe('when the file is not an svg', () => {
+      let fileText
+
+      const file = () => ({
+        slice: () => ({
+          text: async () => fileText
+        }),
+        type: 'image/png'
+      })
+
+      const fileProps = () => ({
+        domObject: file()
+      })
+
+      const subject = () => store.dispatch(actions.uploadPreflight('files', fileProps()))
+
+      it('sets the category to undefined', () => {
+        subject().then(() => {
+          sinon.assert.calledWith(successStore.preflightUpload, {
+            category: undefined
+          })
+        })
+      })
     })
 
     it('follows chain preflight -> upload -> complete', () => {

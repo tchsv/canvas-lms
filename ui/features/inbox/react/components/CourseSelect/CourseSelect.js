@@ -16,13 +16,16 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import I18n from 'i18n!conversations_2'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import {AlertManagerContext} from '@canvas/alerts/react/AlertManager'
 import PropTypes from 'prop-types'
 import React from 'react'
 
 import {ScreenReaderContent} from '@instructure/ui-a11y-content'
 import {Select} from '@instructure/ui-select'
+import {CloseButton} from '@instructure/ui-buttons'
+
+const I18n = useI18nScope('conversations_2')
 
 export const ALL_COURSES_ID = 'all_courses'
 
@@ -39,6 +42,21 @@ const filterOptions = (value, options) => {
     }
   })
   return filteredOptions
+}
+
+const getOptionById = (id, options) => {
+  return Object.values(options)
+    .flat()
+    .find(({assetString}) => id === assetString)
+}
+
+const getCourseName = (courseAssetString, options) => {
+  if (courseAssetString) {
+    const courseInfo = getOptionById(courseAssetString, options)
+    return courseInfo ? courseInfo.contextName : ''
+  } else {
+    return ''
+  }
 }
 
 export class CourseSelect extends React.Component {
@@ -81,13 +99,17 @@ export class CourseSelect extends React.Component {
         })
       )
     }).isRequired,
-    onCourseFilterSelect: PropTypes.func
+    onCourseFilterSelect: PropTypes.func,
+    activeCourseFilterID: PropTypes.string
   }
 
   static getDerivedStateFromProps(props, state) {
     if (props.options !== state.options) {
+      const activeCourseInputValue = getCourseName(props.activeCourseFilterID, props.options)
       return {
-        filteredOptions: filterOptions(state.inputValue, props.options)
+        filteredOptions: filterOptions(activeCourseInputValue, props.options),
+        inputValue: activeCourseInputValue,
+        selectedOptionId: props.activeCourseFilterID ? props.activeCourseFilterID : null
       }
     }
     return null
@@ -108,7 +130,7 @@ export class CourseSelect extends React.Component {
   }
 
   getGroupChangedMessage = newOption => {
-    const currentOption = this.getOptionById(this.state.highlightedOptionId)
+    const currentOption = getOptionById(this.state.highlightedOptionId, this.props.options)
     const currentOptionGroup = this.getOptionGroup(currentOption)
     const newOptionGroup = this.getOptionGroup(newOption)
 
@@ -132,19 +154,13 @@ export class CourseSelect extends React.Component {
     )
   }
 
-  getOptionById = id => {
-    return Object.values(this.props.options)
-      .flat()
-      .find(({assetString}) => id === assetString)
-  }
-
   handleBlur = () => {
     this.setState({highlightedOptionId: null})
   }
 
   handleHighlightOption = (event, {id}) => {
     event.persist()
-    const option = this.getOptionById(id)
+    const option = getOptionById(id, this.props.options)
     if (!option) return // prevent highlighting of empty options
     if (event.key) {
       this.setState({
@@ -164,11 +180,11 @@ export class CourseSelect extends React.Component {
   }
 
   handleSelectOption = (event, {id}) => {
-    const option = this.getOptionById(id)
+    const option = getOptionById(id, this.props.options)
     const contextName = option.contextName
     if (!option) return // prevent selecting of empty options
     if (id === 'all_courses') id = null
-    this.props.onCourseFilterSelect(id)
+    this.props.onCourseFilterSelect({contextID: id, contextName})
     this.setState(
       {
         selectedOptionId: id,
@@ -195,6 +211,8 @@ export class CourseSelect extends React.Component {
   }
 
   handleShowOptions = () => {
+    if (this.state.inputValue !== '') return
+
     this.setState({
       isShowingOptions: true
     })
@@ -244,6 +262,16 @@ export class CourseSelect extends React.Component {
     })
   }
 
+  handleReset = () => {
+    this.props.onCourseFilterSelect({contextID: null, contextName: null})
+    this.setState({
+      inputValue: '',
+      isShowingOptions: false,
+      highlightedOptionId: null,
+      selectedOptionId: null
+    })
+  }
+
   render() {
     const {inputValue, isShowingOptions} = this.state
     return (
@@ -263,6 +291,16 @@ export class CourseSelect extends React.Component {
         onRequestHideOptions={this.handleHideOptions}
         onRequestHighlightOption={this.handleHighlightOption}
         onRequestSelectOption={this.handleSelectOption}
+        renderAfterInput={
+          inputValue !== '' ? (
+            <CloseButton
+              offset="small"
+              data-testid="delete-course-button"
+              screenReaderLabel={I18n.t('Clear Course Selection')}
+              onClick={this.handleReset}
+            />
+          ) : null
+        }
         data-testid="course-select"
       >
         {this.renderGroups()}

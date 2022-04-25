@@ -18,22 +18,27 @@
 
 import React, {Component} from 'react'
 import PropTypes from 'prop-types'
-
-import {convertLatexToMathMl} from '../mathlive'
-
 import {TextArea} from '@instructure/ui-text-area'
 import {CloseButton, Button} from '@instructure/ui-buttons'
 import {Checkbox} from '@instructure/ui-checkbox'
 import {Heading} from '@instructure/ui-heading'
 import {Modal} from '@instructure/ui-modal'
+import {Tooltip} from '@instructure/ui-tooltip'
+import {Flex} from '@instructure/ui-flex'
+import {debounce} from '@instructure/debounce'
 
 import formatMessage from '../../../../format-message'
 
-import EquationEditorToolbar from '../EquationEditorToolbar'
+import MemoizedEquationEditorToolbar from '../EquationEditorToolbar'
+import {containsAdvancedSyntax} from './advancedOnlySyntax'
 
 import {css} from 'aphrodite'
 import mathml from './mathml'
 import styles from './styles'
+
+// Import the <math-field> container and all
+// the relevant math fonts from mathlive
+import '../mathlive'
 
 export default class EquationEditorModal extends Component {
   static propTypes = {
@@ -46,7 +51,9 @@ export default class EquationEditorModal extends Component {
     mountNode: PropTypes.string
   }
 
-  static boundaryRegex = /\\\((.+?)\\\)/g
+  // used for inline latex delimited like: \( ... \) OR $$ ... $$
+  static boundaryRegex = /\\\((.+?)\\\)|\$\$(.+?)\$\$/g
+  static debounceRate = 1000
 
   static defaultProps = {
     title: null,
@@ -91,6 +98,7 @@ export default class EquationEditorModal extends Component {
 
     editor.selection.setRng(range)
     this.originalFormula = this.selectionToLatex(currentFormula)
+    this.forceAdvancedModeIfNecessary(this.originalFormula)
     this.mathField.setValue(this.originalFormula || ' ')
   }
 
@@ -98,16 +106,20 @@ export default class EquationEditorModal extends Component {
     const {editor} = this.props
     const selection = editor.selection.getContent()
 
+    // check if highlighted text is inline latex
     if (selection && this.selectionIsLatex(selection)) {
       this.originalFormula = this.selectionToLatex(selection)
+      this.forceAdvancedModeIfNecessary(this.originalFormula)
       this.mathField.setValue(this.originalFormula || ' ')
     } else {
+      // check if we launched modal from an equation image
       const selnode = editor.selection.getNode()
       if (selnode.tagName === 'IMG' && selnode.classList.contains('equation_image')) {
         try {
           const src = new URL(selnode.src)
           const encoded_eq = src.pathname.replace(/^\/equation_images\//, '')
           this.originalFormula = decodeURIComponent(decodeURIComponent(encoded_eq))
+          this.forceAdvancedModeIfNecessary(this.originalFormula)
           this.mathField.setValue(this.originalFormula || ' ')
         } catch (ex) {
           // probably failed to create the new URL
@@ -115,6 +127,7 @@ export default class EquationEditorModal extends Component {
           console.error(ex)
         }
       } else {
+        // check if the cursor was within inline latex when launched
         const editorRange = editor.selection.getRng()
         const startContainer = editorRange.startContainer
         const wholeText = startContainer.wholeText
@@ -135,12 +148,21 @@ export default class EquationEditorModal extends Component {
     }
   }
 
+  advancedModeOnly(latex) {
+    const normalizedLatex = latex.replace(/\s+/, '')
+    return containsAdvancedSyntax(normalizedLatex)
+  }
+
   selectionIsLatex(selection) {
-    return selection.startsWith('\\(') && selection.endsWith('\\)')
+    return (
+      (selection.startsWith('\\(') && selection.endsWith('\\)')) ||
+      (selection.startsWith('$$') && selection.endsWith('$$'))
+    )
   }
 
   selectionToLatex(selection) {
-    return selection.substr(2, selection.length - 4)
+    const sansDelimiters = selection.substr(2, selection.length - 4)
+    return sansDelimiters.replace(/&nbsp;/g, '').trim()
   }
 
   // ********* //
@@ -185,14 +207,26 @@ export default class EquationEditorModal extends Component {
     onModalDismiss()
   }
 
+  renderMathInAdvancedPreview = debounce(
+    () => {
+      if (this.previewElement.current) {
+        this.previewElement.current.innerHTML = `\\\(${this.state.workingFormula}\\\)`
+        mathml.processNewMathInElem(this.previewElement.current)
+      }
+    },
+    EquationEditorModal.debounceRate,
+    {
+      leading: false,
+      trailing: true
+    }
+  )
+
   setPreviewElementContent() {
     if (!this.state.advanced) {
       return
     }
-    const mathMlContent = convertLatexToMathMl(this.state.workingFormula)
-    if (mathMlContent) {
-      this.previewElement.current.innerHTML = `<math>${mathMlContent}</math>`
-      mathml.processNewMathInElem(this.previewElement.current)
+    if (this.state.workingFormula) {
+      this.renderMathInAdvancedPreview()
     } else {
       this.previewElement.current.innerHTML = ''
     }
@@ -207,6 +241,23 @@ export default class EquationEditorModal extends Component {
         return {advanced: true, workingFormula: this.mathField.getValue()}
       }
     })
+    this.setPreviewElementContent()
+  }
+
+  registerBasicEditorListener = () => {
+    const basicEditor = document.querySelector('math-field')
+    basicEditor.addEventListener('input', e => {
+      if (this.advancedModeOnly(e.target.value)) {
+        this.toggleAdvanced()
+        this.setState({workingFormula: e.target.value})
+      }
+    })
+  }
+
+  forceAdvancedModeIfNecessary(latex) {
+    if (this.advancedModeOnly(latex)) {
+      this.toggleAdvanced()
+    }
   }
 
   handleOpen = () => {
@@ -238,11 +289,38 @@ export default class EquationEditorModal extends Component {
     )
   }
 
+  renderToggle = () => {
+    const lockToggle = this.state.advanced && this.advancedModeOnly(this.state.workingFormula)
+
+    const defaultToggle = (
+      <Checkbox
+        onChange={this.toggleAdvanced}
+        checked={this.state.advanced}
+        label={formatMessage('Directly Edit LaTeX')}
+        variant="toggle"
+        disabled={lockToggle}
+        data-testid="advanced-toggle"
+      />
+    )
+
+    const tooltipToggle = (
+      <Tooltip
+        renderTip={formatMessage('This equation cannot be rendered in Basic View.')}
+        on={['hover', 'focus']}
+      >
+        {defaultToggle}
+      </Tooltip>
+    )
+
+    return lockToggle ? tooltipToggle : defaultToggle
+  }
+
   handleRef = node => {
     this.modalFooter = node
   }
 
   componentDidMount() {
+    this.registerBasicEditorListener()
     this.setPreviewElementContent()
   }
 
@@ -265,6 +343,7 @@ export default class EquationEditorModal extends Component {
         open
         mountNode={mountNode}
         transition="fade"
+        shouldCloseOnDocumentClick={false}
       >
         <Modal.Header>
           <CloseButton
@@ -285,7 +364,7 @@ export default class EquationEditorModal extends Component {
             className={css(styles.mathfieldContainer)}
           >
             <div>
-              <EquationEditorToolbar executeCommand={this.executeCommand} />
+              <MemoizedEquationEditorToolbar executeCommand={this.executeCommand} />
             </div>
 
             <div
@@ -300,7 +379,7 @@ export default class EquationEditorModal extends Component {
                   borderRadius: '4px'
                 }}
                 ref={this.handleFieldRef}
-                default-mode="math"
+                default-mode="inline-math"
                 virtual-keyboard-mode="off"
                 keypress-sound="none"
                 plonk-sound="none"
@@ -325,12 +404,9 @@ export default class EquationEditorModal extends Component {
             </div>
 
             <div className={css(styles.latexToggle)}>
-              <Checkbox
-                onChange={this.toggleAdvanced}
-                checked={this.state.advanced}
-                label={formatMessage('Directly Edit LaTeX')}
-                variant="toggle"
-              />
+              <Flex>
+                <Flex.Item>{this.renderToggle()}</Flex.Item>
+              </Flex>
             </div>
 
             <div style={{display: this.state.advanced ? null : 'none', marginTop: '1em'}}>

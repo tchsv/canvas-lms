@@ -51,7 +51,8 @@ if ENV["CRYSTALBALL_MAP"] == "1"
   Coverage.start unless Coverage.running?
   Crystalball::MapGenerator.start! do |config|
     config.register Crystalball::MapGenerator::CoverageStrategy.new
-    config.map_storage_path = "log/results/crystalball_results/#{ENV.fetch("PARALLEL_INDEX", "0")}_map.yml"
+    config.map_storage_path = "log/results/crystalball_results/#{SecureRandom.uuid}_#{ENV.fetch("PARALLEL_INDEX", "0")}_map.yml"
+    config.dump_threshold = 50_000
   end
 
   module Crystalball
@@ -97,6 +98,7 @@ module WebMock::API
   end
 end
 
+require "delayed/testing"
 Dir[Rails.root.join("spec/support/**/*.rb")].sort.each { |f| require f }
 require "sharding_spec_helper"
 
@@ -430,13 +432,14 @@ RSpec.configure do |config|
 
   # The Pact build needs RspecJunitFormatter and does not run RSpecQ
   file = "log/results/results-#{ENV.fetch("PARALLEL_INDEX", "0").to_i}.xml"
-  config.add_formatter "RspecJunitFormatter", file if ENV["PACT_BROKER"] && ENV["JENKINS_HOME"]
+  config.add_formatter "RspecJunitFormatter", file if (ENV["PACT_BROKER"] && ENV["JENKINS_HOME"]) || ENV["CRYSTALBALL_MAP"] == "1"
 
   config.include Helpers
   config.include Factories
   config.include RequestHelper, type: :request
   config.include Onceler::BasicHelpers
   config.include PGCollkeyHelper
+  config.include ActionDispatch::TestProcess::FixtureFile
   config.project_source_dirs << "gems" # so that failures here are reported properly
 
   if ENV["RSPEC_LOG"]
@@ -652,6 +655,8 @@ RSpec.configure do |config|
       else
         skip "redis required"
       end
+    elsif new_cache == :memory_store
+      cache_opts[:coder] = Marshal
     end
     new_cache ||= :null_store
     new_cache = ActiveSupport::Cache.lookup_store(new_cache, cache_opts)
@@ -835,18 +840,11 @@ RSpec.configure do |config|
   end
 
   def run_job(job)
-    Delayed::Worker.new.perform(job)
+    Delayed::Testing.run_job(job)
   end
 
   def run_jobs
-    while (job = Delayed::Job.get_and_lock_next_available(
-      "spec run_jobs",
-      Delayed::Settings.queue,
-      0,
-      Delayed::MAX_PRIORITY
-    ))
-      run_job(job)
-    end
+    Delayed::Testing.drain
   end
 
   def track_jobs(&block)

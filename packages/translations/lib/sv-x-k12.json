@@ -92,8 +92,8 @@
     "apply_781a2546": {
         "message": "Tillämpa"
     },
-    "apply_changes_to_all_instances_of_this_button_and__3a3bea34": {
-        "message": "Tillämpa ändringar på alla instanser för den här knappen och ikonen i kursen"
+    "apply_changes_to_all_instances_of_this_icon_maker__2642f466": {
+        "message": "Tillämpa ändringar på alla instanser för den här ikonen för ikonverktyget i kursen"
     },
     "apps_54d24a47": {
         "message": "Appar"
@@ -103,6 +103,9 @@
     },
     "arrows_464a3e54": {
         "message": "Pilar"
+    },
+    "art_icon_8e1daad": {
+        "message": "Konstikon"
     },
     "aspect_ratio_will_be_preserved_cb5fdfb8": {
         "message": "Bildförhållande kommer att behållas"
@@ -176,26 +179,17 @@
     "below_is_an_example_of_how_students_will_see_their_8f7e7971": {
         "message": "Nedan visas ett exempel på hur eleverna kommer att se sina scheman"
     },
+    "black_4cb01371": {
+        "message": "Svart"
+    },
+    "blue_daf8fea9": {
+        "message": "Blå"
+    },
     "bottom_third_5f5fec1d": {
         "message": "Tredje nerifrån"
     },
-    "button_color_608a0242": {
-        "message": "Knappfärg"
-    },
-    "button_outline_cf14f071": {
-        "message": "Knappkontur"
-    },
-    "button_outline_size_cc1d1df7": {
-        "message": "Storlek på knappkontur"
-    },
-    "button_shape_dbecb573": {
-        "message": "Knappform"
-    },
-    "button_size_20f5fce1": {
-        "message": "Knappstorlek"
-    },
-    "buttons_and_icons_e66ee12c": {
-        "message": "Knappar och ikoner"
+    "brick_f2656265": {
+        "message": "Tegelsten"
     },
     "c_2001_acme_inc_283f7f80": {
         "message": "(c) 2001 Acme Inc."
@@ -226,6 +220,9 @@
     },
     "clear_2084585f": {
         "message": "Rensa"
+    },
+    "clear_image_3213fe62": {
+        "message": "Rensa bild"
     },
     "clear_selected_file_82388e50": {
         "message": "Rensa vald fil"
@@ -269,8 +266,11 @@
     "collapse_to_hide_types_1ab46d2e": {
         "message": "Minimera för att dölja { types }"
     },
-    "color_color_eb64b08": {
-        "message": "Färg { color }"
+    "color_picker_6b359edf": {
+        "message": "Färgväljaren"
+    },
+    "color_picker_colorname_selected_ad4cf400": {
+        "message": "Färgväljaren ({ colorName } valda)"
     },
     "computer_1d7dfa6f": {
         "message": "Dator"
@@ -335,11 +335,17 @@
     "course_to_do_bcbbab54": {
         "message": "{ course } ATT GÖRA"
     },
-    "create_button_and_icon_5c089934": {
-        "message": "Skapa knapp och ikon"
+    "create_icon_110d6463": {
+        "message": "Skapa ikon"
+    },
+    "create_icon_maker_icon_c716bffe": {
+        "message": "Skapa ikon för ikonverktyget"
     },
     "creative_commons_license_725584ae": {
         "message": "Creative Commons-licens:"
+    },
+    "crop_image_41bf940c": {
+        "message": "Beskär bild"
     },
     "crop_image_807ebb08": {
         "message": "Beskär bilden"
@@ -349,6 +355,9 @@
     },
     "custom_6979cd81": {
         "message": "Anpassa"
+    },
+    "cyan_c1d5f68a": {
+        "message": "Cyan"
     },
     "date_added_ed5ad465": {
         "message": "Tillagt datum"
@@ -373,6 +382,9 @@
     },
     "decrease_indent_de6343ab": {
         "message": "Minska indrag"
+    },
+    "deep_purple_bb3e2907": {
+        "message": "Mörklila"
     },
     "default_bulleted_unordered_list_47079da8": {
         "message": "punktmarkera oordnad lista som standard"
@@ -400,9 +412,6 @@
     },
     "diamond_b8dfe7ae": {
         "message": "Diamant"
-    },
-    "dimension_type_55c83e4e": {
-        "message": "Dimensionstyp"
     },
     "dimensions_45ddb7b7": {
         "message": "Dimensioner"
@@ -479,6 +488,9 @@
     "edit_existing_button_icon_3d0277bd": {
         "message": "Redigera befintlig knapp/ikon"
     },
+    "edit_icon_2c6b0e91": {
+        "message": "Redigera ikon"
+    },
     "edit_link_7f53bebb": {
         "message": "Redigera länk"
     },
@@ -497,17 +509,17 @@
     "embed_image_1080badc": {
         "message": "Bädda in bild"
     },
-    "embed_options_tray_901cfd19": {
-        "message": "Bädda in alternativfält"
-    },
-    "embed_preview_2d741e1f": {
-        "message": "Bädda in förhandsvisning"
-    },
     "embed_video_a97a64af": {
         "message": "Bädda in videon"
     },
     "embedded_content_aaeb4d3d": {
         "message": "inbäddat innehåll"
+    },
+    "engineering_icon_f8f3cf43": {
+        "message": "Ingenjörsikon"
+    },
+    "english_icon_25bfe845": {
+        "message": "Engelsk ikon"
     },
     "enter_at_least_3_characters_to_search_4f037ee0": {
         "message": "Skriv in minst 3 tecken för att söka"
@@ -553,6 +565,12 @@
     },
     "extra_small_9ae33252": {
         "message": "Extra liten"
+    },
+    "extracurricular_icon_67c8ca42": {
+        "message": "Fritidsikon"
+    },
+    "failed_getting_course_list_49846a93": {
+        "message": "Det gick inte att ladda ned kurslistan"
     },
     "failed_peeking_into_your_future_e95b9306": {
         "message": "Det gick inte att titta in i din framtid"
@@ -653,6 +671,12 @@
     "greek_65c5b3f7": {
         "message": "Grekiska"
     },
+    "green_15af4778": {
+        "message": "Grön"
+    },
+    "grey_a55dceff": {
+        "message": "Grå"
+    },
     "group_documents_8bfd6ae6": {
         "message": "Gruppera dokument"
     },
@@ -683,6 +707,9 @@
     "heading_4_b2e74be7": {
         "message": "Rubrik 4"
     },
+    "health_icon_8d292eb5": {
+        "message": "Hälsoikon"
+    },
     "height_69b03e15": {
         "message": "Höjd"
     },
@@ -710,6 +737,24 @@
     "i_hold_the_copyright_71ee91b1": {
         "message": "Jag är upphovsrättsinnehavare"
     },
+    "icon_color_b86dd6d6": {
+        "message": "Ikonfärg"
+    },
+    "icon_maker_icons_cc560f7e": {
+        "message": "Ikoner för ikonverktyget"
+    },
+    "icon_outline_e978dc0c": {
+        "message": "Ikonkontur"
+    },
+    "icon_outline_size_33f39b86": {
+        "message": "Storlek på ikonkontur"
+    },
+    "icon_shape_30b61e7": {
+        "message": "Ikonform"
+    },
+    "icon_size_9353edea": {
+        "message": "Ikonstorlek"
+    },
     "if_you_do_not_select_usage_rights_now_this_file_wi_14e07ab5": {
         "message": "Om du inte väljer användningsrättigheter nu kommer den här filen att publiceras efter att den har laddats upp."
     },
@@ -722,11 +767,17 @@
     "image_options_tray_90a46006": {
         "message": "Alternativfält för bilder"
     },
+    "image_to_crop_3a34487d": {
+        "message": "Bild till beskärning"
+    },
     "images_7ce26570": {
         "message": "bilder"
     },
     "increase_indent_6d550a4a": {
         "message": "Öka indrag"
+    },
+    "indigo_2035fc55": {
+        "message": "Indigo"
     },
     "insert_593145ef": {
         "message": "Infoga"
@@ -773,6 +824,12 @@
     "language_arts_35b79a8b": {
         "message": "Språkstudier"
     },
+    "language_arts_icon_a798b0f8": {
+        "message": "Språkvetenskapsikon"
+    },
+    "languages_icon_9d20539": {
+        "message": "Språkikon"
+    },
     "large_9c5e80e7": {
         "message": "Stor"
     },
@@ -781,6 +838,12 @@
     },
     "left_to_right_e9b4fd06": {
         "message": "Vänster-till-höger"
+    },
+    "library_icon_ae1e54cf": {
+        "message": "Biblioteksikon"
+    },
+    "light_blue_5374f600": {
+        "message": "Ljusblå"
     },
     "link_7262adec": {
         "message": "Länk"
@@ -848,11 +911,20 @@
     "looks_like_there_isn_t_anything_here_d9bcef49": {
         "message": "Det verkar inte finnas något här"
     },
+    "magenta_4a65993c": {
+        "message": "Magenta"
+    },
     "math_ede93050": {
         "message": "Matematik"
     },
+    "math_icon_ad4e9d03": {
+        "message": "Matteikon"
+    },
     "media_af190855": {
         "message": "Media"
+    },
+    "media_file_is_processing_please_try_again_later_58a6d49": {
+        "message": "Mediefilen behandlas. Försök igen senare."
     },
     "medium_5a8e9ead": {
         "message": "Medium"
@@ -878,6 +950,9 @@
     "multi_color_image_63d7372f": {
         "message": "Flerfärgsbild"
     },
+    "music_icon_4db5c972": {
+        "message": "Musikikon"
+    },
     "must_be_at_least_percentage_22e373b6": {
         "message": "Måste vara minst { percentage }%"
     },
@@ -892,6 +967,9 @@
     },
     "name_1aed4a1b": {
         "message": "Namn"
+    },
+    "name_color_ceec76ff": {
+        "message": "{ name } ({ color })"
     },
     "navigate_through_the_menu_or_toolbar_415a4e50": {
         "message": "Navigera via menyn eller verktygsfältet"
@@ -974,6 +1052,9 @@
     "octagon_e48be9f": {
         "message": "Oktogon"
     },
+    "olive_6a3e4d6b": {
+        "message": "Oliv"
+    },
     "only_most_recent_grading_period_shown_f1ad6458": {
         "message": "*Endast den senaste bedömningsperioden visas."
     },
@@ -992,8 +1073,8 @@
     "optional_add_course_ef0d70fc": {
         "message": "Valfritt: Lägg till kurs"
     },
-    "options_3ab0ea65": {
-        "message": "Alternativ"
+    "orange_81386a62": {
+        "message": "Orange"
     },
     "ordered_and_unordered_lists_cfadfc38": {
         "message": "Ordnade och oordnade listor"
@@ -1030,6 +1111,15 @@
     },
     "percentage_must_be_a_number_8033c341": {
         "message": "Procenttalet måste vara ett tal"
+    },
+    "performing_arts_icon_f3497486": {
+        "message": "Underhållningsikon"
+    },
+    "physical_education_icon_d7dffd3e": {
+        "message": "Ikon för idrott och hälsa"
+    },
+    "pink_68ad45cb": {
+        "message": "Rosa"
     },
     "pixels_52ece7d1": {
         "message": "Pixlar"
@@ -1076,6 +1166,12 @@
     "published_when_302d8e23": {
         "message": "Publicerad: { when }"
     },
+    "pumpkin_904428d5": {
+        "message": "Pumpa"
+    },
+    "purple_7678a9fc": {
+        "message": "Lila"
+    },
     "quiz_e0dcce8f": {
         "message": "Quiz"
     },
@@ -1091,11 +1187,17 @@
     "record_upload_media_5fdce166": {
         "message": "Spela in/ladda upp media"
     },
+    "red_8258edf3": {
+        "message": "Röd"
+    },
     "redo_363c58b7": {
         "message": "Gör om"
     },
     "relationships_6602af70": {
         "message": "Relationer"
+    },
+    "religion_icon_246e0be1": {
+        "message": "Religiös ikon"
     },
     "reminder_date_4564d12d": {
         "message": "Påminnelse: { date }"
@@ -1115,6 +1217,9 @@
     "rich_content_editor_2708ef21": {
         "message": "Redigerare för formaterat innehåll"
     },
+    "rich_text_area_press_alt_0_for_rich_content_editor_9d23437f": {
+        "message": "RTF-område. Tryck ned ALT+0 för att visa genvägar i innehållsredigeraren."
+    },
     "right_to_left_9cfb092a": {
         "message": "Höger-till-vänster"
     },
@@ -1124,8 +1229,8 @@
     "save_11a80ec3": {
         "message": "Spara"
     },
-    "saved_buttons_and_icons_8278eed2": {
-        "message": "Sparade knappar och ikoner"
+    "saved_icon_maker_icons_df86e2a1": {
+        "message": "Sparade ikoner för ikonverktyget"
     },
     "schedule_preview_3bcda153": {
         "message": "Förhandsgranskning av scheman"
@@ -1163,9 +1268,6 @@
     "show_audio_options_b489926b": {
         "message": "Visa ljudalternativ"
     },
-    "show_embed_options_ef8d7ef": {
-        "message": "Visa inbäddningsalternativ"
-    },
     "show_image_options_1e2ecc6b": {
         "message": "Visa bildalternativ"
     },
@@ -1180,6 +1282,9 @@
     },
     "single_color_image_4e5d4dbc": {
         "message": "Enfärgsbild"
+    },
+    "single_color_image_color_95fa9a87": {
+        "message": "Enfärgad bildfärg"
     },
     "size_b30e1077": {
         "message": "Storlek"
@@ -1199,17 +1304,8 @@
     "something_went_wrong_and_i_don_t_know_what_to_show_e0c54ec8": {
         "message": "Något gick fel och jag vet inte vad jag ska visa dig."
     },
-    "something_went_wrong_check_your_connection_and_try_2a7b2d13": {
-        "message": "Något gick fel. Kontrollera din anslutning och försök igen."
-    },
     "something_went_wrong_d238c551": {
         "message": "Något gick fel"
-    },
-    "something_went_wrong_try_again_after_refreshing_th_e094eb8d": {
-        "message": "Något gick fel. Uppdatera sidan och försök igen."
-    },
-    "something_went_wrong_uploading_check_your_connecti_aa201f15": {
-        "message": "Något gick fel under uppladdningen. Kontrollera din anslutning och försök igen."
     },
     "sort_by_e75f9e3e": {
         "message": "Sortera efter"
@@ -1234,6 +1330,9 @@
     },
     "starttime_to_endtime_d7cc249d": {
         "message": "{ startTime } till { endTime }"
+    },
+    "steel_blue_14296f08": {
+        "message": "Stålblå"
     },
     "styles_2aa721ef": {
         "message": "Stilar"
@@ -1270,6 +1369,9 @@
     },
     "task_16b0ef38": {
         "message": "Uppgift"
+    },
+    "teal_f729a294": {
+        "message": "Teal"
     },
     "text_7f4593da": {
         "message": "Text"
@@ -1400,9 +1502,6 @@
     "uploading_19e8a4e7": {
         "message": "Laddar upp"
     },
-    "uploading_closed_captions_subtitles_failed_bc093f3": {
-        "message": "Det gick inte att ladda upp undertexter."
-    },
     "uppercase_alphabetic_ordered_list_3f5aa6b2": {
         "message": "markera alfabetisk ordnad lista med versaler"
     },
@@ -1490,6 +1589,9 @@
     "weekly_schedule_navigation_6b042645": {
         "message": "Navigering av veckoschema"
     },
+    "white_87fa64fd": {
+        "message": "Vit"
+    },
     "width_492fec76": {
         "message": "Bredd"
     },
@@ -1522,5 +1624,11 @@
     },
     "you_ve_scrolled_back_to_your_very_first_to_do_29374681": {
         "message": "Du har bläddrat tillbaka till din allra första att göra-uppgift!"
+    },
+    "zoom_in_image_bb97d4f": {
+        "message": "Zooma in bilden"
+    },
+    "zoom_out_image_d0a0a2ec": {
+        "message": "Zooma ut bilden"
     }
 }

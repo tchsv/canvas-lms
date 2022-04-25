@@ -346,6 +346,52 @@ module ActiveRecord
     end
   end
 
+  describe ".global_id?" do
+    specs_require_sharding
+
+    before do
+      @shard1.activate do
+        @account = Account.create!
+      end
+    end
+
+    it "returns true if passed an explicit global id" do
+      @shard1.activate do
+        expect(Account).to be_global_id(@account.global_id)
+      end
+    end
+
+    it "returns true if passed a stringified global id" do
+      @shard1.activate do
+        expect(Account).to be_global_id(@account.global_id.to_s)
+      end
+    end
+
+    it "returns true if passed an id that resolves to a global id" do
+      @shard2.activate do
+        expect(Account).to be_global_id(@account.id)
+      end
+    end
+
+    it "returns false if passed an explicit local id" do
+      @shard2.activate do
+        expect(Account).not_to be_global_id(@account.local_id)
+      end
+    end
+
+    it "returns false if passed an id that resolves to a local id" do
+      @shard1.activate do
+        expect(Account).not_to be_global_id(@account.id)
+      end
+    end
+
+    it "returns false if passed nil" do
+      @shard1.activate do
+        expect(Account).not_to be_global_id(nil)
+      end
+    end
+  end
+
   describe Relation do
     describe "lock_with_exclusive_smarts" do
       let(:scope) { User.active }
@@ -356,6 +402,10 @@ module ActiveRecord
 
       it "substitutes 'FOR NO KEY UPDATE' if specified" do
         expect(scope.lock(:no_key_update).lock_value).to eq "FOR NO KEY UPDATE"
+      end
+
+      it "substitutes 'FOR NO KEY UPDATE SKIP LOCKED' if specified" do
+        expect(scope.lock(:no_key_update_skip_locked).lock_value).to eq "FOR NO KEY UPDATE SKIP LOCKED"
       end
     end
 
@@ -397,16 +447,74 @@ module ActiveRecord
         end
       end
 
+      shared_examples_for "query creation sharding" do
+        specs_require_sharding
+
+        it "derives the appropriate shard from its input, if they all share the same shard" do
+          expect(base_s1.union(base_s1).shard_value).to be @shard1
+
+          @shard2.activate do
+            expect(base_s1.union(base_s1).shard_value).to be @shard1
+          end
+        end
+
+        it "rejects input that are on different shards" do
+          expect { base_s1.union(base_s2) }.to raise_error(/multiple shard values passed to union/)
+        end
+      end
+
       context "directly on the table" do
         let(:base) { User.active }
+        let(:base_s1) { @shard1.activate { User.active } }
+        let(:base_s2) { @shard2.activate { User.active } }
 
         include_examples "query creation"
+        include_examples "query creation sharding"
       end
 
       context "through a relation" do
         let(:base) { Account.create.users }
+        let(:base_s1) { @shard1.activate { Account.create.users } }
+        let(:base_s2) { @shard2.activate { Account.create.users } }
 
         include_examples "query creation"
+        include_examples "query creation sharding"
+      end
+
+      context "through a where query that references multiple shards" do
+        let(:user) { User.create }
+        let(:user_s1) { @shard1.activate { User.create } }
+        let(:user_s2) { @shard2.activate { User.create } }
+
+        let(:base) { User.where(id: [user_s1, user_s2]) }
+        let(:base_s1) { @shard1.activate { User.where(id: [user_s1, user_s2]) } }
+        let(:base_s2) { @shard2.activate { User.where(id: [user_s1, user_s2]) } }
+
+        include_examples "query creation sharding"
+      end
+    end
+
+    describe "touch_all_skip_locked" do
+      before :once do
+        @course1 = Course.create!(name: "course 1")
+        @course2 = Course.create!(name: "course 2")
+        @relation = Course.where(id: [@course1.id, @course2.id])
+      end
+
+      it "uses 'SKIP LOCKED' lock" do
+        Timecop.freeze do
+          now = Time.now.utc
+          expect(@relation).to receive(:update_all_locked_in_order).with(updated_at: now, lock_type: :no_key_update_skip_locked)
+          @relation.touch_all_skip_locked
+        end
+      end
+
+      it "updates the updated_at timestamp on provided relation" do
+        Timecop.freeze do
+          @relation.touch_all_skip_locked
+          expect(@course1.reload.updated_at).to eq Time.now.utc
+          expect(@course2.reload.updated_at).to eq Time.now.utc
+        end
       end
     end
   end
@@ -654,8 +762,11 @@ describe ActiveRecord::Migration::CommandRecorder do
                                       [:add_index, [:accounts, :id, { if_not_exists: true }]],
                                       [:add_foreign_key, [:enrollments, :users, { if_not_exists: true }]],
                                       [:add_column, [:courses, :id, :integer, { limit: 8, if_not_exists: true }], nil],
-
-                                      [:remove_index, [:accounts, { column: :course_template_id, algorithm: :concurrently, if_exists: true }]],
+                                      (if Rails.version < "6.1"
+                                         [:remove_index, [:accounts, { algorithm: :concurrently, column: :course_template_id, if_exists: true }]]
+                                       else
+                                         [:remove_index, [:accounts, :course_template_id, { algorithm: :concurrently, if_exists: true }], nil]
+                                       end),
                                       [:remove_foreign_key, [:accounts, :courses, { column: :course_template_id, if_exists: true }], nil],
                                       [:remove_column, [:accounts, :course_template_id, :integer, { limit: 8, if_exists: true }], nil],
                                     ])

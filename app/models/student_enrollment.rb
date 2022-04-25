@@ -28,7 +28,7 @@ class StudentEnrollment < Enrollment
        e.user.enrollments.where.not(id: e.id).active.where(course_id: e.course_id).exists?)
   }
   after_save :restore_submissions_and_scores
-  after_save :republish_pace_plan_if_needed
+  after_save :republish_course_pace_if_needed
 
   def student?
     true
@@ -132,19 +132,11 @@ class StudentEnrollment < Enrollment
     StudentEnrollment.restore_deleted_scores_for_enrollments([self])
   end
 
-  def republish_pace_plan_if_needed
-    return unless saved_change_to_id? || saved_change_to_start_at?
-    return unless course.enable_pace_plans?
+  def republish_course_pace_if_needed
+    return unless saved_change_to_id? || saved_change_to_start_at? || (saved_change_to_workflow_state? && workflow_state == "invited")
+    return unless course.enable_course_paces?
 
-    pace_plan = course.pace_plans.published.for_user(user).take || course.pace_plans.published.primary.take
-    return unless pace_plan
-
-    pace_plan
-      .delay(
-        run_at: Setting.get("pace_plan_enrollment_update_republish_interval", "300").to_i.seconds.from_now,
-        singleton: "pace_plan_republish:#{pace_plan.global_course_id}:#{pace_plan.global_user_id}",
-        on_conflict: :overwrite
-      )
-      .publish
+    course_pace = course.course_paces.published.for_user(user).take || course.course_paces.published.primary.take
+    course_pace&.create_publish_progress
   end
 end

@@ -18,10 +18,16 @@
 
 import CourseHomeDialog from '@canvas/course-homepage/react/Dialog'
 import HomePagePromptContainer from '@canvas/course-homepage/react/Prompt'
+import ObserverOptions from '@canvas/observer-picker'
+import {
+  getHandleChangeObservedUser,
+  autoFocusObserverPicker
+} from '@canvas/observer-picker/util/pageReloadHelper'
 import createStore from '@canvas/util/createStore'
+import {View} from '@instructure/ui-view'
 import $ from 'jquery'
 import '@canvas/rails-flash-notifications'
-import I18n from 'i18n!courses_show'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import React from 'react'
 import PropTypes from 'prop-types'
 import ReactDOM from 'react-dom'
@@ -29,6 +35,8 @@ import {initializePlanner, renderToDoSidebar} from '@instructure/canvas-planner'
 import {showFlashAlert} from '@canvas/alerts/react/FlashAlert'
 import apiUserContent from '@canvas/util/jquery/apiUserContent'
 import * as apiClient from '@canvas/courses/courseAPIClient'
+
+const I18n = useI18nScope('courses_show')
 
 const defaultViewStore = createStore({
   selectedDefaultView: ENV.COURSE.default_view,
@@ -151,5 +159,23 @@ $(() => {
   const todo_container = document.querySelector('.todo-list')
   if (todo_container) {
     addToDoSidebar(todo_container)
+  }
+
+  const observerPickerContainer = document.getElementById('observer-picker-mountpoint')
+  if (observerPickerContainer && ENV.OBSERVER_OPTIONS?.OBSERVED_USERS_LIST) {
+    ReactDOM.render(
+      <View as="div" maxWidth="12em">
+        <ObserverOptions
+          autoFocus={autoFocusObserverPicker()}
+          canAddObservee={!!ENV.OBSERVER_OPTIONS?.CAN_ADD_OBSERVEE}
+          currentUserRoles={ENV.current_user_roles}
+          currentUser={ENV.current_user}
+          handleChangeObservedUser={getHandleChangeObservedUser()}
+          observedUsersList={ENV.OBSERVER_OPTIONS.OBSERVED_USERS_LIST}
+          renderLabel={I18n.t('Select a student to view. The page will refresh automatically.')}
+        />
+      </View>,
+      observerPickerContainer
+    )
   }
 })

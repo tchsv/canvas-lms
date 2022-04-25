@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import I18n from 'i18n!react_developer_keys'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import PropTypes from 'prop-types'
 import React from 'react'
 import omit from 'lodash/omit'
@@ -28,6 +28,8 @@ import {TextArea} from '@instructure/ui-text-area'
 import {TextInput} from '@instructure/ui-text-input'
 import {ScreenReaderContent} from '@instructure/ui-a11y-content'
 import {ToggleDetails} from '@instructure/ui-toggle-details'
+
+const I18n = useI18nScope('react_developer_keys')
 
 export default class AdditionalSettings extends React.Component {
   constructor(props) {
@@ -154,7 +156,7 @@ export default class AdditionalSettings extends React.Component {
                     <TextInput
                       name="domain"
                       value={additionalSettings.domain}
-                      label={I18n.t('Domain')}
+                      renderLabel={I18n.t('Domain')}
                       onChange={this.handleDomainChange}
                     />
                   </Grid.Col>
@@ -162,7 +164,7 @@ export default class AdditionalSettings extends React.Component {
                     <TextInput
                       name="tool_id"
                       value={additionalSettings.tool_id}
-                      label={I18n.t('Tool Id')}
+                      renderLabel={I18n.t('Tool Id')}
                       onChange={this.handleToolIdChange}
                     />
                   </Grid.Col>
@@ -172,7 +174,7 @@ export default class AdditionalSettings extends React.Component {
                     <TextInput
                       name="settings_icon_url"
                       value={additionalSettings.icon_url}
-                      label={I18n.t('Icon Url')}
+                      renderLabel={I18n.t('Icon Url')}
                       onChange={this.handleIconUrlChange}
                     />
                   </Grid.Col>
@@ -180,7 +182,7 @@ export default class AdditionalSettings extends React.Component {
                     <TextInput
                       name="text"
                       value={additionalSettings.text}
-                      label={I18n.t('Text')}
+                      renderLabel={I18n.t('Text')}
                       onChange={this.handleTextChange}
                     />
                   </Grid.Col>
@@ -191,7 +193,7 @@ export default class AdditionalSettings extends React.Component {
                         additionalSettings.selection_height &&
                         additionalSettings.selection_height.toString()
                       }
-                      label={I18n.t('Selection Height')}
+                      renderLabel={I18n.t('Selection Height')}
                       onChange={this.handleSelectionHeightChange}
                     />
                   </Grid.Col>
@@ -202,7 +204,7 @@ export default class AdditionalSettings extends React.Component {
                         additionalSettings.selection_width &&
                         additionalSettings.selection_width.toString()
                       }
-                      label={I18n.t('Selection Width')}
+                      renderLabel={I18n.t('Selection Width')}
                       onChange={this.handleSelectionWidthChange}
                     />
                   </Grid.Col>

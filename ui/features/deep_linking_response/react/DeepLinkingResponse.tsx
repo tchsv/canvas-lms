@@ -16,8 +16,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-// @ts-ignore: TS doesn't understand i18n scoped imports
-import I18n from 'i18n!external_content.success'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import React, {useEffect, useCallback, useState} from 'react'
 import ReactDOM from 'react-dom'
 import {Text} from '@instructure/ui-text'
@@ -28,6 +27,8 @@ import {Table} from '@instructure/ui-table'
 import {ContentItem, DeepLinkResponse} from '@canvas/deep-linking/types'
 import {Pill} from '@instructure/ui-pill'
 import {View} from '@instructure/ui-view'
+
+const I18n = useI18nScope('external_content.success')
 
 // Doing this to avoid TS2339 errors-- remove and rename once we're on InstUI 8
 const {Item: FlexItem} = Flex as any
@@ -109,7 +110,7 @@ const buildContentItems = (items: ContentItem[]) =>
   }, [] as ContentItemDisplay[])
 
 export const RetrievingContent = ({environment, parentWindow}) => {
-  const messageType = 'LtiDeepLinkingResponse'
+  const subject = 'LtiDeepLinkingResponse'
   const deepLinkResponse = environment.deep_link_response as DeepLinkResponse
   const [hasErrors, setHasErrors] = useState(false)
   const [contentItems, setContentItems] = useState([] as ContentItemDisplay[])
@@ -117,7 +118,7 @@ export const RetrievingContent = ({environment, parentWindow}) => {
   const sendMessage = useCallback(() => {
     parentWindow.postMessage(
       {
-        messageType,
+        subject,
         ...deepLinkResponse
       },
       environment.DEEP_LINKING_POST_MESSAGE_ORIGIN

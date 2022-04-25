@@ -20,7 +20,7 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import RubricAddCriterionPopover from '../react/components/RubricAddCriterionPopover'
 import RubricManagement from '../react/components/RubricManagement'
-import I18n from 'i18n!edit_rubric'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import changePointsPossibleToMatchRubricDialog from '../jst/changePointsPossibleToMatchRubricDialog.handlebars'
 import $ from 'jquery'
 import _ from 'underscore'
@@ -28,16 +28,19 @@ import htmlEscape from 'html-escape'
 import numberHelper from '@canvas/i18n/numberHelper'
 import '@canvas/outcomes/find_outcome'
 import '@canvas/jquery/jquery.ajaxJSON'
-import '@canvas/forms/jquery/jquery.instructure_forms' /* formSubmit, fillFormData, getFormData */
+import '@canvas/forms/jquery/jquery.instructure_forms'/* formSubmit, fillFormData, getFormData */
 import 'jqueryui/dialog'
-import '@canvas/jquery/jquery.instructure_misc_helpers' /* replaceTags */
-import '@canvas/jquery/jquery.instructure_misc_plugins' /* confirmDelete, showIf */
+import '@canvas/jquery/jquery.instructure_misc_helpers'/* replaceTags */
+import '@canvas/jquery/jquery.instructure_misc_plugins'/* confirmDelete, showIf */
 import '@canvas/loading-image'
-import '@canvas/util/templateData' /* fillTemplateData, getTemplateData */
+import '@canvas/util/templateData'/* fillTemplateData, getTemplateData */
 import '@canvas/rails-flash-notifications'
 import 'jquery-tinypubsub'
 import 'jquery-scroll-to-visible/jquery.scrollTo'
 import '@canvas/util/jquery/fixDialogButtons'
+import {showFlashAlert} from '@canvas/alerts/react/FlashAlert'
+
+const I18n = useI18nScope('edit_rubric')
 
 const rubricEditing = {
   htmlBody: null,
@@ -155,9 +158,33 @@ const rubricEditing = {
         $('.new_rating').find('.edit_rating_link').click()
       }, 100)
     }
+  },
+  preventDuplicatedOutcome(outcome) {
+    const rubric = $('#edit_rubric_form').parents('.rubric')
+    const data = rubricEditing.rubricData(rubric)
+    const id_list = Object.keys(data)
+      .filter(k => /learning_outcome_id/.test(k))
+      .map(k => data[k])
+
+    if (id_list.includes(outcome.id)) {
+      showFlashAlert({
+        type: 'error',
+        message: I18n.t(
+          'rubric.import_outcome.duplicated_outcome',
+          'This Outcome has not been added as it already exists in this rubric.'
+        )
+      })
+
+      return true
+    }
+
     return false
   },
   onFindOutcome(outcome) {
+    if (rubricEditing.preventDuplicatedOutcome(outcome)) {
+      return
+    }
+
     let $rubric = $('.rubric table.rubric_table:visible:first'),
       $criterion
 
@@ -442,7 +469,8 @@ const rubricEditing = {
     })
     data.title = data['rubric[title]']
     data.points_possible = numberHelper.parse(data['rubric[points_possible]'])
-    data.rubric_id = $rubric.attr('id').substring(7)
+
+    data.rubric_id = $rubric.attr('id') ? $rubric.attr('id').substring(7) : undefined
     data = $.extend(data, $('#rubrics #rubric_parameters').getFormData())
     return data
   },
@@ -1329,50 +1357,57 @@ rubricEditing.init = function () {
       $rubric.find('.rubric_title .title').text(data['rubric[title]'])
       $rubric.find('.rubric_table caption .title').text(data['rubric[title]'])
       $rubric.find('.rubric_total').text(rubricEditing.localizedPoints(data.points_possible))
-      $rubric.removeClass('editing')
-      if ($rubric.attr('id') == 'rubric_new') {
-        $rubric.attr('id', 'rubric_adding')
-      } else {
-        $rubric.prev('.rubric').remove()
-      }
-      $(this).parents('tr').hide()
       $rubric.loadingImage()
       return $rubric
     },
     success(data, $rubric) {
-      const rubric = data.rubric
       $rubric.loadingImage('remove')
-      rubric.rubric_association_id = data.rubric_association.id
-      rubric.use_for_grading = data.rubric_association.use_for_grading
-      rubric.hide_points = data.rubric_association.hide_points
-      rubric.hide_outcome_results = data.rubric_association.hide_outcome_results
-      rubric.permissions = rubric.permissions || {}
-      if (data.rubric_association.permissions) {
-        rubric.permissions.update_association = data.rubric_association.permissions.update
-        rubric.permissions.delete_association = data.rubric_association.permissions.delete
+
+      if (data.error) {
+        $(':submit.save_button:visible').errorBox(data.messages.join('\n'))
+      } else {
+        $rubric.removeClass('editing')
+        if ($rubric.attr('id') == 'rubric_new') {
+          $rubric.attr('id', 'rubric_adding')
+        } else {
+          $rubric.prev('.rubric').remove()
+        }
+        $(this).parents('tr').hide()
+
+        const rubric = data.rubric
+
+        rubric.rubric_association_id = data.rubric_association.id
+        rubric.use_for_grading = data.rubric_association.use_for_grading
+        rubric.hide_points = data.rubric_association.hide_points
+        rubric.hide_outcome_results = data.rubric_association.hide_outcome_results
+        rubric.permissions = rubric.permissions || {}
+        if (data.rubric_association.permissions) {
+          rubric.permissions.update_association = data.rubric_association.permissions.update
+          rubric.permissions.delete_association = data.rubric_association.permissions.delete
+        }
+        rubricEditing.updateRubric($rubric, rubric)
+        if (
+          data.rubric_association &&
+          data.rubric_association.use_for_grading &&
+          !data.rubric_association.skip_updating_points_possible
+        ) {
+          $('#assignment_show .points_possible').text(rubric.points_possible)
+          const discussion_points_text = I18n.t(
+            'discussion_points_possible',
+            {one: '%{count} point possible', other: '%{count} points possible'},
+            {
+              count: rubric.points_possible || 0,
+              precision: 2,
+              strip_insignificant_zeros: true
+            }
+          )
+          $('.discussion-title .discussion-points').text(discussion_points_text)
+        }
+        if (!limitToOneRubric) {
+          $('.add_rubric_link').show()
+        }
+        $rubric.find('.rubric_title .links:not(.locked)').show()
       }
-      rubricEditing.updateRubric($rubric, rubric)
-      if (
-        data.rubric_association &&
-        data.rubric_association.use_for_grading &&
-        !data.rubric_association.skip_updating_points_possible
-      ) {
-        $('#assignment_show .points_possible').text(rubric.points_possible)
-        const discussion_points_text = I18n.t(
-          'discussion_points_possible',
-          {one: '%{count} point possible', other: '%{count} points possible'},
-          {
-            count: rubric.points_possible || 0,
-            precision: 2,
-            strip_insignificant_zeros: true
-          }
-        )
-        $('.discussion-title .discussion-points').text(discussion_points_text)
-      }
-      if (!limitToOneRubric) {
-        $('.add_rubric_link').show()
-      }
-      $rubric.find('.rubric_title .links:not(.locked)').show()
     }
   })
 

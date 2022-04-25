@@ -18,11 +18,11 @@
 
 import React from 'react'
 import {arrayOf, func} from 'prop-types'
-import I18n from 'i18n!content_share'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import {Table} from '@instructure/ui-table'
 import {Menu} from '@instructure/ui-menu'
 import {ScreenReaderContent} from '@instructure/ui-a11y-content'
-import {Button} from '@instructure/ui-buttons'
+import {Button, IconButton} from '@instructure/ui-buttons'
 import {IconMoreLine, IconEyeLine, IconImportLine, IconTrashLine} from '@instructure/ui-icons'
 import {View} from '@instructure/ui-view'
 import FriendlyDatetime from '@canvas/datetime/react/components/FriendlyDatetime'
@@ -30,6 +30,8 @@ import {Avatar} from '@instructure/ui-avatar'
 import {Text} from '@instructure/ui-text'
 import {Tooltip} from '@instructure/ui-tooltip'
 import contentShareShape from '@canvas/content-sharing/react/proptypes/contentShare'
+
+const I18n = useI18nScope('content_share')
 
 const friendlyShareNames = {
   assignment: I18n.t('Assignment'),
@@ -72,11 +74,13 @@ export default function ReceivedTable({shares, onPreview, onImport, onRemove, on
       <Menu
         data-testid="action-menu"
         trigger={
-          <Button variant="icon" size="small" icon={IconMoreLine}>
-            <ScreenReaderContent>
-              {I18n.t('Manage options for %{name}', {name: share.name})}
-            </ScreenReaderContent>
-          </Button>
+          <IconButton
+            size="small"
+            withBackground={false}
+            withBorder={false}
+            renderIcon={IconMoreLine}
+            screenReaderLabel={I18n.t('Manage options for %{name}', {name: share.name})}
+          />
         }
       >
         {items}

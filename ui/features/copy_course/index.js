@@ -16,8 +16,9 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import I18n from 'i18n!content_migrations'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import $ from 'jquery'
+import ready from '@instructure/ready'
 import DateShiftView from '@canvas/content-migrations/backbone/views/DateShiftView.coffee'
 import DaySubstitutionView from '@canvas/day-substitution/backbone/views/DaySubstitutionView.coffee'
 import ImportQuizzesNextView from '@canvas/content-migrations/backbone/views/ImportQuizzesNextView.coffee'
@@ -27,61 +28,65 @@ import template from '@canvas/day-substitution/jst/DaySubstitutionCollection.han
 import ContentMigration from '@canvas/content-migrations/backbone/models/ContentMigration.coffee'
 import '@canvas/datetime'
 
-$(document).ready(() => $('.datetime_field').datetime_field({addHiddenInput: true}))
+const I18n = useI18nScope('content_migrations')
 
-const daySubCollection = new DaySubstitutionCollection()
-const daySubCollectionView = new CollectionView({
-  collection: daySubCollection,
-  emptyMessage: () => I18n.t('no_day_substitutions', 'No Day Substitutions Added'),
-  itemView: DaySubstitutionView,
-  template
-})
+ready(() => {
+  $(document).ready(() => $('.datetime_field').datetime_field({addHiddenInput: true}))
 
-const content_migration = new ContentMigration()
+  const daySubCollection = new DaySubstitutionCollection()
+  const daySubCollectionView = new CollectionView({
+    collection: daySubCollection,
+    emptyMessage: () => I18n.t('no_day_substitutions', 'No Day Substitutions Added'),
+    itemView: DaySubstitutionView,
+    template
+  })
 
-const dateShiftView = new DateShiftView({
-  model: content_migration,
-  collection: daySubCollection,
-  daySubstitution: daySubCollectionView,
-  oldStartDate: ENV.OLD_START_DATE,
-  oldEndDate: ENV.OLD_END_DATE,
-  addHiddenInput: true
-})
+  const content_migration = new ContentMigration()
 
-const importQuizzesNextView = new ImportQuizzesNextView({
-  model: content_migration,
-  quizzesNextEnabled: ENV.QUIZZES_NEXT_ENABLED,
-  migrationDefault: ENV.NEW_QUIZZES_MIGRATION_DEFAULT,
-  questionBank: null
-})
-$('#new_quizzes_migrate').html(importQuizzesNextView.render().el)
-$('#importQuizzesNext').attr('name', 'settings[import_quizzes_next]')
+  const dateShiftView = new DateShiftView({
+    model: content_migration,
+    collection: daySubCollection,
+    daySubstitution: daySubCollectionView,
+    oldStartDate: ENV.OLD_START_DATE,
+    oldEndDate: ENV.OLD_END_DATE,
+    addHiddenInput: true
+  })
 
-$('#date_shift').html(dateShiftView.render().el)
-dateShiftView.$oldStartDate.val(ENV.OLD_START_DATE).trigger('change')
-dateShiftView.$oldEndDate.val(ENV.OLD_END_DATE).trigger('change')
+  const importQuizzesNextView = new ImportQuizzesNextView({
+    model: content_migration,
+    quizzesNextEnabled: ENV.QUIZZES_NEXT_ENABLED,
+    migrationDefault: ENV.NEW_QUIZZES_MIGRATION_DEFAULT,
+    questionBank: null
+  })
+  $('#new_quizzes_migrate').html(importQuizzesNextView.render().el)
+  $('#importQuizzesNext').attr('name', 'settings[import_quizzes_next]')
 
-const $start = $('#course_start_at')
-const $end = $('#course_conclude_at')
+  $('#date_shift').html(dateShiftView.render().el)
+  dateShiftView.$oldStartDate.val(ENV.OLD_START_DATE).trigger('change')
+  dateShiftView.$oldEndDate.val(ENV.OLD_END_DATE).trigger('change')
 
-function validateDates() {
-  const startAt = $start.data('unfudged-date')
-  const endAt = $end.data('unfudged-date')
+  const $start = $('#course_start_at')
+  const $end = $('#course_conclude_at')
 
-  if (startAt && endAt && endAt < startAt) {
-    $('button[type=submit]').attr('disabled', true)
-    return $end.errorBox(I18n.t('End date cannot be before start date'))
+  function validateDates() {
+    const startAt = $start.data('unfudged-date')
+    const endAt = $end.data('unfudged-date')
+
+    if (startAt && endAt && endAt < startAt) {
+      $('button[type=submit]').attr('disabled', true)
+      return $end.errorBox(I18n.t('End date cannot be before start date'))
+    }
+    $('button[type=submit]').attr('disabled', false)
+    return $('#copy_course_form').hideErrors()
   }
-  $('button[type=submit]').attr('disabled', false)
-  return $('#copy_course_form').hideErrors()
-}
 
-$start.on('change', function () {
-  dateShiftView.$newStartDate.val($(this).val()).trigger('change')
-  validateDates()
-})
+  $start.on('change', function () {
+    dateShiftView.$newStartDate.val($(this).val()).trigger('change')
+    validateDates()
+  })
 
-$end.on('change', function () {
-  dateShiftView.$newEndDate.val($(this).val()).trigger('change')
-  validateDates()
+  $end.on('change', function () {
+    dateShiftView.$newEndDate.val($(this).val()).trigger('change')
+    validateDates()
+  })
 })

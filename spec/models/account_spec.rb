@@ -1801,11 +1801,11 @@ describe Account do
   end
 
   context "inheritable settings" do
-    before do
+    before :once do
       @settings = [:restrict_student_future_view, :lock_all_announcements]
     end
 
-    before do
+    before :once do
       account_model
       @sub1 = @account.sub_accounts.create!
       @sub2 = @sub1.sub_accounts.create!
@@ -1832,13 +1832,7 @@ describe Account do
 
       @settings.each do |key|
         expect(@account.send(key)).to eq({ locked: false, value: false })
-      end
-
-      @settings.each do |key|
         expect(@sub1.send(key)).to eq({ locked: true, value: true })
-      end
-
-      @settings.each do |key|
         expect(@sub2.send(key)).to eq({ locked: true, value: true, inherited: true })
       end
     end
@@ -1856,13 +1850,7 @@ describe Account do
 
       @settings.each do |key|
         expect(@account.send(key)).to eq({ locked: false, value: true })
-      end
-
-      @settings.each do |key|
         expect(@sub1.send(key)).to eq({ locked: false, value: true, inherited: true })
-      end
-
-      @settings.each do |key|
         expect(@sub2.send(key)).to eq({ locked: false, value: false })
       end
     end
@@ -1876,6 +1864,34 @@ describe Account do
 
       expect(@account.restrict_student_future_view).to eq({ locked: false, value: true })
       expect(@account.lock_all_announcements).to eq({ locked: false, value: true })
+    end
+
+    context "empty setting elision" do
+      before :once do
+        @account.update settings: { sis_assignment_name_length_input: { value: "100" } }
+        @sub1.update settings: { sis_assignment_name_length_input: { value: "150" } }
+        @sub2.update settings: { sis_assignment_name_length_input: { value: "200" } }
+      end
+
+      it "elides an empty setting" do
+        @sub1.update settings: { sis_assignment_name_length_input: { value: "" } }
+        expect(@sub1.sis_assignment_name_length_input).to eq({ value: "100", inherited: true })
+      end
+
+      it "elides a nil setting" do
+        @sub1.update settings: { sis_assignment_name_length_input: { value: nil } }
+        expect(@sub1.sis_assignment_name_length_input).to eq({ value: "100", inherited: true })
+      end
+
+      it "elides an explicitly-unlocked setting" do
+        @sub1.update settings: { sis_assignment_name_length_input: { value: nil, locked: false } }
+        expect(@sub1.sis_assignment_name_length_input).to eq({ value: "100", inherited: true })
+      end
+
+      it "doesn't elide a locked setting" do
+        @sub1.update settings: { sis_assignment_name_length_input: { value: nil, locked: true } }
+        expect(@sub2.sis_assignment_name_length_input).to eq({ value: nil, inherited: true, locked: true })
+      end
     end
 
     context "caching" do
@@ -2128,6 +2144,12 @@ describe Account do
     end
 
     describe "account_chain_ids" do
+      let(:account1) { Account.default.sub_accounts.create! }
+
+      before do
+        account1
+      end
+
       it "caches" do
         expect(Account.connection).to receive(:select_values).once.and_call_original
         2.times { Account.account_chain_ids(Account.default.id) }
@@ -2140,11 +2162,32 @@ describe Account do
       end
 
       it "updates if the account chain changes" do
-        account1 = Account.default.sub_accounts.create!
         account2 = Account.default.sub_accounts.create!
         expect(Account.account_chain_ids(account2.id)).to eq [account2.id, Account.default.id]
         account2.update_attribute(:parent_account, account1)
         expect(Account.account_chain_ids(account2.id)).to eq [account2.id, account1.id, Account.default.id]
+      end
+
+      def expect_id_chain_for_account(account, id_chain)
+        # frd disable caching for testing, so that calls with either
+        # Account or id still exercise all logic
+        allow(Account).to receive(:cache_key_for_id).and_return(nil)
+        expect(Account.account_chain_ids(account.id)).to eq id_chain
+        expect(Account.account_chain_ids(account)).to eq id_chain
+      end
+
+      it "returns local ids" do
+        expect_id_chain_for_account(account1, [account1.id, Account.default.id])
+      end
+
+      context "on another shard" do
+        specs_require_sharding
+
+        it "returns correct global ids" do
+          @shard1.activate do
+            expect_id_chain_for_account(account1, [account1.global_id, Account.default.global_id])
+          end
+        end
       end
     end
   end

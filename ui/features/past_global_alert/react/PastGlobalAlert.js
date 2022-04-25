@@ -19,7 +19,9 @@
 import React from 'react'
 import {Alert} from '@instructure/ui-alerts'
 import {Button} from '@instructure/ui-buttons'
-import I18n from 'i18n!past_global_announcements'
+import {useScope as useI18nScope} from '@canvas/i18n'
+
+const I18n = useI18nScope('past_global_announcements')
 
 export default class PastGlobalAlert extends React.Component {
   state = {
@@ -49,7 +51,7 @@ export default class PastGlobalAlert extends React.Component {
           <Button
             data-testid="globalAnnouncementsButton"
             href="/account_notifications"
-            variant="primary"
+            color="primary"
             margin="small 0 0 0"
           >
             {I18n.t('View')}

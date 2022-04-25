@@ -16,7 +16,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import I18n from 'i18n!theme_collection_view'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import React, {useState} from 'react'
 import {find, flatten, groupBy, map, sortBy} from 'lodash'
 import {arrayOf, func, shape, string} from 'prop-types'
@@ -26,17 +26,20 @@ import ThemeCard from './ThemeCard'
 import doFetchApi from '@canvas/do-fetch-api-effect'
 import {Button} from '@instructure/ui-buttons'
 import {Grid} from '@instructure/ui-grid'
+import {Link} from '@instructure/ui-link'
 import {Menu} from '@instructure/ui-menu'
 import {IconAddSolid, IconQuestionLine} from '@instructure/ui-icons'
 import {Popover} from '@instructure/ui-popover'
 import {ScreenReaderContent} from '@instructure/ui-a11y-content'
 import {View} from '@instructure/ui-view'
 
+const I18n = useI18nScope('theme_collection_view')
+
 function NewTheme({onNewTheme, bases}) {
   return (
     <Menu
       trigger={
-        <Button icon={IconAddSolid} variant="primary" data-testid="new-theme-button">
+        <Button renderIcon={IconAddSolid} color="primary" data-testid="new-theme-button">
           {I18n.t('Theme')}
         </Button>
       }
@@ -242,9 +245,9 @@ export default function CollectionView(props) {
               {I18n.t('Templates')}
               <Popover
                 renderTrigger={
-                  <Button variant="link" size="small" icon={IconQuestionLine}>
+                  <Link size="small" renderIcon={IconQuestionLine}>
                     <ScreenReaderContent>{explainerText}</ScreenReaderContent>
-                  </Button>
+                  </Link>
                 }
                 placement="top center"
               >

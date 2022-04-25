@@ -19,7 +19,7 @@
 import $ from 'jquery'
 import _ from 'underscore'
 import SyllabusBehaviors from '@canvas/syllabus/backbone/behaviors/SyllabusBehaviors'
-import I18n from 'i18n!syllabus'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import SyllabusCollection from './backbone/collections/SyllabusCollection'
 import SyllabusCalendarEventsCollection from './backbone/collections/SyllabusCalendarEventsCollection'
 import SyllabusAppointmentGroupsCollection from './backbone/collections/SyllabusAppointmentGroupsCollection'
@@ -28,59 +28,72 @@ import SyllabusView from './backbone/views/SyllabusView'
 import {monitorLtiMessages} from '@canvas/lti/jquery/messages'
 import ready from '@instructure/ready'
 
-// Setup the collections
-const collections = [
-  new SyllabusCalendarEventsCollection([ENV.context_asset_string], 'event'),
-  new SyllabusCalendarEventsCollection([ENV.context_asset_string], 'assignment')
-]
+const I18n = useI18nScope('syllabus')
 
-// Don't show appointment groups for non-logged in users
-if (ENV.current_user_id) {
-  collections.push(
-    new SyllabusAppointmentGroupsCollection([ENV.context_asset_string], 'reservable')
-  )
-  collections.push(
-    new SyllabusAppointmentGroupsCollection([ENV.context_asset_string], 'manageable')
-  )
-}
+let collections = []
+let deferreds
+// If we're in a paced course, we're not showing the assignments
+// so skip retrieving them.
+if (!(ENV.IN_PACED_COURSE && !ENV.current_user_is_student)) {
+  // Setup the collections
+  collections = [
+    new SyllabusCalendarEventsCollection([ENV.context_asset_string], 'event'),
+    new SyllabusCalendarEventsCollection([ENV.context_asset_string], 'assignment')
+  ]
 
-collections.push(new SyllabusPlannerCollection([ENV.context_asset_string]))
-
-// Perform a fetch on each collection
-//   The fetch continues fetching until no next link is returned
-const deferreds = _.map(collections, collection => {
-  const deferred = $.Deferred()
-
-  const error = () => deferred.reject()
-
-  const success = () => {
-    if (collection.canFetch('next')) {
-      return collection.fetch({page: 'next', success, error})
-    } else {
-      return deferred.resolve()
-    }
+  // Don't show appointment groups for non-logged in users
+  if (ENV.current_user_id) {
+    collections.push(
+      new SyllabusAppointmentGroupsCollection([ENV.context_asset_string], 'reservable')
+    )
+    collections.push(
+      new SyllabusAppointmentGroupsCollection([ENV.context_asset_string], 'manageable')
+    )
   }
 
-  collection.fetch({
-    data: {
-      per_page: ENV.SYLLABUS_PER_PAGE || 50
-    },
-    success,
-    error
-  })
+  collections.push(new SyllabusPlannerCollection([ENV.context_asset_string]))
 
-  return deferred
-})
+  // Perform a fetch on each collection
+  //   The fetch continues fetching until no next link is returned
+  deferreds = _.map(collections, collection => {
+    const deferred = $.Deferred()
+
+    const error = () => deferred.reject()
+
+    const success = () => {
+      if (collection.canFetch('next')) {
+        return collection.fetch({page: 'next', success, error})
+      } else {
+        return deferred.resolve()
+      }
+    }
+
+    collection.fetch({
+      data: {
+        per_page: ENV.SYLLABUS_PER_PAGE || 50
+      },
+      success,
+      error
+    })
+
+    return deferred
+  })
+}
 
 ready(() => {
-  // Create the aggregation collection and view
-  const acollection = new SyllabusCollection(collections)
-  const view = new SyllabusView({
-    el: '#syllabusTableBody',
-    collection: acollection,
-    can_read: ENV.CAN_READ,
-    is_valid_user: !!ENV.current_user_id
-  })
+  let view
+  if (ENV.IN_PACED_COURSE && !ENV.current_user_is_student) {
+    renderCoursePacingNotice()
+  } else {
+    // Create the aggregation collection and view
+    const acollection = new SyllabusCollection(collections)
+    view = new SyllabusView({
+      el: '#syllabusTableBody',
+      collection: acollection,
+      can_read: ENV.CAN_READ,
+      is_valid_user: !!ENV.current_user_id
+    })
+  }
 
   // Attach the immersive reader button if enabled
   const immersive_reader_mount_point = document.getElementById('immersive_reader_mount_point')
@@ -119,13 +132,15 @@ ready(() => {
   }
 
   // When all of the fetches have completed, render the view and bind behaviors
-  $.when
-    .apply(this, deferreds)
-    .then(() => {
-      view.render()
-      SyllabusBehaviors.bindToSyllabus()
-    })
-    .fail(() => {})
+  if (view) {
+    $.when
+      .apply(this, deferreds)
+      .then(() => {
+        view.render()
+        SyllabusBehaviors.bindToSyllabus()
+      })
+      .fail(() => {})
+  }
 
   // Add the loading indicator now that the collections are fetching
   $('#loading_indicator').replaceWith('<img src="/images/ajax-reload-animated.gif">')
@@ -137,3 +152,21 @@ ready(() => {
 })
 
 monitorLtiMessages()
+
+function renderCoursePacingNotice() {
+  const contextInfo = ENV.context_asset_string.split('_')
+  const courseId = contextInfo[0] === 'course' ? contextInfo[1] : undefined
+  const $mountPoint = document.getElementById('syllabusContainer')
+  if ($mountPoint) {
+    // replace the table with the notice
+    import('@canvas/due-dates/react/CoursePacingNotice')
+      .then(CoursePacingNoticeModule => {
+        const renderNotice = CoursePacingNoticeModule.renderCoursePacingNotice
+        renderNotice($mountPoint, courseId)
+      })
+      .catch(ex => {
+        // eslint-disable-next-line no-console
+        console.error('Falied loading CoursePacingNotice', ex)
+      })
+  }
+}

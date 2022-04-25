@@ -301,7 +301,7 @@ class FilesController < ApplicationController
         scope = Attachments::ScopedToUser.new(@context || @folder, @current_user).scope
         scope = scope.preload(:user) if params[:include].include?("user") && params[:sort] != "user"
         scope = scope.preload(:usage_rights) if params[:include].include?("usage_rights")
-        scope = Attachment.search_by_attribute(scope, :display_name, params[:search_term])
+        scope = Attachment.search_by_attribute(scope, :display_name, params[:search_term], normalize_unicode: true)
 
         order_clause = case params[:sort]
                        when "position" # undocumented; kept for compatibility
@@ -481,6 +481,24 @@ class FilesController < ApplicationController
   #   "user":: the user who uploaded the file or last edited its content
   #   "usage_rights":: copyright and license information for the file (see UsageRights)
   #
+  # @argument replacement_chain_context_type [Optional, String]
+  #   When a user replaces a file during upload, Canvas keeps track of the "replacement chain."
+  #
+  #   Include this parameter if you wish Canvas to follow the replacement chain if the requested
+  #   file was deleted and replaced by another.
+  #
+  #   Must be set to 'course' or 'account'. The "replacement_chain_context_id" parameter must
+  #   also be included.
+  #
+  # @argument replacement_chain_context_id [Optional, Integer]
+  #   When a user replaces a file during upload, Canvas keeps track of the "replacement chain."
+  #
+  #   Include this parameter if you wish Canvas to follow the replacement chain if the requested
+  #   file was deleted and replaced by another.
+  #
+  #   Indicates the context ID Canvas should use when following the "replacement chain." The
+  #   "replacement_chain_context_id" paraamter must also be included.
+  #
   # @example_request
   #
   #   curl 'https://<canvas>/api/v1/files/<file_id>' \
@@ -492,7 +510,14 @@ class FilesController < ApplicationController
   # @returns File
   def api_show
     get_context
+
     @attachment = @context ? @context.attachments.not_deleted.find_by(id: params[:id]) : Attachment.not_deleted.find_by(id: params[:id])
+
+    if replacement_chain_context
+      replacement = attachment_or_replacement(replacement_chain_context, params[:id])
+      @attachment ||= replacement if replacement&.available?
+    end
+
     unless @attachment
       render json: { errors: [{ message: "The specified resource does not exist." }] }, status: :not_found
       return
@@ -509,6 +534,25 @@ class FilesController < ApplicationController
     end
   end
 
+  # @API Translate file reference
+  # Get information about a file from a course copy file reference
+  #
+  # @example_request
+  #
+  #   curl https://<canvas>/api/v1/courses/1/files/file_ref/i567b573b77fab13a1a39937c24ae88f2 \
+  #        -H 'Authorization: Bearer <token>'
+  #
+  # @returns File
+  def file_ref
+    get_context
+
+    @attachment = @context.attachments.not_deleted.find_by(migration_id: params[:migration_id])
+    raise ActiveRecord::RecordNotFound unless @attachment
+    return unless authorized_action(@attachment, @current_user, :read)
+
+    render json: attachment_json(@attachment, @current_user, session, params)
+  end
+
   def show
     GuardRail.activate(:secondary) do
       params[:id] ||= params[:file_id]
@@ -520,11 +564,19 @@ class FilesController < ApplicationController
       # this implicit context magic happens in ApplicationController#get_context
       if @context.nil? || @current_user.nil? || @context == @current_user
         @attachment = Attachment.find(params[:id])
+
+        # Check if a specific context for the relation replacement chain
+        # was set. If so, use it to look up the attachment. This is needed
+        # for some services (like Buttons & Icons) to avoid setting @context
+        # and being redirected
+        if replacement_chain_context && @attachment.deleted?
+          @attachment = attachment_or_replacement(replacement_chain_context, params[:id])
+        end
+
         @context = nil unless @context == @current_user || @context == @attachment.context
         @skip_crumb = true unless @context
       else
-        # NOTE: Attachment#find has special logic to find overwriting files; see FindInContextAssociation
-        @attachment ||= @context.attachments.find(params[:id])
+        @attachment ||= attachment_or_replacement(@context, params[:id])
       end
 
       params[:download] ||= params[:preview]
@@ -1328,6 +1380,18 @@ class FilesController < ApplicationController
   end
 
   private
+
+  def attachment_or_replacement(context, id)
+    # NOTE: Attachment#find has special logic to find overwriting files; see FindInContextAssociation
+    context.attachments.find(id)
+  end
+
+  def replacement_chain_context
+    return unless params[:replacement_chain_context_type] == "course"
+    return unless params[:replacement_chain_context_id].present?
+
+    api_find(Course.active, params[:replacement_chain_context_id])
+  end
 
   def log_attachment_access(attachment)
     log_asset_access(attachment, "files", "files")

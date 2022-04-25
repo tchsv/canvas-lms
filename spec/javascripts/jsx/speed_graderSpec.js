@@ -21,10 +21,10 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import _ from 'underscore'
 
-import SpeedGrader from 'ui/features/speed_grader/jquery/speed_grader.js'
-import SpeedGraderAlerts from 'ui/features/speed_grader/react/SpeedGraderAlerts.js'
-import SpeedGraderHelpers from 'ui/features/speed_grader/jquery/speed_grader_helpers.js'
-import JQuerySelectorCache from 'ui/features/speed_grader/JQuerySelectorCache.js'
+import SpeedGrader from 'ui/features/speed_grader/jquery/speed_grader'
+import SpeedGraderAlerts from 'ui/features/speed_grader/react/SpeedGraderAlerts'
+import SpeedGraderHelpers from 'ui/features/speed_grader/jquery/speed_grader_helpers'
+import JQuerySelectorCache from 'ui/features/speed_grader/JQuerySelectorCache'
 import moxios from 'moxios'
 import fakeENV from 'helpers/fakeENV'
 import numberHelper from '@canvas/i18n/numberHelper'
@@ -1467,12 +1467,14 @@ QUnit.module('SpeedGrader', rootHooks => {
           index: 0,
           id: 4,
           name: 'Guy B. Studying',
+          anonymous_name: 'Student 1',
           submission_state: 'not_graded'
         },
         {
           index: 1,
           id: 12,
           name: 'Sil E. Bus',
+          anonymous_name: 'Student 2',
           submission_state: 'graded'
         }
       ]
@@ -1574,6 +1576,7 @@ QUnit.module('SpeedGrader', rootHooks => {
         <div id="multiple_submissions"></div>
         <div id="speed_grader_edit_status_mount_point"></div>
         <div id="speed_grader_edit_status_secondary_mount_point"></div>
+        <div id="submission_word_count"></div>
       </div>`)
       sinon.stub($, 'ajaxJSON')
 
@@ -1616,7 +1619,8 @@ QUnit.module('SpeedGrader', rootHooks => {
                     {
                       attachment: {viewed_at: new Date('Jan 1, 2011').toISOString()}
                     }
-                  ]
+                  ],
+                  word_count: 24
                 }
               }
             ]
@@ -1721,6 +1725,44 @@ QUnit.module('SpeedGrader', rootHooks => {
       const menuOption = $menuContent.querySelectorAll('[role="none"]')[index]
       menuOption.children[0].click()
     }
+
+    QUnit.module('SpeedGrader#shouldParseGrade', hooks => {
+      hooks.afterEach(() => {
+        SpeedGrader.EG.currentStudent.submission.submission_type = 'basic_lti_launch'
+      })
+
+      test('does not show the word count for online text entry submission with feature disabled', () => {
+        ENV.FEATURES.word_count_in_speed_grader = false
+        finishSetup()
+        SpeedGrader.EG.currentStudent.submission.submission_type = 'online_text_entry'
+        SpeedGrader.EG.handleSubmissionSelectionChange()
+        strictEqual(document.getElementById('submission_word_count').children.length, 0)
+      })
+
+      test('does not show the word count for basic lti submission', () => {
+        ENV.FEATURES.word_count_in_speed_grader = true
+        finishSetup()
+        SpeedGrader.EG.handleSubmissionSelectionChange()
+        strictEqual(document.getElementById('submission_word_count').children.length, 0)
+      })
+
+      test('does not show the word count for external tool submission', () => {
+        ENV.FEATURES.word_count_in_speed_grader = true
+        finishSetup()
+        SpeedGrader.EG.currentStudent.submission.submission_type = 'external_tool'
+        SpeedGrader.EG.handleSubmissionSelectionChange()
+        strictEqual(document.getElementById('submission_word_count').children.length, 0)
+      })
+
+      test('shows the word count for online text entry submission', () => {
+        ENV.FEATURES.word_count_in_speed_grader = true
+        finishSetup()
+        SpeedGrader.EG.currentStudent.submission.submission_type = 'online_text_entry'
+        SpeedGrader.EG.handleSubmissionSelectionChange()
+        strictEqual(document.getElementById('submission_word_count').children.length, 1)
+        strictEqual($('#submission_word_count').text(), 'Word Count: 24 words')
+      })
+    })
 
     test('should use submission history lti launch url', () => {
       finishSetup()
@@ -2252,7 +2294,7 @@ QUnit.module('SpeedGrader', rootHooks => {
     equal(result, 'A')
   })
 
-  QUnit.module('SpeedGrader', suiteHooks => {
+  QUnit.module('SpeedGrader (2)', suiteHooks => {
     suiteHooks.beforeEach(() => {
       setupFixtures(`
       <div id="combo_box_container"></div>
@@ -2360,6 +2402,13 @@ QUnit.module('SpeedGrader', rootHooks => {
           ]
         })
 
+        test('filters out students that do not have submissions', () => {
+          window.jsonData.submissions.shift()
+          SpeedGrader.EG.jsonReady()
+          const ids = window.jsonData.studentsWithSubmissions.map(student => student.id)
+          deepEqual(ids, ['1102', '1103', '1104'])
+        })
+
         test('preserves student order (from server) when sorting alphabetically', () => {
           SpeedGrader.EG.jsonReady()
           const ids = window.jsonData.studentsWithSubmissions.map(student => student.id)
@@ -2409,10 +2458,10 @@ QUnit.module('SpeedGrader', rootHooks => {
       })
 
       QUnit.module('when students are anonymous', contextHooks => {
-        const alpha = {anonymous_id: '00000'}
-        const beta = {anonymous_id: '99999'}
-        const gamma = {anonymous_id: 'aaaaa'}
-        const delta = {anonymous_id: 'zzzzz'}
+        const alpha = {anonymous_id: '00000', anonymous_name_position: 1}
+        const beta = {anonymous_id: '99999', anonymous_name_position: 2}
+        const gamma = {anonymous_id: 'aaaaa', anonymous_name_position: 3}
+        const delta = {anonymous_id: 'zzzzz', anonymous_name_position: 4}
 
         contextHooks.beforeEach(() => {
           window.jsonData.anonymize_students = true
@@ -3076,8 +3125,7 @@ QUnit.module('SpeedGrader', rootHooks => {
     SpeedGrader.teardown()
   })
 
-  QUnit.module('SpeedGrader', function (suiteHooks) {
-    /* eslint-disable-line qunit/no-identical-names */
+  QUnit.module('SpeedGrader (3)', function (suiteHooks) {
     suiteHooks.beforeEach(() => {
       fakeENV.setup({
         assignment_id: '2',
@@ -3599,8 +3647,8 @@ QUnit.module('SpeedGrader', rootHooks => {
       const originalJsonData = window.jsonData
       const alphaIdPair = {id: '1'}
       const omegaIdPair = {id: '9'}
-      const alphaAnonymousIdPair = {anonymous_id: '00000'}
-      const omegaAnonymousIdPair = {anonymous_id: 'ZZZZZ'}
+      const alphaAnonymousIdPair = {anonymous_id: '00000', anonymous_name_position: 1}
+      const omegaAnonymousIdPair = {anonymous_id: 'ZZZZZ', anonymous_name_position: 2}
 
       const baseAssignment = {}
       const assignment = {
@@ -3846,8 +3894,7 @@ QUnit.module('SpeedGrader', rootHooks => {
           fakeENV.teardown()
         })
 
-        QUnit.module('given a non-concluded enrollment', () => {
-          /* eslint-disable-line qunit/no-identical-names */
+        QUnit.module('given a non-concluded enrollment (2)', () => {
           test('button is shown when comment is publishable', () => {
             SpeedGrader.EG.addCommentSubmissionHandler(commentElement, {publishable: true})
             const submitButtons = document.querySelectorAll('.submit_comment_button')
@@ -3861,8 +3908,7 @@ QUnit.module('SpeedGrader', rootHooks => {
           })
         })
 
-        QUnit.module('given a concluded enrollment', concludedHooks => {
-          /* eslint-disable-line qunit/no-identical-names */
+        QUnit.module('given a concluded enrollment (2)', concludedHooks => {
           concludedHooks.beforeEach(() => {
             originalWorkflowState =
               window.jsonData.studentMap[alphaAnonymousStudent.anonymous_id].enrollments[0]
@@ -3914,8 +3960,8 @@ QUnit.module('SpeedGrader', rootHooks => {
       anonymousHooks.beforeEach(() => {
         assignment = {anonymize_students: true}
         originalJsonData = window.jsonData
-        alpha = {anonymous_id: '00000'}
-        omega = {anonymous_id: 'zzzzz'}
+        alpha = {anonymous_id: '00000', anonymous_name: 'Student 1', anonymous_name_position: 1}
+        omega = {anonymous_id: 'zzzzz', anonymous_name: 'Student 2', anonymous_name_position: 2}
         alphaStudent = {
           ...alpha,
           submission_history: [],
@@ -4947,9 +4993,7 @@ QUnit.module('SpeedGrader', rootHooks => {
 
       QUnit.module('#setOrUpdateSubmission', hooks => {
         function getPostOrHideGradesButton() {
-          return document.querySelector(
-            '#speed_grader_post_grades_menu_mount_point button[title="Post or Hide Grades"]'
-          )
+          return document.querySelector('#speed_grader_post_grades_menu_mount_point button')
         }
 
         hooks.beforeEach(() => {
@@ -5008,6 +5052,18 @@ QUnit.module('SpeedGrader', rootHooks => {
           delete alphaSubmission.versioned_attachments
           const {submission} = SpeedGrader.EG.setOrUpdateSubmission(alphaSubmission)
           deepEqual(submission.submission_history[0].versioned_attachments, versionedAttachments)
+        })
+
+        test('does not thoughtlessly alter the submission field of the first attempt of the existing submission object if the passed-in submission has no attempt field', () => {
+          alphaSubmission.submission_history[0].submission = {grade: 'please spare me'}
+
+          const fakeSubmission = {
+            ...alphaSubmission,
+            score: '10'
+          }
+          SpeedGrader.EG.setOrUpdateSubmission(fakeSubmission)
+
+          strictEqual(alphaSubmission.submission_history[0].submission.grade, 'please spare me')
         })
       })
 
@@ -5476,8 +5532,7 @@ QUnit.module('SpeedGrader', rootHooks => {
         })
       })
 
-      QUnit.module('#renderSubmissionPreview', hooks => {
-        /* eslint-disable-line qunit/no-identical-names */
+      QUnit.module('#renderSubmissionPreview (2)', hooks => {
         let anonymousId
         let assignmentId
         let courseId
@@ -7207,7 +7262,7 @@ QUnit.module('SpeedGrader', rootHooks => {
           SpeedGrader.EG.jsonReady()
         })
 
-        QUnit.module('with new plagiarism icons active', newPlagiarismIconHooks => {
+        QUnit.module('with new plagiarism icons active (2)', newPlagiarismIconHooks => {
           // This is the inner "container" that holds both the icon and (if present) score text,
           // and may be rendered as a link if the a valid report URL exists
           const similarityContainerSelector =
@@ -7330,7 +7385,7 @@ QUnit.module('SpeedGrader', rootHooks => {
           })
         })
 
-        QUnit.module('with old plagiarism icons active', () => {
+        QUnit.module('with old plagiarism icons active (2)', () => {
           const similarityScoreSelector =
             '#submission_files_list .submission-file .turnitin_score_container .turnitin_similarity_score'
 
@@ -7414,8 +7469,7 @@ QUnit.module('SpeedGrader', rootHooks => {
         })
       })
 
-      QUnit.module('when anonymous grading is active', hooks => {
-        /* eslint-disable-line qunit/no-identical-names */
+      QUnit.module('when anonymous grading is active (2)', hooks => {
         hooks.beforeEach(() => {
           const reportURL = document.querySelector('#assignment_submission_turnitin_report_url')
           reportURL.href = reportURL.href.replace('user_id', 'anonymous_id')
@@ -7609,12 +7663,12 @@ QUnit.module('SpeedGrader', rootHooks => {
             let originalWorkflowState
             let originalConcluded
 
-            function isPresent(mountPoint) {
-              strictEqual(mountPoint.innerText, 'HIDDEN')
+            function isPresent(mountPoint_) {
+              strictEqual(mountPoint_.innerText, 'HIDDEN')
             }
 
-            function isNotPresent(mountPoint) {
-              strictEqual(mountPoint.innerText, '')
+            function isNotPresent(mountPoint_) {
+              strictEqual(mountPoint_.innerText, '')
             }
 
             function pill() {

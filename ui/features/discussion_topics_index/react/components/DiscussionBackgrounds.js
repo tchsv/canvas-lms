@@ -16,7 +16,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import I18n from 'i18n!discussions_v2'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import React from 'react'
 import {string} from 'prop-types'
 
@@ -29,6 +29,10 @@ import propTypes from '../propTypes'
 import pinnedUrl from '../../images/pinned.svg'
 import unpinnedUrl from '../../images/unpinned.svg'
 import closedForCommentsUrl from '../../images/closed-comments.svg'
+
+import {Link} from '@instructure/ui-link'
+
+const I18n = useI18nScope('discussions_v2')
 
 const BackgroundSVG = props => (
   <View margin="small auto" maxWidth="16rem" display="block">
@@ -67,12 +71,12 @@ export const unpinnedDiscussionsBackground = props => (
       {I18n.t('There are no discussions to show in this section')}
     </Text>
     {props.permissions.create && (
-      <Button
-        variant="link"
+      <Link
         href={`/${props.contextType}s/${props.contextID}/discussion_topics/new`}
+        isWithinText={false}
       >
         {I18n.t('Click here to add a discussion')}
-      </Button>
+      </Link>
     )}
   </View>
 )

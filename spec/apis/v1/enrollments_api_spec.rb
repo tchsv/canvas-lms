@@ -811,6 +811,40 @@ describe EnrollmentsApiController, type: :request do
       context "sharding" do
         specs_require_sharding
 
+        it "groups_id retrieve correct groups with cross-shard users" do
+          @shard2.activate do
+            @s2_user = user_with_pseudonym(active_all: true)
+          end
+
+          @shard1.activate do
+            @s1_user = user_with_pseudonym(active_all: true)
+          end
+
+          @course.enroll_student(@s1_user)
+          @course.enroll_student(@s2_user)
+
+          group = @course.groups.create(name: "A Group")
+
+          GroupMembership.create!(
+            group: group,
+            user: @s1_user,
+            workflow_state: "accepted"
+          )
+
+          GroupMembership.create!(
+            group: group,
+            user: @s2_user,
+            workflow_state: "accepted"
+          )
+
+          json = api_call(:get, "/api/v1/courses/#{@course.id}/enrollments", { controller: "enrollments_api", action: "index",
+                                                                               course_id: @course.id.to_param, format: "json",
+                                                                               include: ["group_ids"] })
+
+          expect(json[0]["user"]["group_ids"]).to eq([group.id])
+          expect(json[1]["user"]["group_ids"]).to eq([group.id])
+        end
+
         it "properly restores an existing enrollment when self-enrolling a cross-shard user" do
           @shard1.activate { @cs_user = user_with_pseudonym(active_all: true) }
           enrollment = @course.enroll_student(@cs_user)
@@ -2269,6 +2303,24 @@ describe EnrollmentsApiController, type: :request do
 
           enrollment_ids = json.collect { |e| e["id"] }
           expect(enrollment_ids.sort).to eq(@course.enrollments.map(&:id).sort)
+          expect(json.length).to eq 2
+        end
+
+        it "returns enrollments from the course's shard for an observer user" do
+          @shard1.activate do
+            @enrolled_user = user_factory(active_user: true)
+
+            account = Account.create!
+            @cs_course = Course.create!(account: account)
+            @cs_course.enroll_user(@user, "ObserverEnrollment", enrollment_state: "active")
+            @cs_course.enroll_user(@enrolled_user, "StudentEnrollment", enrollment_state: "active")
+          end
+
+          @params[:course_id] = @cs_course.id
+          json = api_call(:get, "/api/v1/courses/#{@cs_course.id}/enrollments", @params)
+
+          enrollment_ids = json.collect { |e| e["id"] }
+          expect(enrollment_ids.sort).to eq(@cs_course.enrollments.map(&:id).sort)
           expect(json.length).to eq 2
         end
       end

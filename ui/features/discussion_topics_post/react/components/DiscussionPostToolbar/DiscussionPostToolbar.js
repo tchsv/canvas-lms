@@ -20,7 +20,7 @@ import {Button, IconButton} from '@instructure/ui-buttons'
 import {ChildTopic} from '../../../graphql/ChildTopic'
 import {Flex} from '@instructure/ui-flex'
 import {GroupsMenu} from '../GroupsMenu/GroupsMenu'
-import I18n from 'i18n!discussions_posts'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import {
   IconArrowDownLine,
   IconArrowUpLine,
@@ -39,6 +39,8 @@ import {TextInput} from '@instructure/ui-text-input'
 import {Tooltip} from '@instructure/ui-tooltip'
 import {View} from '@instructure/ui-view'
 import {AnonymousAvatar} from '@canvas/discussions/react/components/AnonymousAvatar/AnonymousAvatar'
+
+const I18n = useI18nScope('discussions_posts')
 
 export const getMenuConfig = props => {
   const options = {
@@ -100,7 +102,8 @@ export const DiscussionPostToolbar = props => {
             shouldGrow: true,
             shouldShrink: true,
             width: null
-          }
+          },
+          padding: 'xx-small'
         },
         desktop: {
           direction: 'row',
@@ -114,7 +117,8 @@ export const DiscussionPostToolbar = props => {
             shouldGrow: false,
             shouldShrink: false,
             width: '120px'
-          }
+          },
+          padding: '0'
         }
       }}
       render={responsiveProps => (
@@ -127,18 +131,16 @@ export const DiscussionPostToolbar = props => {
                   <Flex.Item
                     data-testid="groups-menu-button"
                     margin="0 small 0 0"
-                    overflowY="hidden"
-                    overflowX="hidden"
+                    padding={responsiveProps.padding}
                   >
                     <GroupsMenu width="10px" childTopics={props.childTopics} />
                   </Flex.Item>
                 )}
                 {/* Search */}
                 <Flex.Item
-                  overflowY="hidden"
-                  overflowX="hidden"
                   shouldGrow={responsiveProps.search.shouldGrow}
                   shouldShrink={responsiveProps.search.shouldShrink}
+                  padding={responsiveProps.padding}
                 >
                   <TextInput
                     data-testid="search-filter"
@@ -151,7 +153,7 @@ export const DiscussionPostToolbar = props => {
                       </ScreenReaderContent>
                     }
                     value={props.searchTerm}
-                    renderBeforeInput={<IconSearchLine inline={false} />}
+                    renderBeforeInput={<IconSearchLine display="block" />}
                     renderAfterInput={clearButton}
                     placeholder={I18n.t('Search entries or author...')}
                     shouldNotWrap
@@ -166,8 +168,7 @@ export const DiscussionPostToolbar = props => {
                 {/* Filter */}
                 <Flex.Item
                   margin="0 small 0 0"
-                  overflowY="hidden"
-                  overflowX="hidden"
+                  padding={responsiveProps.padding}
                   shouldGrow={responsiveProps.filter.shouldGrow}
                   shouldShrink={responsiveProps.filter.shouldShrink}
                 >
@@ -187,7 +188,7 @@ export const DiscussionPostToolbar = props => {
                   </SimpleSelect>
                 </Flex.Item>
                 {/* Sort */}
-                <Flex.Item overflowY="hidden" overflowX="hidden">
+                <Flex.Item padding={responsiveProps.padding}>
                   <Tooltip
                     renderTip={
                       props.sortDirection === 'desc'

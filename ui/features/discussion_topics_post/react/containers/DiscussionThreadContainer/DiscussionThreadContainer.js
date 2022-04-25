@@ -38,7 +38,7 @@ import {DISCUSSION_SUBENTRIES_QUERY} from '../../../graphql/Queries'
 import {DiscussionEdit} from '../../components/DiscussionEdit/DiscussionEdit'
 import {Flex} from '@instructure/ui-flex'
 import {Highlight} from '../../components/Highlight/Highlight'
-import I18n from 'i18n!discussion_topics_post'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import LoadingIndicator from '@canvas/loading-indicator'
 import {SearchContext} from '../../utils/constants'
 import {DiscussionEntryContainer} from '../DiscussionEntryContainer/DiscussionEntryContainer'
@@ -53,6 +53,8 @@ import {ThreadingToolbar} from '../../components/ThreadingToolbar/ThreadingToolb
 import {useMutation, useQuery} from 'react-apollo'
 import {View} from '@instructure/ui-view'
 import {ReportReply} from '../../components/ReportReply/ReportReply'
+
+const I18n = useI18nScope('discussion_topics_post')
 
 export const DiscussionThreadContainer = props => {
   const {searchTerm, sort, filter} = useContext(SearchContext)
@@ -241,6 +243,7 @@ export const DiscussionThreadContainer = props => {
       <ThreadingToolbar.Expansion
         key={`expand-${props.discussionEntry._id}`}
         delimiterKey={`expand-delimiter-${props.discussionEntry._id}`}
+        authorName={getDisplayName(props.discussionEntry)}
         expandText={
           <ReplyInfo
             replyCount={props.discussionEntry.rootEntryParticipantCounts?.repliesCount}
@@ -355,6 +358,7 @@ export const DiscussionThreadContainer = props => {
                       filter !== 'drafts' && !props.discussionEntry.deleted ? (
                         <ThreadActions
                           id={props.discussionEntry._id}
+                          authorName={getDisplayName(props.discussionEntry)}
                           isUnread={!props.discussionEntry.entryParticipant?.read}
                           onToggleUnread={toggleUnread}
                           onDelete={props.discussionEntry.permissions?.delete ? onDelete : null}
@@ -380,7 +384,6 @@ export const DiscussionThreadContainer = props => {
                           }
                           goToTopic={props.goToTopic}
                           onReport={
-                            ENV?.student_reporting_enabled &&
                             props.discussionTopic.permissions?.studentReporting
                               ? () => {
                                   setShowReportModal(true)

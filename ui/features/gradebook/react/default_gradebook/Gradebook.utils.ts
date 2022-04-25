@@ -21,19 +21,30 @@ import ReactDOM from 'react-dom'
 import assignmentHelper from '../shared/helpers/assignmentHelper'
 import {showConfirmationDialog} from '@canvas/feature-flags/react/ConfirmationDialog'
 // @ts-ignore
-import I18n from 'i18n!gradebook'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import _ from 'lodash'
 import htmlEscape from 'html-escape'
 import type {
   Assignment,
+  AssignmentGroup,
   Filter,
-  GradebookFilterApiResponse,
+  FilterCondition,
+  FilterConditionType,
   GradebookFilterApiRequest,
+  GradebookFilterApiResponse,
+  GradingPeriod,
+  Module,
   PartialFilter,
   Section,
   SectionMap,
+  StudentGroup,
+  StudentGroupCategory,
+  StudentGroupCategoryMap,
   Submission
 } from './gradebook.d'
+import filterConditionTypes from './constants/filterConditionTypes'
+
+const I18n = useI18nScope('gradebook')
 
 export function compareAssignmentDueDates(assignment1, assignment2) {
   return assignmentHelper.compareByDueDate(assignment1.object, assignment2.object)
@@ -180,7 +191,7 @@ export function getAssignmentGroupColumnId(assignmentGroupId: string) {
   return `assignment_group_${assignmentGroupId}`
 }
 
-export function findAllAppliedFilterValuesOfType(type: string, filters: Filter[]) {
+export function findAllAppliedFilterValuesOfType(type: FilterConditionType, filters: Filter[]) {
   return filters
     .filter(f => f.is_applied)
     .flatMap(f => f.conditions.filter(c => c.type === type && c.value))
@@ -199,15 +210,14 @@ export const deserializeFilter = (json: GradebookFilterApiResponse): Filter => {
   const filter = json.gradebook_filter
   if (!filter.id || typeof filter.id !== 'string') throw new Error('invalid filter id')
   if (!Array.isArray(filter.payload.conditions)) throw new Error('invalid filter conditions')
-  const conditions = filter.payload.conditions.map(c => {
-    if (!c || typeof c.id !== 'string') throw new Error('invalid condition id')
-    return {
+  const conditions = filter.payload.conditions
+    .filter(c => c && (typeof c.type === 'undefined' || filterConditionTypes.includes(c.type)))
+    .map(c => ({
       id: c.id,
       type: c.type,
       value: c.value,
       created_at: String(c.created_at)
-    }
-  })
+    }))
   return {
     id: filter.id,
     name: String(filter.name),
@@ -225,4 +235,69 @@ export const serializeFilter = (filter: PartialFilter): GradebookFilterApiReques
       conditions: filter.conditions
     }
   }
+}
+
+export const compareFilterByDate = (a: Filter, b: Filter) =>
+  new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+
+export const getLabelForFilterCondition = (
+  condition: FilterCondition,
+  assignmentGroups: Pick<AssignmentGroup, 'id' | 'name'>[],
+  gradingPeriods: Pick<GradingPeriod, 'id' | 'title'>[],
+  modules: Pick<Module, 'id' | 'name'>[],
+  sections: Pick<Section, 'id' | 'name'>[],
+  studentGroupCategories: StudentGroupCategoryMap
+) => {
+  if (!condition.type) throw new Error('missing condition type')
+
+  if (condition.type === 'section') {
+    return sections.find(s => s.id === condition.value)?.name || I18n.t('Section')
+  } else if (condition.type === 'module') {
+    return modules.find(m => m.id === condition.value)?.name || I18n.t('Module')
+  } else if (condition.type === 'assignment-group') {
+    return assignmentGroups.find(a => a.id === condition.value)?.name || I18n.t('Assignment Group')
+  } else if (condition.type === 'grading-period') {
+    return gradingPeriods.find(g => g.id === condition.value)?.title || I18n.t('Grading Period')
+  } else if (condition.type === 'student-group') {
+    const studentGroups: StudentGroup[] = Object.values(studentGroupCategories)
+      .map((c: StudentGroupCategory) => c.groups)
+      .flat()
+    return (
+      studentGroups.find((g: StudentGroup) => g.id === condition.value)?.name ||
+      I18n.t('Student Group')
+    )
+  } else if (condition.type === 'submissions') {
+    if (condition.value === 'has-ungraded-submissions') {
+      return I18n.t('Has ungraded submissions')
+    } else if (condition.value === 'has-submissions') {
+      return I18n.t('Has submissions')
+    } else {
+      throw new Error('invalid submissions condition value')
+    }
+  } else if (condition.type === 'start-date') {
+    const options: any = {
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric'
+    }
+    if (typeof condition.value !== 'string') throw new Error('invalid start-date value')
+    const value = Intl.DateTimeFormat(I18n.currentLocale(), options).format(
+      new Date(condition.value)
+    )
+    return I18n.t('Start Date %{value}', {value})
+  } else if (condition.type === 'end-date') {
+    const options: any = {
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric'
+    }
+    if (typeof condition.value !== 'string') throw new Error('invalid end-date value')
+    const value = Intl.DateTimeFormat(I18n.currentLocale(), options).format(
+      new Date(condition.value)
+    )
+    return I18n.t('End Date %{value}', {value})
+  }
+
+  // unrecognized types should have been filtered out by deserializeFilter
+  throw new Error('invalid condition type')
 }

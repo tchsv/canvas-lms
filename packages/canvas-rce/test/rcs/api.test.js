@@ -48,6 +48,7 @@ describe('sources/api', () => {
 
   afterEach(() => {
     fetchMock.restore()
+    alertFuncSpy.resetHistory()
   })
 
   describe('initializeCollection', () => {
@@ -305,9 +306,13 @@ describe('sources/api', () => {
 
       it('makes a request to the files api with given host and folder ID', () => {
         subject()
-        sinon.assert.calledWith(apiSource.apiFetch, 'https://canvas.rce/api/files/2?', {
-          Authorization: 'Bearer theJWT'
-        })
+        sinon.assert.calledWith(
+          apiSource.apiFetch,
+          'https://canvas.rce/api/files/2?&category=uncategorized',
+          {
+            Authorization: 'Bearer theJWT'
+          }
+        )
       })
 
       describe('with perPage set', () => {
@@ -319,7 +324,7 @@ describe('sources/api', () => {
           subject()
           sinon.assert.calledWith(
             apiSource.apiFetch,
-            'https://canvas.rce/api/files/2?per_page=50',
+            'https://canvas.rce/api/files/2?per_page=50&category=uncategorized',
             {
               Authorization: 'Bearer theJWT'
             }
@@ -449,6 +454,10 @@ describe('sources/api', () => {
     const fileProps = {}
     const apiProps = {}
 
+    afterEach(() => {
+      fetchMock.restore
+    })
+
     it('includes "onDuplicate"', () => {
       fetchMock.mock(uri, '{}')
 
@@ -462,10 +471,10 @@ describe('sources/api', () => {
       fetchMock.mock(uri, '{}')
 
       return apiSource
-        .preflightUpload(fileProps, {category: 'buttons_and_icons'}, apiProps)
+        .preflightUpload(fileProps, {category: 'icon_maker_icons'}, apiProps)
         .then(() => {
           const body = JSON.parse(fetchMock.lastOptions(uri).body)
-          assert.equal(body.category, 'buttons_and_icons')
+          assert.equal(body.category, 'icon_maker_icons')
         })
     })
 
@@ -524,6 +533,29 @@ describe('sources/api', () => {
       fetchMock.mock(uri, 500)
       return apiSource.preflightUpload(fileProps, apiProps).catch(e => {
         assert(e)
+      })
+    })
+
+    describe('when the file storage quota is exceeded', () => {
+      beforeEach(() => {
+        const error = new Error('file size exceeds quota')
+        error.response = {json: async () => ({message: 'file size exceeds quota'})}
+
+        fetchMock.mock(uri, {throws: error}, {overwriteRoutes: true})
+      })
+
+      it('gives a "quota" error if quota is full', () => {
+        try {
+          return apiSource
+            .preflightUpload(fileProps, apiProps)
+            .then(() => {
+              sinon.assert.calledWith(alertFuncSpy, {
+                text: 'File storage quota exceeded',
+                variant: 'error'
+              })
+            })
+            .catch(e => {})
+        } catch (e) {} // This will re-throw so we just catch it here/
       })
     })
   })

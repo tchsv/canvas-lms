@@ -31,8 +31,9 @@ import numberFormat from '@canvas/i18n/numberFormat'
 import '@canvas/datetime'
 import '@canvas/jquery/jquery.instructure_misc_helpers'
 import '@canvas/jquery/jquery.instructure_misc_plugins'
-import 'translations/_core_en'
-import I18n from 'i18n!handlebars_helpers' # 'i18n!handlebars_helpers' sets the scope for the I18n.t calls
+import {useScope as useI18nScope} from '@canvas/i18n'
+
+I18n = useI18nScope('handlebars_helpers')
 
 Handlebars = _Handlebars.default
 
@@ -130,6 +131,10 @@ Handlebars.registerHelper name, fn for name, fn of {
   # expects: anything that $.datetimeString can handle
   datetimeFormatted : (datetime) ->
     $.datetimeString(datetime)
+
+  datetimeFormattedWithTz: (datetime) ->
+    date = tz.parse(datetime)
+    tz.format(date, 'date.formats.full')
 
   # Strips the time information from the datetime and accounts for the user's
   # timezone preference. expects: anything tz() can handle

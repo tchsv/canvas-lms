@@ -21,9 +21,11 @@ import PropTypes from 'prop-types'
 import {ScreenReaderContent} from '@instructure/ui-a11y-content'
 import {TextInput} from '@instructure/ui-text-input'
 import {Flex} from '@instructure/ui-flex'
-import I18n from 'i18n!edit_rubricPoints'
+import {useScope as useI18nScope} from '@canvas/i18n'
 
 import {assessmentShape} from './types'
+
+const I18n = useI18nScope('edit_rubricPoints')
 
 export const roundIfWhole = n =>
   I18n.toNumber(n, {
@@ -65,7 +67,7 @@ const Points = props => {
     } else {
       return (
         <div className="react-rubric-cell graded-points">
-          <Flex alignItems="end" wrapItems>
+          <Flex alignItems="end" wrap="wrap">
             <Flex.Item size="4rem" margin="none small none none">
               <TextInput
                 display="inline-block"

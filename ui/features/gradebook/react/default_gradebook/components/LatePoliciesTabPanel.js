@@ -32,7 +32,9 @@ import CanvasSelect from '@canvas/instui-bindings/react/Select'
 import NumberHelper from '@canvas/i18n/numberHelper'
 
 import Round from 'round'
-import I18n from 'i18n!gradebook'
+import {useScope as useI18nScope} from '@canvas/i18n'
+
+const I18n = useI18nScope('gradebook')
 
 const MIN_PERCENTAGE_INPUT = 0
 const MAX_PERCENTAGE_INPUT = 100
@@ -352,7 +354,7 @@ class LatePoliciesTabPanel extends React.Component {
         {this.state.showAlert && (
           <Alert
             variant="warning"
-            closeButtonLabel={I18n.t('Close')}
+            renderCloseButtonLabel={I18n.t('Close')}
             onDismiss={this.closeAlert}
             margin="small"
           >
@@ -446,7 +448,7 @@ class LatePoliciesTabPanel extends React.Component {
                         this.handleChange('lateSubmissionMinimumPercent', val)
                       }
                       placeholder="0"
-                      inline
+                      display="inline-block"
                       showArrows={false}
                     />
                   </Grid.Col>

@@ -16,12 +16,24 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import '../public/javascripts/translations/_core_en'
 import Enzyme from 'enzyme'
 import Adapter from 'enzyme-adapter-react-16'
 import {filterUselessConsoleMessages} from '@instructure/js-utils'
+import rceFormatMessage from '@instructure/canvas-rce/lib/format-message'
+import plannerFormatMessage from '@instructure/canvas-planner/lib/format-message'
 import {up as configureDateTime} from '../ui/boot/initializers/configureDateTime'
-
 import {up as configureDateTimeMomentParser} from '../ui/boot/initializers/configureDateTimeMomentParser'
+
+rceFormatMessage.setup({
+  locale: 'en',
+  missingTranslation: 'ignore'
+})
+
+plannerFormatMessage.setup({
+  locale: 'en',
+  missingTranslation: 'ignore'
+})
 
 /**
  * We want to ensure errors and warnings get appropriate eyes. If
@@ -35,13 +47,11 @@ const ignoredErrors = [
   /\[object Object\]/,
   /%s has a method called shouldComponentUpdate/,
   /`NaN` is an invalid value for the `%s` css style property/,
-  /`value` prop on `%s` should not be null/,
   /<Provider> does not support changing `store` on the fly/,
   /A component is changing a controlled input of type %s to be uncontrolled/,
   /A theme registry has already been initialized/,
   /An update to (%s|DefaultToolForm) inside a test was not wrapped in act/,
   /Can't perform a React state update on an unmounted component/,
-  /CancelAttemptButton: prop type `submission` is invalid/,
   /Cannot read property '(activeElement|useRealTimers)' of undefined/,
   /Cannot read property 'name' of null/,
   /Cannot update during an existing state transition/,
@@ -67,7 +77,6 @@ const ignoredErrors = [
   /Invalid prop `value` of type `object` supplied to `CanvasSelect`/,
   /Invariant Violation/,
   /It looks like you're using the wrong act/,
-  /modalProps.onDismiss is not a function/,
   /Prop `children` should be supplied unless/,
   /props.setRCEOpen is not a function/,
   /React does not recognize the `%s` prop on a DOM element/,
@@ -81,13 +90,10 @@ const ignoredErrors = [
   /The prop `focusOnInit` is marked as required in `(FileUpload|TextEntry|UrlEntry)`/,
   /The prop `groupTitle` is marked as required in `(GroupMoveModal|GroupRemoveModal|SearchBreadcrumb)`/,
   /The prop `id` is marked as required in `(CanvasSelectOption|ColHeader|DashboardCard|FormField|Option)`/,
-  /The prop `isLoading` is marked as required in `LoadingWrapper`/,
   /The prop `label` is marked as required in `(CanvasInstUIModal|FormField|FormFieldLayout|Modal)`/,
   /The prop `rcsProps.canUploadFiles` is marked as required in `ForwardRef`/,
   /The prop `renderLabel` is marked as required in `(FileDrop|NumberInput|Select)`/,
-  /The prop `rootId` is marked as required in `GroupSelectionDrillDown`/,
   /Unexpected keys "searchPermissions", "filterRoles", "tabChanged", "setAndOpenAddTray" found in preloadedState argument passed to createStore/,
-  /Use the `defaultValue` or `value` props on <select> instead of setting `selected` on <option>/,
   /validateDOMNesting\(...\): %s cannot appear as a child of <%s>/,
   /WARNING: heuristic fragment matching going on!/,
   /Warning: Failed prop type: Expected one of Checkbox in CheckboxGroup but found `View`/,
@@ -97,16 +103,10 @@ const ignoredErrors = [
 const globalWarn = global.console.warn
 const ignoredWarnings = [
   /\[View|Button|Text\] .* in version 8.0.0/i,
-  /`waitForElement` has been deprecated/,
   /Error getting \/media_objects\/dummy_media_id\/info/,
   /Exactly one focusable child is required/,
-  /is deprecated and will be removed/,
-  /Missing field errors in/,
-  /Missing field moduleItem in/,
   /Please update the following components: %s/,
   /shared_brand_configs.* not called/,
-  /toBeEmpty has been deprecated/,
-  /Translation for .* is missing/,
   /value provided is not in a recognized RFC2822 or ISO format/
 ]
 global.console = {

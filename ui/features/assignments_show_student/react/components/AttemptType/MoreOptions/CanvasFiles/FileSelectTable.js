@@ -16,14 +16,16 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {func, object, string} from 'prop-types'
-import I18n from 'i18n!assignments_2'
+import {arrayOf, func, object, string} from 'prop-types'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import React from 'react'
 import TableFiles from './TableFiles'
 import TableFolders from './TableFolders'
 import TableHeader from './TableHeader'
 
 import {ScreenReaderContent} from '@instructure/ui-a11y-content'
+
+const I18n = useI18nScope('assignments_2')
 
 const foldersPresent = folder => {
   return folder && folder.subFolderIDs
@@ -63,6 +65,7 @@ const FileSelectTable = props => {
       )}
       {filesPresent(props.folders[props.selectedFolderID]) && (
         <TableFiles
+          allowedExtensions={props.allowedExtensions}
           columnWidths={tableColumnWidths}
           files={props.files}
           folders={props.folders}
@@ -75,6 +78,7 @@ const FileSelectTable = props => {
 }
 
 FileSelectTable.propTypes = {
+  allowedExtensions: arrayOf(string),
   folders: object,
   files: object,
   handleCanvasFileSelect: func,

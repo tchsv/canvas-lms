@@ -17,6 +17,7 @@
  */
 
 import {ConversationMessage} from '../../../graphql/ConversationMessage'
+import DateHelper from '@canvas/datetime/dateHelper'
 import PropTypes from 'prop-types'
 import React from 'react'
 
@@ -24,7 +25,7 @@ import {Flex} from '@instructure/ui-flex'
 import {Text} from '@instructure/ui-text'
 import {View} from '@instructure/ui-view'
 
-const PastMessage = (props) => (
+const PastMessage = props => (
   <View as="div" borderWidth="small none none none">
     <Flex direction="column" margin="medium">
       <Flex.Item>
@@ -33,7 +34,7 @@ const PastMessage = (props) => (
             <Text>{props.author.name}</Text>
           </Flex.Item>
           <Flex.Item>
-            <Text weight="light">{props.createdAt}</Text>
+            <Text weight="light">{DateHelper.formatDatetimeForDisplay(props.createdAt)}</Text>
           </Flex.Item>
         </Flex>
       </Flex.Item>
@@ -44,10 +45,10 @@ const PastMessage = (props) => (
   </View>
 )
 
-export const PastMessages = (props) => {
+export const PastMessages = props => {
   return (
     <Flex direction="column" data-testid="past-messages">
-      {props.messages.map((message) => (
+      {props.messages.map(message => (
         <Flex.Item key={btoa(JSON.stringify(message))}>
           <PastMessage {...message} />
         </Flex.Item>
@@ -57,5 +58,5 @@ export const PastMessages = (props) => {
 }
 
 PastMessages.propTypes = {
-  messages: PropTypes.arrayOf(ConversationMessage.shape),
+  messages: PropTypes.arrayOf(ConversationMessage.shape)
 }

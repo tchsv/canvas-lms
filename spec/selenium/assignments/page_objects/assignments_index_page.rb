@@ -83,8 +83,16 @@ module AssignmentsIndexPage
     ff("ul[role='menu'] li")
   end
 
+  def bulk_edit_dates_menu_jqselector
+    "li:contains('Edit Assignment Dates')"
+  end
+
   def bulk_edit_dates_menu
-    fj("li:contains('Edit Assignment Dates')")
+    fj(bulk_edit_dates_menu_jqselector)
+  end
+
+  def assignment_groups_weight
+    fj("li:contains('Assignment Groups Weight')")
   end
 
   def bulk_edit_root
@@ -92,7 +100,7 @@ module AssignmentsIndexPage
   end
 
   def bulk_edit_tr_rows
-    ff("#bulkEditRoot tbody tr")
+    ff("#bulkEditRoot [role='table'] [role='row']")
   end
 
   def bulk_edit_loading_spinner

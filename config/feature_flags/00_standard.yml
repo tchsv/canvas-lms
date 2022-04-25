@@ -57,16 +57,11 @@ compact_live_event_payloads:
   display_name: Remove null values from live event payloads
   description: Canvas will remove keys with null values from live event payloads if
     this feature is enabled.
-conditional_release:
-  type: setting
-  state: allowed
-  display_name: Mastery Paths
-  description: Configure individual learning paths for students based on assessment
-    results.
-  applies_to: Course
-  root_opt_in: true
-  custom_transition_proc: conditional_release_transition_hook
-  after_state_change_proc: conditional_release_after_change_hook
+default_due_time:
+  state: hidden
+  display_name: Default Due Time
+  description: Adds an account/course setting for a default due time for new assignments
+  applies_to: RootAccount
 disable_alert_timeouts:
   type: setting
   state: allowed
@@ -184,11 +179,6 @@ high_contrast_course_colors:
     high_contrast_course_colors_description: |-
       High Contrast Course Colors darkens system provided and color picker course colors
       (not manually defined ones) to improve contrast ratio
-  applies_to: SiteAdmin
-important_dates:
-  state: hidden
-  display_name: Important Dates
-  description: Enables important dates to be applied to assignments, calendar events, and others.
   applies_to: SiteAdmin
 include_byte_order_mark_in_gradebook_exports:
   type: setting
@@ -348,15 +338,6 @@ quizzes_next_submission_history:
     separately.
   applies_to: RootAccount
   root_opt_in: true
-responsive_layout:
-  state: hidden
-  display_name: Responsive Layout
-  description: This is a feature to allow the development of a responsive layout
-  applies_to: RootAccount
-  root_opt_in: true
-  environments:
-    development:
-      state: 'on'
 restrict_students_from_annotating:
   state: allowed
   display_name: Restrict Students from Annotating

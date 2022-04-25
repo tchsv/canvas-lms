@@ -317,42 +317,21 @@ describe UsersController do
       expect(courses.map { |c| c["label"] }).to eq %w[E c d a b]
     end
 
-    it "does not include courses that an admin can't content-manage" do
+    it "does not include courses for which the user doesnt have the appropriate rights" do
       @role1 = custom_account_role("subadmin", account: Account.default)
-      account_admin_user_with_role_changes(role: @role1, role_changes: {
-                                             read_course_content: true,
-                                             read_course_list: true,
-                                             manage_content: false
-                                           })
-      user_session(@admin)
+      account_admin_user_with_role_changes(role: @role1, role_changes: { manage_content: false, read_course_content: false })
+      course_with_user("TeacherEnrollment", course_name: "A", active_all: true, user: @admin)
+      course_with_user("StudentEnrollment", course_name: "B", active_all: true, user: @admin)
 
-      course_with_teacher(course_name: "A", active_all: true, user: @admin)
-      course_with_teacher(course_name: "B", active_all: true)
-      course_with_teacher(course_name: "C", active_all: true, user: @admin)
-      course_with_teacher(course_name: "D", active_all: true)
+      user_session(@admin)
 
       get "manageable_courses", params: { user_id: @admin.id }
       expect(response).to be_successful
+      expect(json_parse.map { |c| c["label"] }).to eq %w[A B]
 
-      courses = json_parse
-      expect(courses.map { |c| c["label"] }).to eq %w[A C]
-    end
-
-    it "does not include courses that an admin doesn't have rights to see" do
-      @role1 = custom_account_role("subadmin", account: Account.default)
-      account_admin_user_with_role_changes(role: @role1, role_changes: { manage_content: true })
-      user_session(@admin)
-
-      course_with_teacher(course_name: "A", active_all: true, user: @admin)
-      course_with_teacher(course_name: "B", active_all: true)
-      course_with_teacher(course_name: "C", active_all: true, user: @admin)
-      course_with_teacher(course_name: "D", active_all: true)
-
-      get "manageable_courses", params: { user_id: @admin.id }
+      get "manageable_courses", params: { user_id: @admin.id, enforce_manage_grant_requirement: true }
       expect(response).to be_successful
-
-      courses = json_parse
-      expect(courses.map { |c| c["label"] }).to eq %w[A C]
+      expect(json_parse.map { |c| c["label"] }).to eq %w[A]
     end
 
     context "query matching" do
@@ -410,20 +389,6 @@ describe UsersController do
         expect(response).to be_successful
         courses = json_parse
         expect(courses.map { |c| c["id"] }).to eq [@course.id]
-      end
-
-      it "does not include courses that an admin doesn't have rights to see when passing include = 'concluded'" do
-        @role1 = custom_account_role("subadmin", account: Account.default)
-        account_admin_user_with_role_changes(role: @role1, role_changes: { manage_content: true })
-        user_session(@admin)
-
-        course_with_teacher(course_name: "MyAdminCourse", active_all: true, user: @admin)
-
-        get "manageable_courses", params: { user_id: @admin.id, include: "concluded" }
-        expect(response).to be_successful
-        courses = json_parse
-
-        expect(courses.map { |c| c["course_code"] }.sort).to eq ["MyAdminCourse"].sort
       end
 
       it "includes concluded courses for teachers when passing include = 'concluded'" do
@@ -2098,21 +2063,40 @@ describe UsersController do
         expect(response).to be_successful
         expect(assigns[:enrollments].sort_by(&:id)).to eq [@enrollment, @e2]
       end
+    end
 
-      it "includes enrollments from all shards for trusted account admins" do
-        skip "granting read permissions to trusted accounts"
+    context "rendering page views" do
+      before do
+        allow(PageView).to receive(:page_views_enabled?).and_return(true)
         course_with_teacher(active_all: 1)
-        @shard1.activate do
-          account = Account.create!
-          course = account.courses.create!
-          @e2 = course.enroll_teacher(@teacher)
-        end
-        account_admin_user
-        user_session(@user)
+      end
 
-        get "show", params: { id: @teacher.id }
-        expect(response).to be_successful
-        expect(assigns[:enrollments].sort_by(&:id)).to eq [@enrollment, @e2]
+      context "when view_statistics right is granted" do
+        before do
+          account_admin_user_with_role_changes(
+            role_changes: { view_statistics: true }
+          )
+          user_session(@user)
+        end
+
+        it "is viewable" do
+          get "show", params: { id: @teacher.id }
+          expect(assigns[:show_page_views]).to be true
+        end
+      end
+
+      context "when view_statistics right is not granted" do
+        before do
+          account_admin_user_with_role_changes(
+            role_changes: { view_statistics: false }
+          )
+          user_session(@user)
+        end
+
+        it "is not viewable" do
+          get "show", params: { id: @teacher.id }
+          expect(assigns[:show_page_views]).to be false
+        end
       end
     end
 
@@ -2621,10 +2605,10 @@ describe UsersController do
       end
 
       shared_examples_for "observer list" do
-        it "sets ENV.OBSERVER_LIST with self and observed users" do
+        it "sets ENV.OBSERVED_USERS_LIST with self and observed users" do
           get "user_dashboard"
 
-          observers = assigns[:js_env][:OBSERVER_LIST]
+          observers = assigns[:js_env][:OBSERVED_USERS_LIST]
           expect(observers.length).to be(1)
           expect(observers[0][:name]).to eq(@student.name)
           expect(observers[0][:id]).to eq(@student.id)
@@ -2693,9 +2677,8 @@ describe UsersController do
           end
         end
 
-        context "@cards_prefetch_observer_param" do
+        context "@cards_prefetch_observed_param" do
           before :once do
-            Account.site_admin.enable_feature!(:k5_parent_support)
             @user1 = user_factory(active_all: true, account: @account)
             @course = course_factory(active_all: true, account: @account)
           end
@@ -2709,13 +2692,13 @@ describe UsersController do
             @course.enroll_student(student)
             @course.enroll_user(@user1, "ObserverEnrollment", { associated_user_id: student.id })
             get "user_dashboard"
-            expect(controller.instance_variable_get(:@cards_prefetch_observer_param)).to eq student.id
+            expect(controller.instance_variable_get(:@cards_prefetch_observed_param)).to eq student.id
           end
 
           it "is undefined when user is not an observer" do
             @course.enroll_student(@user1)
             get "user_dashboard"
-            expect(controller.instance_variable_get(:@cards_prefetch_observer_param)).to be_nil
+            expect(controller.instance_variable_get(:@cards_prefetch_observed_param)).to be_nil
           end
         end
       end
@@ -2729,6 +2712,60 @@ describe UsersController do
       get "user_dashboard"
       expect(assigns[:js_env][:CREATE_COURSES_PERMISSIONS][:PERMISSION]).to be(:teacher)
       expect(assigns[:js_env][:CREATE_COURSES_PERMISSIONS][:RESTRICT_TO_MCC_ACCOUNT]).to be_falsey
+    end
+  end
+
+  describe "#dashboard_stream_items" do
+    before :once do
+      @course1 = course_factory(active_all: true)
+      @user1 = user_factory(active_all: true)
+    end
+
+    before do
+      user_session(@user1)
+    end
+
+    it "does not pass contexts to cached_recent_stream_items for students" do
+      @course1.enroll_student(@user1)
+      expect(@user1).to receive(:cached_recent_stream_items).with({ contexts: nil })
+
+      get "dashboard_stream_items"
+      expect(assigns[:user].id).to be(@user1.id)
+      expect(assigns[:is_observing_student]).to be(false)
+    end
+
+    context "with observers" do
+      before :once do
+        Account.site_admin.enable_feature!(:observer_picker)
+        @course2 = course_factory(active_all: true)
+        @student = user_factory(active_all: true)
+        @course1.enroll_student(@student)
+        @course1.enroll_user(@user1, "ObserverEnrollment", associated_user_id: @student.id)
+      end
+
+      it "passes context to cached_recent_stream_items for observers when observer_picker flag is on" do
+        expect_any_instance_of(User).to receive(:cached_recent_stream_items).with({ contexts: [@course1] })
+
+        get "dashboard_stream_items", params: { observed_user_id: @student.id }
+        expect(assigns[:user].id).to be(@student.id)
+        expect(assigns[:is_observing_student]).to be(true)
+      end
+
+      it "does not set @user to observer parameter if observer_picker flag is off" do
+        Account.site_admin.disable_feature!(:observer_picker)
+
+        get "dashboard_stream_items", params: { observed_user_id: @student.id }
+        expect(assigns[:user].id).to be(@user1.id)
+        expect(assigns[:is_observing_student]).to be(false)
+      end
+
+      it "returns unauthorized if user passes observed_user_id of user whom they are not observing" do
+        @another_student = user_factory(active_all: true)
+        @course1.enroll_student(@another_student)
+
+        get "dashboard_stream_items", params: { observed_user_id: @another_student.id }
+        expect(response).to be_unauthorized
+      end
     end
   end
 
@@ -2793,7 +2830,7 @@ describe UsersController do
       end
 
       it "sets variables for observer observing themself" do
-        get "dashboard_sidebar", params: { observed_user: @user1.id }
+        get "dashboard_sidebar", params: { observed_user_id: @user1.id }
         expect(assigns[:user].id).to be(@user1.id)
         expect(assigns[:is_observing_student]).to be(false)
         expect(assigns[:show_recent_feedback]).to be(false)
@@ -2801,18 +2838,18 @@ describe UsersController do
       end
 
       it "sets variables for observer observing a student" do
-        get "dashboard_sidebar", params: { observed_user: @student.id }
+        get "dashboard_sidebar", params: { observed_user_id: @student.id }
         expect(assigns[:user].id).to be(@student.id)
         expect(assigns[:is_observing_student]).to be(true)
         expect(assigns[:show_recent_feedback]).to be(true)
         expect(controller).not_to have_received(:prepare_current_user_dashboard_items)
       end
 
-      it "returns unauthorized if user passes observed_user who they are not observing" do
+      it "returns unauthorized if user passes observed_user_id of user who they are not observing" do
         @another_student = user_factory(active_all: true)
         @course1.enroll_student(@another_student)
 
-        get "dashboard_sidebar", params: { observed_user: @another_student.id }
+        get "dashboard_sidebar", params: { observed_user_id: @another_student.id }
         expect(response).to be_unauthorized
       end
     end
@@ -2901,6 +2938,37 @@ describe UsersController do
       expect(@user.preferences[:collapse_global_nav]).to be_truthy
       expect(@user.preferences[:collapse_course_nav]).to be_falsey
       expect(@user.preferences[:elementary_dashboard_disabled]).to be_truthy
+    end
+  end
+
+  describe "#show_k5_dashboard" do
+    before :once do
+      @observer = user_factory(active_all: true)
+      @student = user_factory(active_all: true)
+      course_factory(active_all: true)
+      @course.enroll_student(@student)
+    end
+
+    before do
+      user_session(@observer)
+    end
+
+    it "returns unauthorized for arbitrary user" do
+      get "show_k5_dashboard", params: { id: @student.id }, format: "json"
+      assert_unauthorized
+    end
+
+    it "returns value for self" do
+      allow(controller).to receive(:k5_user?).with({ user: @observer, course_ids: [] }).and_return(true)
+      get "show_k5_dashboard", params: { id: "self" }, format: "json"
+      expect(json_parse["k5_user"]).to be_truthy
+    end
+
+    it "returns value for linked student" do
+      @course.enroll_user(@observer, "ObserverEnrollment", associated_user_id: @student)
+      allow(controller).to receive(:k5_user?).with({ user: @student, course_ids: [@course.id] }).and_return(true)
+      get "show_k5_dashboard", params: { id: @student.id }, format: "json"
+      expect(json_parse["k5_user"]).to be_truthy
     end
   end
 end

@@ -17,8 +17,8 @@
  */
 
 import PropTypes from 'prop-types'
-import React from 'react'
-
+import React, {useContext} from 'react'
+import {ConversationContext} from '../../../util/constants'
 import {Button} from '@instructure/ui-buttons'
 import {Flex} from '@instructure/ui-flex'
 import {
@@ -32,8 +32,10 @@ import {
 } from '@instructure/ui-icons'
 import {Menu} from '@instructure/ui-menu'
 import {Tooltip} from '@instructure/ui-tooltip'
-import I18n from 'i18n!conversations_2'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import {View} from '@instructure/ui-view'
+
+const I18n = useI18nScope('conversations_2')
 
 const Settings = props => (
   <Menu
@@ -94,14 +96,15 @@ const ActionButton = props => (
 )
 
 export const MessageActionButtons = props => {
-  if (props.isSubmissionComment) {
+  const {isSubmissionCommentsType} = useContext(ConversationContext)
+  if (isSubmissionCommentsType) {
     return (
       <ActionButton
         tip={I18n.t('Reply')}
         icon={IconReplyLine}
         onClick={props.reply}
-        disabled={props.replyDisabled}
         testid="reply"
+        disabled={props.replyDisabled}
       />
     )
   }
@@ -154,7 +157,6 @@ export const MessageActionButtons = props => {
 }
 
 MessageActionButtons.propTypes = {
-  isSubmissionComment: PropTypes.bool,
   replyDisabled: PropTypes.bool,
   archiveDisabled: PropTypes.bool,
   deleteDisabled: PropTypes.bool,

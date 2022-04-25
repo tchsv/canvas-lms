@@ -644,6 +644,26 @@
 #         "annotatable_attachment_id": {
 #           "description": "The id of the attachment to be annotated by students. Relevant only if submission_types includes 'student_annotation'.",
 #           "type": "integer"
+#         },
+#         "anonymize_students": {
+#           "description": "(Optional) Boolean indicating whether student names are anonymized",
+#           "example": false,
+#           "type": "boolean"
+#         },
+#         "require_lockdown_browser": {
+#           "description": "(Optional) Boolean indicating whether the Respondus LockDown Browser® is required for this assignment.",
+#           "example": false,
+#           "type": "boolean"
+#         },
+#         "important_dates": {
+#           "description": "(Optional) Boolean indicating whether this assignment has important dates.",
+#           "example": false,
+#           "type": "boolean"
+#         },
+#         "muted": {
+#           "description": "(Optional, Deprecated) Boolean indicating whether notifications are muted for this assignment.",
+#           "example": false,
+#           "type": "boolean"
 #         }
 #       }
 #     }
@@ -817,11 +837,13 @@ class AssignmentsApiController < ApplicationController
       when "name"
         scope = scope.reorder(Arel.sql("#{Assignment.best_unicode_collation_key("assignments.title")}, assignment_groups.position, assignments.position, assignments.id"))
       when "due_at"
-        scope = if @context.grants_right?(user, :read_as_admin)
-                  scope.with_latest_due_date.reorder(Arel.sql("latest_due_date, #{Assignment.best_unicode_collation_key("assignments.title")}, assignment_groups.position, assignments.position, assignments.id"))
-                else
-                  scope.with_user_due_date(user).reorder(Arel.sql("user_due_date, #{Assignment.best_unicode_collation_key("assignments.title")}, assignment_groups.position, assignments.position, assignments.id"))
-                end
+        context.shard.activate do
+          scope = if @context.grants_right?(user, :read_as_admin)
+                    scope.with_latest_due_date.reorder(Arel.sql("latest_due_date, #{Assignment.best_unicode_collation_key("assignments.title")}, assignment_groups.position, assignments.position, assignments.id"))
+                  else
+                    scope.with_user_due_date(user).reorder(Arel.sql("user_due_date, #{Assignment.best_unicode_collation_key("assignments.title")}, assignment_groups.position, assignments.position, assignments.id"))
+                  end
+        end
       end
 
       assignments = if params[:assignment_group_id].present?

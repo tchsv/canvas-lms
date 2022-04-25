@@ -87,7 +87,7 @@ class Submission < ActiveRecord::Base
   belongs_to :user
   alias_method :student, :user
   belongs_to :grader, class_name: "User"
-  belongs_to :grading_period
+  belongs_to :grading_period, inverse_of: :submissions
   belongs_to :group
   belongs_to :media_object
   belongs_to :root_account, class_name: "Account"
@@ -203,6 +203,10 @@ class Submission < ActiveRecord::Base
               assignments.submission_types IN ('', 'none', 'not_graded', 'on_paper', 'wiki_page', 'external_tool')
             )
             AND assignments.submission_types IS NOT NULL
+            AND NOT (
+              late_policy_status IS NULL
+              AND grader_id IS NOT NULL
+            )
           )
         )
       SQL
@@ -1979,17 +1983,21 @@ class Submission < ActiveRecord::Base
   end
   private :validate_single_submission
 
-  def grade_change_audit(force_audit: assignment_changed_not_sub, skip_insert: false)
-    newly_graded = saved_change_to_workflow_state? && workflow_state == "graded"
-    grade_changed = (saved_changes.keys & %w[grade score excused]).present?
-    return true unless newly_graded || grade_changed || force_audit
+  def grade_change_audit(force_audit: false)
+    # grade or graded status changed
+    grade_changed = (saved_changes.keys & %w[grade score excused]).present? || (saved_change_to_workflow_state? && workflow_state == "graded")
 
-    if grade_change_event_author_id.present?
-      self.grader_id = grade_change_event_author_id
-    end
-    self.class.connection.after_transaction_commit do
-      Auditors::GradeChange.record(skip_insert: skip_insert, submission: self)
-      queue_conditional_release_grade_change_handler if newly_graded || grade_changed
+    # any auditable conditions
+    perform_audit = force_audit || grade_changed || assignment_changed_not_sub || saved_change_to_posted_at?
+
+    if perform_audit
+      if grade_change_event_author_id.present?
+        self.grader_id = grade_change_event_author_id
+      end
+      self.class.connection.after_transaction_commit do
+        Auditors::GradeChange.record(submission: self, skip_insert: !grade_changed)
+        queue_conditional_release_grade_change_handler if grade_changed
+      end
     end
   end
 
@@ -1998,7 +2006,7 @@ class Submission < ActiveRecord::Base
       return unless graded? && posted?
       # use request caches to handle n+1's when updating a lot of submissions in the same course in one request
       return unless RequestCache.cache("conditional_release_feature_enabled", course_id) do
-        course.feature_enabled?(:conditional_release)
+        course.conditional_release?
       end
 
       if ConditionalRelease::Rule.is_trigger_assignment?(assignment)
@@ -2539,6 +2547,11 @@ class Submission < ActiveRecord::Base
     return unless saved_change_to_score?
     return if autograded? # Submission changed by LTI Tool, it will set result score directly
 
+    unless lti_result
+      assignment.line_items.first&.results&.create!(
+        submission: self, user: user, created_at: Time.zone.now, updated_at: Time.zone.now
+      )
+    end
     Lti::Result.update_score_for_submission(self, score)
   end
 
@@ -2651,7 +2664,7 @@ class Submission < ActiveRecord::Base
   end
 
   def assignment_muted_changed
-    grade_change_audit(force_audit: true, skip_insert: true)
+    grade_change_audit(force_audit: true)
   end
 
   def without_graded_submission?
@@ -2843,10 +2856,12 @@ class Submission < ActiveRecord::Base
   end
 
   def word_count
-    return nil unless body && submission_type != "online_quiz"
-
-    tinymce_wordcount_count_regex = /[\w\u2019\x27\-\u00C0-\u1FFF]+/
-    @word_count ||= ActionController::Base.helpers.strip_tags(body).scan(tinymce_wordcount_count_regex).size
+    if body && submission_type != "online_quiz"
+      tinymce_wordcount_count_regex = /[\w\u2019\x27\-\u00C0-\u1FFF]+/
+      ActionController::Base.helpers.strip_tags(body).scan(tinymce_wordcount_count_regex).size
+    elsif versioned_attachments.present?
+      Attachment.where(id: versioned_attachments.pluck(:id)).sum(:word_count)
+    end
   end
 
   private
@@ -2883,8 +2898,12 @@ class Submission < ActiveRecord::Base
 
     pg.scorer = pg.current_user = scorer
     pg.final = !!attrs[:final]
-    pg.grade = attrs[:grade] if attrs.key?(:grade)
-    pg.score = attrs[:score] if attrs.key?(:score)
+    if attrs.key?(:score)
+      pg.score = attrs[:score]
+      pg.grade = attrs[:grade].presence
+    elsif attrs.key?(:grade)
+      pg.grade = attrs[:grade]
+    end
     pg.source_provisional_grade = attrs[:source_provisional_grade] if attrs.key?(:source_provisional_grade)
     pg.graded_anonymously = attrs[:graded_anonymously] unless attrs[:graded_anonymously].nil?
     pg.force_save = !!attrs[:force_save]
@@ -2935,10 +2954,10 @@ class Submission < ActiveRecord::Base
     # posting/hiding on a separate copy of the assignment, then reload our copy
     # of the assignment to make sure we pick up any changes to the muted status.
     if posted? && !previously_posted
-      Assignment.find(assignment_id).post_submissions(submission_ids: [id], skip_updating_timestamp: true)
+      Assignment.find(assignment_id).post_submissions(submission_ids: [id], skip_updating_timestamp: true, skip_muted_changed: true)
       assignment.reload
     elsif !posted? && previously_posted
-      Assignment.find(assignment_id).hide_submissions(submission_ids: [id], skip_updating_timestamp: true)
+      Assignment.find(assignment_id).hide_submissions(submission_ids: [id], skip_updating_timestamp: true, skip_muted_changed: true)
       assignment.reload
     end
   end

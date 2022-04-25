@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 - present Instructure, Inc.
+ * Copyright (C) 2022 - present Instructure, Inc.
  *
  * This file is part of Canvas.
  *
@@ -20,7 +20,6 @@ const {defaults} = require('jest-config')
 
 module.exports = {
   moduleNameMapper: {
-    '^i18n!(.*$)': '<rootDir>/jest/i18nTransformer.js',
     '\\.svg$': '<rootDir>/jest/imageMock.js',
     'node_modules-version-of-backbone': require.resolve('backbone'),
     'node_modules-version-of-react-modal': require.resolve('react-modal'),
@@ -30,8 +29,11 @@ module.exports = {
     // redirect imports from es/rce to lib
     '@instructure/canvas-rce/es/rce/tinyRCE': '<rootDir>/packages/canvas-rce/lib/rce/tinyRCE.js',
     '@instructure/canvas-rce/es/rce/RCE': '<rootDir>/packages/canvas-rce/lib/rce/RCE.js',
+    '@instructure/canvas-rce/es/rce/plugins/shared/Upload/CategoryProcessor':
+      '<rootDir>/packages/canvas-rce/lib/rce/plugins/shared/Upload/CategoryProcessor',
     // mock the tinymce-react Editor react component
-    '@tinymce/tinymce-react': '<rootDir>/packages/canvas-rce/src/rce/__mocks__/tinymceReact.js'
+    '@tinymce/tinymce-react': '<rootDir>/packages/canvas-rce/src/rce/__mocks__/tinymceReact.js',
+    'decimal.js/decimal.mjs': 'decimal.js/decimal.js'
   },
   roots: ['<rootDir>/ui', 'gems/plugins', 'public/javascripts'],
   moduleDirectories: ['ui/shims', 'public/javascripts', 'node_modules'],
@@ -42,7 +44,8 @@ module.exports = {
       {
         suiteName: 'Jest Tests',
         outputDirectory: process.env.TEST_RESULT_OUTPUT_DIR || './coverage-js/junit-reports',
-        outputName: 'jest.xml'
+        outputName: 'jest.xml',
+        addFileAttribute: 'true'
       }
     ]
   ],
@@ -56,16 +59,45 @@ module.exports = {
 
   coverageDirectory: '<rootDir>/coverage-jest/',
 
+  // skip flaky timeout tests from coverage until they can be addressed
+  // Related JIRA tickets for the skipped coverage tests;
+  // k5_dashboard: LS-2243
+  collectCoverageFrom: [
+    '**/__tests__/**/?(*.)(spec|test).[jt]s?(x)',
+    '!<rootDir>/ui/features/k5_dashboard/react/__tests__/k5DashboardPlanner.test.js'
+  ],
+
   moduleFileExtensions: [...defaults.moduleFileExtensions, 'coffee', 'handlebars'],
   restoreMocks: true,
 
   testEnvironment: 'jest-environment-jsdom-fourteen',
 
+  testSequencer: '<rootDir>/jest/test-sequencer.js',
+
   transform: {
-    '^i18n': '<rootDir>/jest/i18nTransformer.js',
-    '^.+\\.coffee': '<rootDir>/jest/coffeeTransformer.js',
-    '^.+\\.handlebars': '<rootDir>/jest/handlebarsTransformer.js',
-    '^.+\\.[jt]sx?$': 'babel-jest',
-    '\\.graphql$': 'jest-raw-loader'
+    '\\.coffee$': '<rootDir>/jest/coffeeTransformer.js',
+    '\\.handlebars$': '<rootDir>/jest/handlebarsTransformer.js',
+    '\\.graphql$': 'jest-raw-loader',
+    '\\.[jt]sx?$': [
+      'babel-jest',
+      {
+        configFile: false,
+        presets: [
+          [
+            '@babel/preset-env',
+            {
+              // until we're on Jest 27 and can look into loading ESMs natively;
+              // https://jestjs.io/docs/ecmascript-modules
+              modules: 'commonjs'
+            }
+          ],
+          ['@babel/preset-react', {useBuiltIns: true}],
+          ['@babel/preset-typescript', {}]
+        ],
+        targets: {
+          node: 'current'
+        }
+      }
+    ]
   }
 }

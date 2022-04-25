@@ -87,7 +87,7 @@ module CC
     LEARNING_OUTCOMES = "learning_outcomes.xml"
     MANIFEST = "imsmanifest.xml"
     MODULE_META = "module_meta.xml"
-    PACE_PLANS = "pace_plans.xml"
+    COURSE_PACES = "course_paces.xml"
     RUBRICS = "rubrics.xml"
     EXTERNAL_TOOLS = "external_tools.xml"
     FILES_META = "files_meta.xml"
@@ -166,7 +166,7 @@ module CC
     def self.map_linked_objects(content)
       linked_objects = []
       doc = Nokogiri::XML.fragment(content)
-      doc.css("a, img", "iframe").each do |node|
+      doc.css("a, img", "iframe", "source").each do |node|
         source = node["href"] || node["src"]
         next unless SPECIAL_REFERENCE_REGEX.match?(source)
 
@@ -365,6 +365,19 @@ module CC
           info = CCHelper.media_object_info(obj, course: @course, flavor: media_object_flavor)
           @media_object_infos[obj.id] = info
           iframe["src"] = File.join(WEB_CONTENT_TOKEN, info[:path])
+        end
+
+        replaceable_media_types = ["audio", "video"]
+        doc.css("iframe[data-media-type]").each do |iframe|
+          next unless replaceable_media_types.include?(iframe["data-media-type"])
+
+          iframe.name = iframe["data-media-type"]
+          source = Nokogiri::XML::Node.new("source", iframe)
+          source["src"] = iframe["src"]
+          source["data-media-id"] = iframe["data-media-id"]
+          source["data-media-type"] = iframe["data-media-type"]
+          iframe.add_child(source)
+          iframe.remove_attribute("src")
         end
 
         # prepend the Canvas domain to remaining absolute paths that are missing the host

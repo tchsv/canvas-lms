@@ -31,10 +31,6 @@ shared_examples_for "k5 important dates" do
   include SharedExamplesCommon
   include K5ImportantDatesSectionPageObject
 
-  before :once do
-    Account.site_admin.enable_feature!(:important_dates)
-  end
-
   it "shows the important dates section on the dashboard" do
     get "/"
 
@@ -48,7 +44,7 @@ shared_examples_for "k5 important dates" do
   end
 
   it "shows an important date for an assignment" do
-    assignment_title = "Electricity Homework"
+    assignment_title = "Elec HW"
     due_at = 2.days.from_now(Time.zone.now)
 
     assignment = create_important_date_assignment(@subject_course, assignment_title, due_at)
@@ -62,7 +58,7 @@ shared_examples_for "k5 important dates" do
   end
 
   it "only shows no dates panda when important dates is not set for assignment" do
-    assignment_title = "Electricity Homework"
+    assignment_title = "Elec HW"
     due_at = 2.days.from_now(Time.zone.now)
     create_dated_assignment(@subject_course, assignment_title, due_at)
 
@@ -72,7 +68,7 @@ shared_examples_for "k5 important dates" do
   end
 
   it "shows an important date for a quiz" do
-    quiz_title = "Electricity Quiz"
+    quiz_title = "Elec Quiz"
     due_at = 2.days.from_now(Time.zone.now)
     quiz = quiz_model(course: @subject_course, title: quiz_title)
     quiz.generate_quiz_data
@@ -90,7 +86,7 @@ shared_examples_for "k5 important dates" do
   end
 
   it "shows an important date for a graded discussion" do
-    discussion_title = "Electricity Discussion"
+    discussion_title = "Elec Disc"
     due_at = 2.days.from_now(Time.zone.now)
     discussion_assignment = create_dated_assignment(@subject_course, discussion_title, due_at, 10)
     @course.discussion_topics.create!(title: discussion_title, assignment: discussion_assignment)
@@ -105,7 +101,7 @@ shared_examples_for "k5 important dates" do
   end
 
   it "does not show an important date assignment in the past" do
-    assignment_title = "Electricity Homework"
+    assignment_title = "Elec HW"
     due_at = 2.days.ago(Time.zone.now)
     create_important_date_assignment(@subject_course, assignment_title, due_at)
 
@@ -115,7 +111,7 @@ shared_examples_for "k5 important dates" do
   end
 
   it "shows an important date for a calendar event" do
-    calendar_event_title = "Electricity Event"
+    calendar_event_title = "Elec Event"
     start_at = 2.days.from_now(Time.zone.now)
     calendar_event = create_calendar_event(@subject_course, calendar_event_title, start_at)
     calendar_event.update!(important_dates: true)
@@ -128,7 +124,7 @@ shared_examples_for "k5 important dates" do
   end
 
   it "does not show an important date for a calendar event" do
-    calendar_event_title = "Electricity Event"
+    calendar_event_title = "Elec Event"
     start_at = 2.days.ago(Time.zone.now)
     calendar_event = create_calendar_event(@subject_course, calendar_event_title, start_at)
     calendar_event.update!(important_dates: true)
@@ -138,7 +134,7 @@ shared_examples_for "k5 important dates" do
   end
 
   it "shows a specific color icon when color is set for subject" do
-    assignment_title = "Electricity Homework"
+    assignment_title = "Elec HW"
     due_at = 2.days.from_now(Time.zone.now)
     create_important_date_assignment(@subject_course, assignment_title, due_at)
 
@@ -159,8 +155,6 @@ shared_examples_for "k5 important dates calendar picker" do |context|
   include K5ImportantDatesSectionPageObject
 
   before :once do
-    Account.site_admin.enable_feature!(:important_dates)
-
     @account.settings[:calendar_contexts_limit] = 2
     @account.save!
   end
@@ -191,7 +185,6 @@ shared_examples_for "k5 important dates calendar picker" do |context|
       end
       user_session(@homeroom_teacher)
     when :observer
-      Account.site_admin.enable_feature!(:k5_parent_support)
       @observer = user_with_pseudonym(name: "Mom", email: "bestmom@example.com", workflow_state: "available")
       add_linked_observer(@student, @observer, root_account: @account)
       # For now, The calendar picker is only available if the observer is viewing his own enrollments

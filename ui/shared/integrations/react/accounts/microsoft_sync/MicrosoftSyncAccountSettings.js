@@ -22,7 +22,7 @@ import {Spinner} from '@instructure/ui-spinner'
 import {View} from '@instructure/ui-view'
 import {Button, IconButton} from '@instructure/ui-buttons'
 import {IconInfoLine, IconUploadLine} from '@instructure/ui-icons'
-import I18n from 'i18n!account_settings_jsx_bundle'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import React from 'react'
 import {Table} from '@instructure/ui-table'
 import LoginAttributeSelector from './components/LoginAttributeSelector'
@@ -34,6 +34,8 @@ import useSettings from './lib/useSettings'
 import {Tooltip} from '@instructure/ui-tooltip'
 import LoginAttributeSuffixInput from './components/LoginAttributeSuffixInput'
 import ActiveDirectoryLookupAttributeSelector from './components/ActiveDirectoryLookupAttributeSelector'
+
+const I18n = useI18nScope('account_settings_jsx_bundle')
 
 export default function MicrosoftSyncAccountSettings() {
   const [state, dispatch] = useSettings()
@@ -91,7 +93,7 @@ export default function MicrosoftSyncAccountSettings() {
               <Table.RowHeader textAlign="start">
                 <span>{I18n.t('Tenant Name')}</span>
                 <Tooltip
-                  tip={I18n.t('Your Azure Active Directory Tenant Name')}
+                  renderTip={I18n.t('Your Azure Active Directory Tenant Name')}
                   on={['hover', 'focus']}
                 >
                   <IconButton
@@ -121,7 +123,7 @@ export default function MicrosoftSyncAccountSettings() {
               <Table.RowHeader textAlign="start">
                 <span>{I18n.t('Login Attribute')}</span>
                 <Tooltip
-                  tip={I18n.t(
+                  renderTip={I18n.t(
                     'The attribute to use when associating a Canvas User with a Microsoft User'
                   )}
                   placement="top"
@@ -152,7 +154,7 @@ export default function MicrosoftSyncAccountSettings() {
               <Table.RowHeader textAlign="start">
                 <span>{I18n.t('Suffix')}</span>
                 <Tooltip
-                  tip={I18n.t(
+                  renderTip={I18n.t(
                     'Not Required. If this is populated the entered text will be appended to the Login Attribute'
                   )}
                   on={['hover', 'focus']}
@@ -182,7 +184,7 @@ export default function MicrosoftSyncAccountSettings() {
               <Table.RowHeader>
                 <span>{I18n.t('Active Directory Lookup Attribute')}</span>
                 <Tooltip
-                  tip={I18n.t(
+                  renderTip={I18n.t(
                     'The Active Directory attribute that will be used to match a Canvas user to a Microsoft user'
                   )}
                   on={['hover', 'focus']}

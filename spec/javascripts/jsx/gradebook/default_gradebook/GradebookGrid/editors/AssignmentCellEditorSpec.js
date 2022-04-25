@@ -17,10 +17,10 @@
  */
 
 import ReactDOM from 'react-dom'
-import AssignmentRowCellPropFactory from 'ui/features/gradebook/react/default_gradebook/GradebookGrid/editors/AssignmentCellEditor/AssignmentRowCellPropFactory.js'
-import AssignmentCellEditor from 'ui/features/gradebook/react/default_gradebook/GradebookGrid/editors/AssignmentCellEditor/index.js'
-import GridEvent from 'ui/features/gradebook/react/default_gradebook/GradebookGrid/GridSupport/GridEvent.js'
-import {createGradebook} from 'ui/features/gradebook/react/default_gradebook/__tests__/GradebookSpecHelper.js'
+import AssignmentRowCellPropFactory from 'ui/features/gradebook/react/default_gradebook/GradebookGrid/editors/AssignmentCellEditor/AssignmentRowCellPropFactory'
+import AssignmentCellEditor from 'ui/features/gradebook/react/default_gradebook/GradebookGrid/editors/AssignmentCellEditor/index'
+import GridEvent from 'ui/features/gradebook/react/default_gradebook/GradebookGrid/GridSupport/GridEvent'
+import {createGradebook} from 'ui/features/gradebook/react/default_gradebook/__tests__/GradebookSpecHelper'
 
 QUnit.module('GradebookGrid AssignmentCellEditor', suiteHooks => {
   let $container
@@ -57,14 +57,8 @@ QUnit.module('GradebookGrid AssignmentCellEditor', suiteHooks => {
       user_id: '1101'
     })
 
-    sinon
-      .stub(gradebook, 'isGradeEditable')
-      .withArgs('1101', '2301')
-      .returns(true)
-    sinon
-      .stub(gradebook, 'isGradeVisible')
-      .withArgs('1101', '2301')
-      .returns(true)
+    sinon.stub(gradebook, 'isGradeEditable').withArgs('1101', '2301').returns(true)
+    sinon.stub(gradebook, 'isGradeVisible').withArgs('1101', '2301').returns(true)
 
     editorOptions = {
       column: {

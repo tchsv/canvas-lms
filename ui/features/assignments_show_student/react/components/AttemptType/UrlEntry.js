@@ -19,12 +19,11 @@
 import {AlertManagerContext} from '@canvas/alerts/react/AlertManager'
 import {Assignment} from '@canvas/assignments/graphql/student/Assignment'
 import {bool, func} from 'prop-types'
-import I18n from 'i18n!assignments_2_url_entry'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import {isSubmitted} from '../../helpers/SubmissionHelpers'
 import MoreOptions from './MoreOptions/index'
 import {Submission} from '@canvas/assignments/graphql/student/Submission'
 import React, {createRef} from 'react'
-import theme from '@instructure/canvas-theme'
 
 import {Billboard} from '@instructure/ui-billboard'
 import {Button} from '@instructure/ui-buttons'
@@ -36,6 +35,8 @@ import {Link} from '@instructure/ui-link'
 import {ScreenReaderContent} from '@instructure/ui-a11y-content'
 import StudentViewContext from '../Context'
 import {TextInput} from '@instructure/ui-text-input'
+
+const I18n = useI18nScope('assignments_2_url_entry')
 
 const ERROR_MESSAGE = [
   {text: I18n.t('Please enter a valid url (e.g. http://example.com)'), type: 'error'}
@@ -88,7 +89,7 @@ class UrlEntry extends React.Component {
   }
 
   handleLTIURLs = async e => {
-    if (e.data.messageType === 'LtiDeepLinkingResponse') {
+    if (e.data.subject === 'LtiDeepLinkingResponse') {
       if (e.data.errormsg) {
         this.context.setOnFailure(e.data.errormsg)
         return
@@ -100,7 +101,7 @@ class UrlEntry extends React.Component {
     }
 
     // Since LTI 1.0 handles its own message alerting we don't have to
-    if (e.data.messageType === 'A2ExternalContentReady') {
+    if (e.data.subject === 'A2ExternalContentReady') {
       if (!e.data.errormsg && e.data.content_items.length) {
         const url = e.data.content_items[0].url
         this.createSubmissionDraft(url)
@@ -184,7 +185,7 @@ class UrlEntry extends React.Component {
                   <Flex.Item>
                     {this.state.valid && (
                       <Button
-                        icon={IconEyeLine}
+                        renderIcon={IconEyeLine}
                         margin="0 0 0 x-small"
                         onClick={() => window.open(this.state.url)}
                         data-testid="preview-button"
@@ -210,13 +211,13 @@ class UrlEntry extends React.Component {
   }
 
   renderAttempt = () => (
-    <View as="div" borderWidth="small" data-testid="url-entry" margin="0 0 medium 0">
+    <View as="div" data-testid="url-entry" margin="0 0 medium 0">
       <Billboard
         heading={I18n.t('Enter Web URL')}
         headingAs="span"
         headingLevel="h4"
         message={this.renderURLInput()}
-        theme={{backgroundColor: theme.variables.colors.porcelain}}
+        theme={{backgroundColor: 'transparent'}}
       />
     </View>
   )

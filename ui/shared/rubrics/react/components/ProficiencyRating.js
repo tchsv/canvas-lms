@@ -23,15 +23,17 @@
 
 import React from 'react'
 import PropTypes from 'prop-types'
-import {Button} from '@instructure/ui-buttons'
+import {Button, IconButton} from '@instructure/ui-buttons'
 import {Table} from '@instructure/ui-table'
-import I18n from 'i18n!ProficiencyRating'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import {IconTrashLine} from '@instructure/ui-icons'
 import {Popover} from '@instructure/ui-popover'
 import {RadioInput} from '@instructure/ui-radio-input'
 import {TextInput} from '@instructure/ui-text-input'
 import {ScreenReaderContent} from '@instructure/ui-a11y-content'
 import ColorPicker, {PREDEFINED_COLORS} from '@canvas/color-picker'
+
+const I18n = useI18nScope('ProficiencyRating')
 
 function formatColor(color) {
   if (color[0] !== '#') {
@@ -179,44 +181,46 @@ export default class ProficiencyRating extends React.Component {
         </Table.Cell>
         <Table.Cell>
           <span style={{whiteSpace: 'nowrap'}}>
-            <Popover on="click" show={this.state.showColorPopover} onToggle={this.handleMenuToggle}>
-              <Popover.Trigger>
+            <Popover
+              on="click"
+              isShowingContent={this.state.showColorPopover}
+              onToggle={this.handleMenuToggle}
+              renderTrigger={
                 <Button ref={this.setColorRef} variant="link">
                   <div>
                     <span className="colorPickerIcon" style={{background: formatColor(color)}} />
                     {I18n.t('Change')}
                   </div>
                 </Button>
-              </Popover.Trigger>
-              <Popover.Content>
-                <ColorPicker
-                  parentComponent="ProficiencyRating"
-                  colors={PREDEFINED_COLORS}
-                  currentColor={formatColor(color)}
-                  isOpen
-                  hidePrompt
-                  nonModal
-                  hideOnScroll={false}
-                  withAnimation={false}
-                  withBorder={false}
-                  withBoxShadow={false}
-                  withArrow={false}
-                  focusOnMount={false}
-                  afterClose={this.handleMenuClose}
-                  setStatusColor={this.setColor}
-                />
-              </Popover.Content>
+              }
+            >
+              <ColorPicker
+                parentComponent="ProficiencyRating"
+                colors={PREDEFINED_COLORS}
+                currentColor={formatColor(color)}
+                isOpen
+                hidePrompt
+                nonModal
+                hideOnScroll={false}
+                withAnimation={false}
+                withBorder={false}
+                withBoxShadow={false}
+                withArrow={false}
+                focusOnMount={false}
+                afterClose={this.handleMenuClose}
+                setStatusColor={this.setColor}
+              />
             </Popover>
             <div className="delete">
-              <Button
+              <IconButton
                 disabled={disableDelete}
-                buttonRef={this.setTrashRef}
+                elementRef={this.setTrashRef}
                 onClick={this.handleDelete}
-                variant="icon"
-                icon={<IconTrashLine />}
-              >
-                <ScreenReaderContent>{I18n.t('Delete proficiency rating')}</ScreenReaderContent>
-              </Button>
+                renderIcon={<IconTrashLine />}
+                withBackground={false}
+                withBorder={false}
+                screenReaderLabel={I18n.t('Delete proficiency rating')}
+              />
             </div>
           </span>
         </Table.Cell>

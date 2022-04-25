@@ -19,7 +19,7 @@
 #
 
 require_relative "../api_spec_helper"
-require_relative "../locked_spec"
+require_relative "../locked_examples"
 
 RSpec.configure do |config|
   config.include ApplicationHelper
@@ -1139,30 +1139,116 @@ describe "Files API", type: :request do
       expect(json.keys & prohibited_fields).to be_empty
     end
 
-    it "is locked/hidden for a student" do
-      course_with_student(course: @course)
-      att2 = Attachment.create!(filename: "test.txt", display_name: "test.txt", uploaded_data: StringIO.new("file"), folder: @root, context: @course, locked: true)
-      att2.hidden = true
-      att2.save!
-      json = api_call(:get, "/api/v1/files/#{att2.id}", { controller: "files", action: "api_show", format: "json", id: att2.id.to_param }, { include: ["enhanced_preview_url"] })
-      expect(json["locked"]).to be_truthy
-      should_be_locked(json)
+    context "when the attachment is locked and replacement params are inlucded" do
+      subject do
+        api_call(
+          :get,
+          "/api/v1/files/#{old_attachment.id}",
+          { controller: "files", action: "api_show", format: "json", id: old_attachment.id.to_param }.merge(params)
+        )
+      end
 
-      att2.locked = false
-      att2.unlock_at = 2.days.from_now
-      att2.lock_at = 2.days.ago
-      att2.save!
-      json = api_call(:get, "/api/v1/files/#{att2.id}", { controller: "files", action: "api_show", format: "json", id: att2.id.to_param }, { include: ["enhanced_preview_url"] })
-      expect(json["locked"]).to be_falsey
-      should_be_locked(json)
+      let(:old_attachment) do
+        old = @course.attachments.build(display_name: "old file")
+        old.file_state = "deleted"
+        old.replacement_attachment = attachment
+        old.save!
+        old
+      end
 
-      att2.lock_at = att2.unlock_at = nil
-      att2.save!
-      json = api_call(:get, "/api/v1/files/#{att2.id}", { controller: "files", action: "api_show", format: "json", id: att2.id.to_param }, { include: ["enhanced_preview_url"] })
-      expect(json["url"]).to eq file_download_url(att2, verifier: att2.uuid, download: "1", download_frd: "1")
-      expect(json["locked"]).to be_falsey
-      expect(json["locked_for_user"]).to be_falsey
-      expect(json["preview_url"]).not_to be_nil
+      let(:attachment) { @att }
+      let(:params) do
+        {
+          id: old_attachment.id,
+          replacement_chain_context_type: "course",
+          replacement_chain_context_id: @course.id
+        }
+      end
+
+      it "returns the replacement file" do
+        expect(subject["id"]).to eq attachment.id
+      end
+    end
+
+    context "as a student" do
+      subject do
+        api_call(:get, "/api/v1/files/#{attachment.id}", { controller: "files", action: "api_show", format: "json", id: attachment.id.to_param }, { include: ["enhanced_preview_url"] })
+      end
+
+      before do
+        course_with_student_logged_in(course: @course)
+      end
+
+      let(:attachment) { Attachment.create!(attributes.merge(attr_overrides)) }
+      let(:attributes) { { filename: "test.txt", display_name: "test.txt", uploaded_data: StringIO.new("file"), folder: @root, context: @course } }
+      let(:attr_overrides) { {} }
+
+      context "when the attachment is hidden" do
+        context "and the attachment is locked" do
+          let(:attr_overrides) { { hidden: true, locked: true } }
+
+          it "sets 'locked' to true" do
+            expect(subject["locked"]).to be_truthy
+          end
+
+          it "shows the file is locked" do
+            should_be_locked(subject)
+          end
+        end
+
+        context "and the attachment has unlock_at and lock_at set" do
+          let(:attr_overrides) { { hidden: true, unlock_at: 2.days.from_now, lock_at: 2.days.ago } }
+
+          it "sets 'locked' to false" do
+            expect(subject["locked"]).to be_falsey
+          end
+
+          it "shows the file is locked" do
+            should_be_locked(subject)
+          end
+        end
+
+        context "and the attachment is not locked in any way" do
+          let(:attr_overrides) { { hidden: true } }
+
+          it "includes the the file url" do
+            expect(subject["url"]).to eq file_download_url(attachment, verifier: attachment.uuid, download: "1", download_frd: "1")
+          end
+
+          it "does not show the file is locked" do
+            expect(subject["locked"]).to be_falsey
+            expect(subject["locked_for_user"]).to be_falsey
+          end
+
+          it "includes a preview URL" do
+            expect(subject["preview_url"]).not_to be_nil
+          end
+        end
+      end
+
+      context "when the attachment is locked" do
+        let(:attr_overrides) { { locked: true } }
+
+        it "sets 'locked_to_user' to true" do
+          expect(subject["locked_for_user"]).to be_truthy
+        end
+
+        it "sets a preview url" do
+          expect(subject["preview_url"]).not_to be_nil
+        end
+      end
+
+      context "when the file is scheduled to be locked" do
+        let(:attr_overrides) { { unlock_at: 2.days.from_now, lock_at: 2.days.ago } }
+
+        it "sets 'locked_to_user' to true" do
+          expect(subject["locked_for_user"]).to be_truthy
+        end
+
+        it "sets a preview url" do
+          expect(subject["preview_url"]).not_to be_nil
+        end
+      end
     end
 
     it "returns not found error" do
@@ -1209,6 +1295,35 @@ describe "Files API", type: :request do
                                             "license" => "cc_by_sa",
                                             "license_name" => "CC Attribution Share Alike"
                                           })
+    end
+  end
+
+  describe "#file_ref" do
+    before :once do
+      attachment_model(context: @course, filename: "hello.txt")
+      @mig_id = "i567b573b77fab13a1a39937c24ae88f2"
+      @attachment.update migration_id: @mig_id
+    end
+
+    it "finds a file by migration_id" do
+      json = api_call(:get, "/api/v1/courses/#{@course.to_param}/files/file_ref/#{@mig_id}",
+                      controller: "files", action: "file_ref", format: "json", course_id: @course.to_param,
+                      migration_id: @mig_id)
+      expect(json["id"]).to eq @attachment.id
+      expect(json["display_name"]).to eq @attachment.display_name
+    end
+
+    it "requires permissions" do
+      user_factory
+      api_call(:get, "/api/v1/courses/#{@course.to_param}/files/file_ref/#{@mig_id}",
+               { controller: "files", action: "file_ref", format: "json", course_id: @course.to_param,
+                 migration_id: @mig_id }, {}, {}, { expected_status: 401 })
+    end
+
+    it "404s if given a bad migration id" do
+      api_call(:get, "/api/v1/courses/#{@course.to_param}/files/file_ref/lolcats",
+               { controller: "files", action: "file_ref", format: "json", course_id: @course.to_param,
+                 migration_id: "lolcats" }, {}, {}, { expected_status: 404 })
     end
   end
 

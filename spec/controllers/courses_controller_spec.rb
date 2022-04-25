@@ -1727,11 +1727,11 @@ describe CoursesController do
         expect(assigns[:js_env][:COURSE][:has_syllabus_body]).to be_falsey
       end
 
-      it "sets ENV.OBSERVER_LIST with self and observed users" do
+      it "sets ENV.OBSERVED_USERS_LIST with self and observed users" do
         user_session(@student)
 
         get "show", params: { id: @course.id }
-        observers = assigns[:js_env][:OBSERVER_LIST]
+        observers = assigns[:js_env][:OBSERVED_USERS_LIST]
         expect(observers.length).to be(1)
         expect(observers[0][:name]).to eq(@student.name)
         expect(observers[0][:id]).to eq(@student.id)
@@ -1743,6 +1743,15 @@ describe CoursesController do
 
         get "show", params: { id: @course.id }
         expect(assigns[:js_env][:COURSE][:student_outcome_gradebook_enabled]).to be_truthy
+      end
+
+      it "sets ENV.SHOW_IMMERSIVE_READER when user flag is enabled" do
+        Account.site_admin.enable_feature!(:more_immersive_reader)
+        @student.enable_feature!(:user_immersive_reader_wiki_pages)
+        user_session(@student)
+
+        get "show", params: { id: @course.id }
+        expect(assigns[:js_env][:SHOW_IMMERSIVE_READER]).to be_truthy
       end
 
       context "ENV.COURSE.self_enrollment" do
@@ -1898,6 +1907,49 @@ describe CoursesController do
 
         get "show", params: { id: @course.id }
         expect(assigns[:js_env][:COURSE][:latest_announcement][:title]).to eq "Hello students"
+      end
+    end
+
+    context "when logged in as an observer with multiple student associations" do
+      before do
+        @student2 = User.create!
+        @course.enroll_user(@student2, "StudentEnrollment", enrollment_state: "active")
+
+        @observer = User.create!
+        @course.enroll_user(@observer, "ObserverEnrollment", enrollment_state: "active", associated_user_id: @student.id)
+        @course.enroll_user(@observer, "ObserverEnrollment", enrollment_state: "active", associated_user_id: @student2.id)
+        user_session(@observer)
+      end
+
+      it "sets context_enrollment using first enrollment" do
+        get :show, params: { id: @course.id }
+        enrollment = assigns[:context_enrollment]
+        expect(enrollment.is_a?(ObserverEnrollment)).to be true
+        expect(enrollment.user_id).to eq @observer.id
+        expect(enrollment.associated_user_id).to eq @student.id
+      end
+
+      context "when observer_picker and a2 observer view is enabled" do
+        before do
+          Account.site_admin.enable_feature!(:observer_picker)
+          Setting.set("assignments_2_observer_view", "true")
+        end
+
+        it "sets context_enrollment using selected observed user" do
+          cookies["#{ObserverEnrollmentsHelper::OBSERVER_COOKIE_PREFIX}#{@observer.id}"] = @student2.id
+          get :show, params: { id: @course.id }
+          enrollment = assigns[:context_enrollment]
+          expect(enrollment.is_a?(ObserverEnrollment)).to be true
+          expect(enrollment.user_id).to eq @observer.id
+          expect(enrollment.associated_user_id).to eq @student2.id
+        end
+
+        it "sets js_env variables" do
+          get :show, params: { id: @course.id }
+          expect(assigns[:js_env]).to have_key(:OBSERVER_OPTIONS)
+          expect(assigns[:js_env][:OBSERVER_OPTIONS][:OBSERVED_USERS_LIST].is_a?(Array)).to be true
+          expect(assigns[:js_env][:OBSERVER_OPTIONS][:CAN_ADD_OBSERVEE]).to be false
+        end
       end
     end
   end
@@ -2129,6 +2181,14 @@ describe CoursesController do
       expect(json["public_syllabus"]).to be false
       expect(json["is_public_to_auth_users"]).to be false
       expect(json["public_syllabus_to_auth"]).to be false
+    end
+
+    it "returns an error if syllabus_body content is nested too deeply" do
+      stub_const("CanvasSanitize::SANITIZE", { parser_options: { max_tree_depth: 1 } })
+      put "create", params: { account_id: @account.id, course: { syllabus_body: "<div><span>deeeeeeep</span></div>" }, format: :json }
+      expect(response.status).to eq 400
+      json = JSON.parse response.body
+      expect(json["errors"].keys).to include "unparsable_content"
     end
   end
 
@@ -2593,8 +2653,27 @@ describe CoursesController do
     end
 
     it "lets admins without course edit rights update only the syllabus body" do
+      @course.root_account.disable_feature!(:granular_permissions_manage_course_content)
       role = custom_account_role("grade viewer", account: Account.default)
       account_admin_user_with_role_changes(role: role, role_changes: { manage_content: true })
+      user_session(@user)
+
+      name = "some name"
+      body = "some body"
+      put "update", params: { id: @course.id, course: { name: name, syllabus_body: body } }
+
+      @course.reload
+      expect(@course.name).to_not eq name
+      expect(@course.syllabus_body).to eq body
+    end
+
+    it "lets admins without course edit rights update only the syllabus body (granular permissions)" do
+      @course.root_account.enable_feature!(:granular_permissions_manage_course_content)
+      role = custom_account_role("grade viewer", account: Account.default)
+      account_admin_user_with_role_changes(
+        role: role,
+        role_changes: { manage_course_content_edit: true }
+      )
       user_session(@user)
 
       name = "some name"
@@ -2663,14 +2742,14 @@ describe CoursesController do
         put "update", params: { id: @course.id, course: { image_id: @attachment.id } }
         @course.reload
         expect(@course.settings[:image_id]).to eq @attachment.id.to_s
-        expect(@course.settings[:image_url]).to eq ""
+        expect(@course.settings[:image_url]).to be_nil
       end
 
       it "clears the image_id when setting an image_url" do
         put "update", params: { id: @course.id, course: { image_id: "12345678" } }
         put "update", params: { id: @course.id, course: { image_url: "http://farm3.static.flickr.com/image.jpg" } }
         @course.reload
-        expect(@course.settings[:image_id]).to eq ""
+        expect(@course.settings[:image_id]).to be_nil
         expect(@course.settings[:image_url]).to eq "http://farm3.static.flickr.com/image.jpg"
       end
 
@@ -2678,16 +2757,16 @@ describe CoursesController do
         put "update", params: { id: @course.id, course: { image_id: "12345678" } }
         put "update", params: { id: @course.id, course: { remove_image: true } }
         @course.reload
-        expect(@course.settings[:image_id]).to eq ""
-        expect(@course.settings[:image_url]).to eq ""
+        expect(@course.settings[:image_id]).to be_nil
+        expect(@course.settings[:image_url]).to be_nil
       end
 
       it "clears image url after setting remove_image" do
         put "update", params: { id: @course.id, course: { image_url: "http://farm3.static.flickr.com/image.jpg" } }
         put "update", params: { id: @course.id, course: { remove_image: true } }
         @course.reload
-        expect(@course.settings[:image_id]).to eq ""
-        expect(@course.settings[:image_url]).to eq ""
+        expect(@course.settings[:image_id]).to be_nil
+        expect(@course.settings[:image_url]).to be_nil
       end
     end
 
@@ -2707,7 +2786,7 @@ describe CoursesController do
         put "update", params: { id: @course.id, course: { course_color: "1" } }
         put "update", params: { id: @course.id, course: { course_color: "#1a2b3c4e5f6" } }
         @course.reload
-        expect(@course.settings[:course_color]).to eq ""
+        expect(@course.settings[:course_color]).to be_nil
       end
 
       it "normalizes hexcodes without a leading #" do
@@ -2719,13 +2798,50 @@ describe CoursesController do
       it "sets blank inputs to nil" do
         put "update", params: { id: @course.id, course: { course_color: "   " } }
         @course.reload
-        expect(@course.settings[:course_color]).to eq ""
+        expect(@course.settings[:course_color]).to be_nil
       end
 
       it "sets single character (e.g. just a pound sign) inputs to nil" do
         put "update", params: { id: @course.id, course: { course_color: "#" } }
         @course.reload
-        expect(@course.settings[:course_color]).to eq ""
+        expect(@course.settings[:course_color]).to be_nil
+      end
+    end
+
+    describe "default due time" do
+      before do
+        user_session @teacher
+      end
+
+      it "sets the normalized due time if valid" do
+        put "update", params: { id: @course.id, course: { default_due_time: "4:00 PM" } }
+        expect(@course.reload.settings[:default_due_time]).to eq "16:00:00"
+      end
+
+      it "ignores invalid settings" do
+        put "update", params: { id: @course.id, course: { default_due_time: "lolcats" } }
+        expect(@course.reload.settings[:default_due_time]).to be_nil
+      end
+
+      it "inherits the account setting if `inherit` is given" do
+        @course.account.update settings: { default_due_time: { value: "21:00:00" } }
+        expect(@course.default_due_time).to eq "21:00:00"
+
+        @course.default_due_time = "22:00:00"
+        @course.save!
+        expect(@course.default_due_time).to eq "22:00:00"
+
+        put "update", params: { id: @course.id, course: { default_due_time: "inherit" } }
+        @course.reload
+        expect(@course.default_due_time).to eq "21:00:00"
+        expect(@course.settings[:default_due_time]).to be_nil
+      end
+
+      it "leaves the setting alone if the parameter isn't given" do
+        @course.default_due_time = "22:00:00"
+        @course.save!
+        put "update", params: { id: @course.id, course: { course_color: "#000000" } }
+        expect(@course.reload.settings[:default_due_time]).to eq "22:00:00"
       end
     end
 
@@ -2757,6 +2873,13 @@ describe CoursesController do
         put "update", params: { id: @course.id, course: { blueprint: "1" } }, format: "json"
         expect(response.status).to eq 400
         expect(response.body).to include "Cannot have a blueprint course with students"
+      end
+
+      it "does not allow a course with observers to be set as a master course" do
+        observer_in_course
+        put "update", params: { id: @course.id, course: { blueprint: "1" } }, format: "json"
+        expect(response.status).to eq 400
+        expect(response.body).to include "Cannot have a blueprint course with observers"
       end
 
       it "does not allow a minion course to be set as a master course" do
@@ -2869,6 +2992,43 @@ describe CoursesController do
 
       # if the sync job runs, we'll know because restrict_enrollments_to_course_dates will be synced as true
       expect(subject.reload.restrict_enrollments_to_course_dates).to be_falsey
+    end
+
+    context "course paces" do
+      before do
+        @course.account.enable_feature!(:course_paces)
+        @course.enable_course_paces = true
+        @course.restrict_enrollments_to_course_dates = true
+        @course.save!
+        @course_pace = course_pace_model(course: @course)
+      end
+
+      it "republishes course paces when dates have changed" do
+        user_session(@teacher)
+        put "update", params: { id: @course.id, course: { start_at: 1.day.from_now } }
+        expect(Progress.find_by(context: @course_pace)).to be_queued
+        Progress.destroy_all
+        put "update", params: { id: @course.id, course: { conclude_at: 1.year.from_now } }
+        expect(Progress.find_by(context: @course_pace)).to be_queued
+        Progress.destroy_all
+        put "update", params: { id: @course.id, course: { restrict_enrollments_to_course_dates: false } }
+        expect(Progress.find_by(context: @course_pace)).to be_queued
+      end
+
+      it "does not republish course paces when dates have not changed" do
+        user_session(@teacher)
+        put "update", params: { id: @course.id, course: { name: "course paces" } }
+        expect(Progress.find_by(context: @course_pace)).to be_nil
+      end
+    end
+
+    it "returns an error if syllabus_body content is nested too deeply" do
+      user_session(@teacher)
+      stub_const("CanvasSanitize::SANITIZE", { parser_options: { max_tree_depth: 1 } })
+      put "update", params: { id: @course.id, course: { syllabus_body: "<div><span>deeeeeeep</span></div>" }, format: :json }
+      expect(response.status).to eq 400
+      json = JSON.parse response.body
+      expect(json["errors"].keys).to include "unparsable_content"
     end
   end
 

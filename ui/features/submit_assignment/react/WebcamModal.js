@@ -20,8 +20,10 @@ import PropTypes from 'prop-types'
 import Modal from '@canvas/instui-bindings/react/InstuiModal'
 import {getUserMedia} from '../util/mediaUtils'
 import {IconVideoCameraOffSolid} from '@instructure/ui-icons'
-import I18n from 'i18n!webcam_modal'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import Focus from '@canvas/outcomes/react/Focus'
+
+const I18n = useI18nScope('webcam_modal')
 
 const WebcamModal = ({onSelectImage, open, onDismiss}) => {
   const videoRef = useRef(null)
@@ -120,7 +122,7 @@ const WebcamModal = ({onSelectImage, open, onDismiss}) => {
         <Modal.Footer>
           {!takenImage.dataURL && (
             <Focus>
-              <Button variant="primary" onClick={onTakePicture}>
+              <Button color="primary" onClick={onTakePicture}>
                 {I18n.t('Take Photo')}
               </Button>
             </Focus>
@@ -133,7 +135,7 @@ const WebcamModal = ({onSelectImage, open, onDismiss}) => {
               </Button>
 
               <Focus>
-                <Button variant="primary" onClick={innerOnSelectImage}>
+                <Button color="primary" onClick={innerOnSelectImage}>
                   {I18n.t('Use This Photo')}
                 </Button>
               </Focus>

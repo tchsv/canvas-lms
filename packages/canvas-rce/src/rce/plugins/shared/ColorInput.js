@@ -29,32 +29,43 @@ import PreviewIcon from './PreviewIcon'
 
 import formatMessage from '../../../format-message'
 
-const COLORS = [
-  '#BD3C14',
-  '#FF2717',
-  '#E71F63',
-  '#8F3E97',
-  '#65499D',
-  '#4554A4',
-  '#1770AB',
-  '#0B9BE3',
-  '#06A3B7',
-  '#009688',
-  '#009606',
-  '#8D9900',
-  '#D97900',
-  '#FD5D10',
-  '#F06291',
-  '#111111',
-  '#556572',
-  '#6B7780',
-  '#FFFFFF',
+const NAMED_COLORS = [
+  {color: '#BD3C14', name: formatMessage('Brick')},
+  {color: '#FF2717', name: formatMessage('Red')},
+  {color: '#E71F63', name: formatMessage('Magenta')},
+  {color: '#8F3E97', name: formatMessage('Purple')},
+  {color: '#65499D', name: formatMessage('Deep Purple')},
+  {color: '#4554A4', name: formatMessage('Indigo')},
+  {color: '#1770AB', name: formatMessage('Blue')},
+  {color: '#0B9BE3', name: formatMessage('Light Blue')},
+  {color: '#06A3B7', name: formatMessage('Cyan')},
+  {color: '#009688', name: formatMessage('Teal')},
+  {color: '#009606', name: formatMessage('Green')},
+  {color: '#8D9900', name: formatMessage('Olive')},
+  {color: '#D97900', name: formatMessage('Pumpkin')},
+  {color: '#FD5D10', name: formatMessage('Orange')},
+  {color: '#F06291', name: formatMessage('Pink')},
+  {color: '#000000', name: formatMessage('Black')},
+  {color: '#556572', name: formatMessage('Steel Blue')},
+  {color: '#6B7780', name: formatMessage('Grey')},
+  {color: '#FFFFFF', name: formatMessage('White')},
   null
 ]
 
-export const ColorInput = ({color, label, name, onChange, popoverMountNode, width = '11rem'}) => {
+export const ColorInput = ({
+  color,
+  label,
+  name,
+  onChange,
+  popoverMountNode,
+  width = '11rem',
+  readonly = false,
+  requireColor = false
+}) => {
   const [isOpen, setIsOpen] = useState(false)
   const [inputValue, setInputValue] = useState(color)
+
+  const colorName = NAMED_COLORS.find(c => c?.color === color)?.name
 
   useEffect(() => {
     setInputValue(color)
@@ -78,6 +89,19 @@ export const ColorInput = ({color, label, name, onChange, popoverMountNode, widt
     }
   }
 
+  const colorPreviews = NAMED_COLORS.map(c => (
+    <ColorPreview
+      key={`${name}-${c?.color}`}
+      color={c?.color}
+      name={c?.name}
+      disabled={!isOpen}
+      onSelect={() => {
+        handleColorChange(c?.color)
+        setIsOpen(false)
+      }}
+    />
+  ))
+
   function renderPopover() {
     return (
       <Popover
@@ -94,6 +118,8 @@ export const ColorInput = ({color, label, name, onChange, popoverMountNode, widt
             size="small"
             withBackground={false}
             withBorder={false}
+            interaction="enabled"
+            data-testid={`${name}-popover-trigger`}
           >
             {isOpen ? <IconArrowOpenUpLine /> : <IconArrowOpenDownLine />}
           </IconButton>
@@ -105,23 +131,21 @@ export const ColorInput = ({color, label, name, onChange, popoverMountNode, widt
         <Flex
           alignItems="center"
           as="div"
-          justifyItems="center"
+          justifyItems={requireColor ? 'start' : 'center'}
           padding="x-large x-small small"
           width="175px"
           wrapItems
+          data-testid={`${name}-popover`}
         >
-          {COLORS.map(hex => (
-            <ColorPreview
-              key={`${name}-${hex}`}
-              color={hex}
-              disabled={!isOpen}
-              onSelect={() => handleColorChange(hex)}
-            />
-          ))}
+          {requireColor ? colorPreviews.slice(0, -1) : colorPreviews}
         </Flex>
       </Popover>
     )
   }
+
+  const pickerLabel = colorName
+    ? formatMessage('Color Picker ({colorName} selected)', {colorName})
+    : formatMessage('Color Picker')
 
   return (
     <View as="div">
@@ -132,17 +156,18 @@ export const ColorInput = ({color, label, name, onChange, popoverMountNode, widt
         onChange={(e, value) => handleColorChange(value)}
         placeholder={formatMessage('None')}
         renderBeforeInput={<ColorPreview color={color} disabled margin="0" />}
-        renderAfterInput={renderPopover()}
+        renderAfterInput={<span aria-label={pickerLabel}>{renderPopover()}</span>}
         renderLabel={label}
         shouldNotWrap
         value={inputValue || ''}
         width={width}
+        interaction={readonly ? 'readonly' : undefined}
       />
     </View>
   )
 }
 
-function ColorPreview({color, disabled, margin = 'xxx-small', onSelect}) {
+function ColorPreview({color, name, disabled, margin = 'xxx-small', onSelect}) {
   return (
     <BaseButton
       interaction={disabled ? 'readonly' : undefined}
@@ -150,16 +175,14 @@ function ColorPreview({color, disabled, margin = 'xxx-small', onSelect}) {
       margin={margin}
       onClick={onSelect}
       size="small"
-      tabIndex={onSelect ? 0 : -1}
       withBackground={false}
       withBorder={false}
+      aria-hidden={disabled}
     >
-      {!disabled && (
-        <ScreenReaderContent>
-          {color ? formatMessage('Color {color}', {color}) : formatMessage('None')}
-        </ScreenReaderContent>
-      )}
-      <PreviewIcon color={color} testId={`colorPreview-${color}`} />
+      <ScreenReaderContent>
+        {color ? formatMessage('{name} ({color})', {name, color}) : formatMessage('None')}
+      </ScreenReaderContent>
+      <PreviewIcon color={color} testId={`colorPreview-${color || 'none'}`} />
     </BaseButton>
   )
 }

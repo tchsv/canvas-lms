@@ -302,6 +302,7 @@ class AccountsController < ApplicationController
   include Api::V1::Account
   include CustomSidebarLinksHelper
   include SupportHelpers::ControllerHelpers
+  include DefaultDueTimeHelper
 
   INTEGER_REGEX = /\A[+-]?\d+\z/.freeze
   SIS_ASSINGMENT_NAME_LENGTH_DEFAULT = 255
@@ -401,7 +402,7 @@ class AccountsController < ApplicationController
   end
 
   # @API Settings
-  # Returns all of the settings for the specified account as a JSON object. The caller must be an Account
+  # Returns settings for the specified account as a JSON object. The caller must be an Account
   # admin with the manage_account_settings permission.
   #
   # @example_request
@@ -413,7 +414,8 @@ class AccountsController < ApplicationController
   def show_settings
     return render_unauthorized_action unless @account.grants_right?(@current_user, session, :manage_account_settings)
 
-    render json: @account.settings
+    public_attrs = %i[microsoft_sync_enabled microsoft_sync_tenant microsoft_sync_login_attribute microsoft_sync_login_attribute_suffix microsoft_sync_remote_attribute]
+    render json: public_attrs.index_with { |key| @account.settings[key] }.compact
   end
 
   # @API Permissions
@@ -957,6 +959,12 @@ class AccountsController < ApplicationController
   # @argument account[settings][restrict_student_future_listing][locked] [Boolean]
   #   Lock this setting for sub-accounts and courses
   #
+  # @argument account[settings][conditional_release][value] [Boolean]
+  #   Enable or disable individual learning paths for students based on assessment
+  #
+  # @argument account[settings][conditional_release][locked] [Boolean]
+  #   Lock this setting for sub-accounts and courses
+  #
   # @argument account[settings][lock_outcome_proficiency][value] [Boolean]
   #   [DEPRECATED] Restrict instructors from changing mastery scale
   #
@@ -1038,6 +1046,13 @@ class AccountsController < ApplicationController
            params[:account][:settings][:outgoing_email_default_name_option] == "default"
           # If set to default, remove the custom name so it doesn't get saved
           params[:account][:settings][:outgoing_email_default_name] = ""
+        end
+
+        emoji_deny_list = params[:account][:settings].try(:delete, :emoji_deny_list)
+        if @account.feature_allowed?(:submission_comment_emojis) &&
+           @account.root_account? &&
+           !@account.site_admin?
+          @account.settings[:emoji_deny_list] = emoji_deny_list
         end
 
         if @account.grants_right?(@current_user, :manage_site_settings)
@@ -1125,6 +1140,11 @@ class AccountsController < ApplicationController
             # Invalidate the cached k5 settings for all users in the account
             @account.root_account.clear_k5_cache
           end
+        end
+
+        # validate/normalize default due time parameter
+        if (default_due_time = params.dig(:account, :settings, :default_due_time, :value))
+          params[:account][:settings][:default_due_time][:value] = normalize_due_time(default_due_time)
         end
 
         # Set default Dashboard view
@@ -1227,7 +1247,8 @@ class AccountsController < ApplicationController
                  REDIRECT_URI: MicrosoftSync::LoginService::REDIRECT_URI,
                  BASE_URL: MicrosoftSync::LoginService::BASE_URL
                },
-               COURSE_CREATION_SETTINGS: course_creation_settings
+               COURSE_CREATION_SETTINGS: course_creation_settings,
+               EMOJI_DENY_LIST: @account.root_account.settings[:emoji_deny_list]
              })
       js_env(edit_help_links_env, true)
     end
@@ -1748,7 +1769,9 @@ class AccountsController < ApplicationController
                                    :smart_alerts_threshold, :enable_fullstory, :enable_google_analytics,
                                    { enable_as_k5_account: [:value, :locked] }.freeze,
                                    :enable_push_notifications, :teachers_can_create_courses_anywhere,
-                                   :students_can_create_courses_anywhere].freeze
+                                   :students_can_create_courses_anywhere,
+                                   { default_due_time: [:value] }.freeze,
+                                   { conditional_release: [:value, :locked] }.freeze,].freeze
 
   def permitted_account_attributes
     [:name, :turnitin_account_id, :turnitin_shared_secret, :include_crosslisted_courses,

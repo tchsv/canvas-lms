@@ -17,16 +17,18 @@
  */
 
 import {TextInput} from '@instructure/ui-text-input'
-import I18n from 'i18n!account_settings_jsx_bundle'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import PropTypes from 'prop-types'
 import React from 'react'
 import {ScreenReaderContent} from '@instructure/ui-a11y-content'
+
+const I18n = useI18nScope('account_settings_jsx_bundle')
 
 export default function TenantInput(props) {
   return (
     <>
       <TextInput
-        label={<ScreenReaderContent>{I18n.t('Tenant Name Input Area')}</ScreenReaderContent>}
+        renderLabel={<ScreenReaderContent>{I18n.t('Tenant Name Input Area')}</ScreenReaderContent>}
         type="text"
         placeholder={I18n.t('microsoft_tenant_name%{domain}', {domain: '.onmicrosoft.com'})}
         onChange={props.tenantInputHandler}

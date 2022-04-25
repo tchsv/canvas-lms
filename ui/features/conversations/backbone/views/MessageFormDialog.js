@@ -16,7 +16,7 @@
 // with this program. If not, see <http://www.gnu.org/licenses/>.
 //
 
-import I18n from 'i18n!conversation_dialog'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import $ from 'jquery'
 import _ from 'underscore'
 import {Collection} from '@canvas/backbone'
@@ -32,6 +32,8 @@ import CourseSelectionView from './CourseSelectionView'
 import ContextMessagesView from './ContextMessagesView'
 import 'jquery.elastic'
 import '@canvas/forms/jquery/jquery.instructure_forms.js'
+
+const I18n = useI18nScope('conversation_dialog')
 
 // #
 // reusable message composition dialog
@@ -68,8 +70,6 @@ export default class MessageFormDialog extends DialogBaseView {
   }
 
   dialogOptions() {
-    const responsive_awareness = !!window.ENV?.FEATURES?.responsive_awareness
-
     const smallTablet = window.matchMedia('(min-width: 550px)').matches
     const tablet = window.matchMedia('(min-width: 700px)').matches
 
@@ -80,10 +80,10 @@ export default class MessageFormDialog extends DialogBaseView {
     return {
       id: 'compose-new-message',
       autoOpen: false,
-      minWidth: responsive_awareness ? responsiveMinWidth : 550,
-      width: responsive_awareness ? responsiveWidth : 700,
+      minWidth: responsiveMinWidth,
+      width: responsiveWidth,
       minHeight: 500,
-      height: responsive_awareness ? responsiveHeight : 550,
+      height: responsiveHeight,
       resizable: true,
       title: I18n.t('Compose Message'),
       // Event handler for catching when the dialog is closed.
@@ -333,7 +333,11 @@ export default class MessageFormDialog extends DialogBaseView {
     this.$fullDialog.on('dblclick', '.attachment', e => this.handleAttachmentDblClick(e))
     this.$fullDialog.on('change', '.file_input', e => this.handleAttachment(e))
 
-    this.$fullDialog.on('click', '.attach-media', preventDefault(() => this.addMediaComment()))
+    this.$fullDialog.on(
+      'click',
+      '.attach-media',
+      preventDefault(() => this.addMediaComment())
+    )
     this.$fullDialog.on(
       'click',
       '.media_comment .remove_link',
@@ -507,9 +511,7 @@ export default class MessageFormDialog extends DialogBaseView {
   }
 
   handleAttachmentDblClick(e) {
-    $(e.currentTarget)
-      .find('input')
-      .click()
+    $(e.currentTarget).find('input').click()
   }
 
   handleAttachment(e) {
@@ -539,10 +541,7 @@ export default class MessageFormDialog extends DialogBaseView {
 
     const remove = $attachment.find('.remove_link')
     remove.attr('aria-label', `${remove.attr('title')}: ${name}`)
-    const extension = name
-      .split('.')
-      .pop()
-      .toLowerCase()
+    const extension = name.split('.').pop().toLowerCase()
     if (this.imageTypes.includes(extension) && window.FileReader) {
       const picReader = new FileReader()
       picReader.addEventListener('load', e => {

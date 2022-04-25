@@ -18,7 +18,7 @@
 
 import React, {useState, useEffect} from 'react'
 import PropTypes from 'prop-types'
-import I18n from 'i18n!MasteryScale'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import numberHelper from '@canvas/i18n/numberHelper'
 import {Button} from '@instructure/ui-buttons'
 import {FormFieldGroup} from '@instructure/ui-form-field'
@@ -27,12 +27,15 @@ import {Text} from '@instructure/ui-text'
 import {Heading} from '@instructure/ui-heading'
 import {ScreenReaderContent} from '@instructure/ui-a11y-content'
 import {View} from '@instructure/ui-view'
+import {TextInput} from '@instructure/ui-text-input'
 import {NumberInput} from '@instructure/ui-number-input'
 import {SimpleSelect} from '@instructure/ui-simple-select'
 import {showFlashAlert} from '@canvas/alerts/react/FlashAlert'
 import CalculationMethodContent from '@canvas/grade-summary/backbone/models/CalculationMethodContent'
 import ConfirmMasteryModal from '../ConfirmMasteryModal'
 import useCanvasContext from '@canvas/outcomes/react/hooks/useCanvasContext'
+
+const I18n = useI18nScope('MasteryScale')
 
 export const defaultProficiencyCalculation = {
   calculationMethod: 'decaying_average',
@@ -48,15 +51,19 @@ const validInt = (method, value) => {
   }
 }
 
-const CalculationIntInput = ({updateCalculationInt, calculationMethod, calculationInt}) => {
+const CalculationIntInput = ({
+  updateCalculationInt,
+  calculationMethod,
+  calculationInt,
+  individualOutcomeDisplay,
+  calcIntInputRef
+}) => {
   const handleChange = (_event, data) => {
     if (data === '') {
       updateCalculationInt('')
     } else {
       const parsed = numberHelper.parse(data)
-      if (!Number.isNaN(parsed)) {
-        updateCalculationInt(parsed)
-      }
+      updateCalculationInt(!Number.isNaN(parsed) ? parsed : '')
     }
   }
 
@@ -81,66 +88,101 @@ const CalculationIntInput = ({updateCalculationInt, calculationMethod, calculati
     })
   }
 
-  return (
-    <NumberInput
-      renderLabel={() => I18n.t('Parameter')}
-      value={typeof calculationInt === 'number' ? calculationInt : ''}
-      messages={errorMessages}
-      onIncrement={handleIncrement}
-      onDecrement={handleDecrement}
-      onChange={handleChange}
-    />
-  )
+  if (individualOutcomeDisplay) {
+    return (
+      <View as="div" display="flex">
+        <View as="div" padding="0" className="points">
+          <TextInput
+            isRequired
+            messages={errorMessages}
+            onChange={handleChange}
+            renderLabel={
+              <ScreenReaderContent>{I18n.t('Proficiency Calculation')}</ScreenReaderContent>
+            }
+            value={I18n.n(calculationInt) || ''}
+            shouldNotWrap
+            textAlign="center"
+            width="3rem"
+            data-testid="calculation-int-input"
+            inputRef={calcIntInputRef}
+          />
+        </View>
+        <View as="div" padding="none none none x-small">
+          <View as="div">
+            <Text color="primary" size="small" weight="normal">
+              {calculationMethod.calculationIntLabel}
+            </Text>
+          </View>
+          <View as="div">
+            <Text color="secondary" size="x-small" weight="normal">
+              {calculationMethod.calculationIntDescription}
+            </Text>
+          </View>
+        </View>
+      </View>
+    )
+  } else {
+    return (
+      <NumberInput
+        renderLabel={() => I18n.t('Parameter')}
+        value={typeof calculationInt === 'number' ? calculationInt : ''}
+        messages={errorMessages}
+        onIncrement={handleIncrement}
+        onDecrement={handleDecrement}
+        onChange={handleChange}
+      />
+    )
+  }
 }
 
-const Display = ({calculationInt, currentMethod, individualOutcomeDisplay}) => (
-  <View as="div" padding="small none none">
-    <Flex
-      wrap="wrap"
-      direction={individualOutcomeDisplay ? 'row' : 'column'}
-      padding={individualOutcomeDisplay ? 'none small small none' : 'none small none none'}
-    >
-      <Flex.Item
-        as="div"
-        padding="none xx-small none none"
-        data-testid="read-only-calculation-method"
-      >
-        {individualOutcomeDisplay ? (
-          <Text weight="bold">{I18n.t('Proficiency Calculation:')}</Text>
-        ) : (
-          <Heading level="h4">{I18n.t('Mastery Calculation')}</Heading>
-        )}
-      </Flex.Item>
-      <Flex.Item>
-        <Text color="primary" weight="normal">
-          {currentMethod.friendlyCalculationMethod}
-        </Text>
-      </Flex.Item>
-    </Flex>
-    {currentMethod.validRange && (
+const Display = ({calculationInt, currentMethod, individualOutcomeDisplay}) => {
+  const {isMobileView} = useCanvasContext()
+
+  return (
+    <View as="div" padding="small none none">
       <Flex
         wrap="wrap"
-        direction={individualOutcomeDisplay ? 'row' : 'column'}
+        direction={individualOutcomeDisplay ? (isMobileView ? 'column' : 'row') : 'column'}
         padding={individualOutcomeDisplay ? 'none small small none' : 'none small none none'}
       >
-        <Flex.Item as="div" padding="none xx-small none none">
+        <Flex.Item
+          as="div"
+          padding="none xx-small none none"
+          data-testid="read-only-calculation-method"
+        >
           {individualOutcomeDisplay ? (
-            <Text weight="bold">{I18n.t('Parameter:')}</Text>
+            <View as="div">
+              <Text weight="bold">{I18n.t('Proficiency Calculation:')}</Text>
+            </View>
           ) : (
-            <Heading margin="medium none none" level="h4">
-              {I18n.t('Parameter')}
-            </Heading>
+            <Heading level="h4">{I18n.t('Mastery Calculation')}</Heading>
           )}
         </Flex.Item>
-        <Flex.Item>
+        <Flex.Item padding={isMobileView ? 'small none none' : 'none'}>
           <Text color="primary" weight="normal">
-            {calculationInt}
+            {individualOutcomeDisplay
+              ? currentMethod.method
+              : currentMethod.friendlyCalculationMethod}
           </Text>
         </Flex.Item>
       </Flex>
-    )}
-  </View>
-)
+      {currentMethod.validRange && !individualOutcomeDisplay && (
+        <Flex wrap="wrap" direction="column" padding="none small none none">
+          <Flex.Item as="div" padding="none xx-small none none">
+            <Heading margin="medium none none" level="h4">
+              {I18n.t('Parameter')}
+            </Heading>
+          </Flex.Item>
+          <Flex.Item>
+            <Text color="primary" weight="normal">
+              {calculationInt}
+            </Text>
+          </Flex.Item>
+        </Flex>
+      )}
+    </View>
+  )
+}
 
 const Form = ({
   calculationMethodKey,
@@ -149,7 +191,8 @@ const Form = ({
   currentMethod,
   updateCalculationMethod,
   setCalculationInt,
-  individualOutcomeForm
+  individualOutcomeForm,
+  calcIntInputRef
 }) => (
   <FormFieldGroup
     description={
@@ -167,6 +210,7 @@ const Form = ({
       }
       value={calculationMethodKey}
       onChange={updateCalculationMethod}
+      data-testid="calculation-method-input"
     >
       {Object.keys(calculationMethods).map(key => (
         <SimpleSelect.Option key={key} id={key} value={key}>
@@ -179,6 +223,8 @@ const Form = ({
         calculationInt={calculationInt}
         calculationMethod={currentMethod}
         updateCalculationInt={setCalculationInt}
+        individualOutcomeDisplay={individualOutcomeForm}
+        calcIntInputRef={calcIntInputRef}
       />
     )}
   </FormFieldGroup>
@@ -194,11 +240,13 @@ const Example = ({currentMethod, individualOutcomeExample}) => {
         </View>
         <View as="div" padding="x-small 0">
           {I18n.t('Item Scores:')}&nbsp;
-          <Text weight="bold"> {currentMethod.exampleScores}</Text>
+          <Text weight="bold">{currentMethod.exampleScores}</Text>
         </View>
         <View as="div" padding="x-small 0">
           {I18n.t('Final Score:')}&nbsp;
-          <Text weight="bold">{currentMethod.exampleResult}</Text>
+          <Text weight="bold" data-testid="proficiency-calculation-example-final-score">
+            {currentMethod.exampleResult}
+          </Text>
         </View>
       </Text>
     </div>
@@ -220,8 +268,10 @@ const ProficiencyCalculation = ({
   updateError,
   canManage,
   onNotifyPendingChanges,
+  masteryPoints,
   individualOutcome,
-  setError
+  setError,
+  calcIntInputRef
 }) => {
   const {contextType} = useCanvasContext()
   const {calculationMethod: initialMethodKey, calculationInt: initialInt} = method
@@ -263,7 +313,9 @@ const ProficiencyCalculation = ({
 
   const calculationMethods = new CalculationMethodContent({
     calculation_method: calculationMethodKey,
-    calculation_int: calculationInt
+    calculation_int: calculationInt,
+    is_individual_outcome: true,
+    mastery_points: masteryPoints
   }).toJSON()
   const currentMethod = calculationMethods[calculationMethodKey]
 
@@ -332,6 +384,7 @@ const ProficiencyCalculation = ({
               updateCalculationMethod={updateCalculationMethod}
               setCalculationInt={updateCalculationInt}
               individualOutcomeForm={individualOutcomeEdit}
+              calcIntInputRef={calcIntInputRef}
             />
           ) : (
             <Display
@@ -359,7 +412,7 @@ const ProficiencyCalculation = ({
       {canManage && !individualOutcome && (
         <div className="save">
           <Button
-            variant="primary"
+            color="primary"
             interaction={allowSave ? 'enabled' : 'disabled'}
             onClick={() => {
               if (validInt(currentMethod, calculationInt)) {
@@ -391,14 +444,17 @@ ProficiencyCalculation.propTypes = {
   update: PropTypes.func,
   onNotifyPendingChanges: PropTypes.func,
   updateError: PropTypes.string,
+  masteryPoints: PropTypes.number,
   individualOutcome: PropTypes.oneOf(['display', 'edit']),
-  setError: PropTypes.func
+  setError: PropTypes.func,
+  calcIntInputRef: PropTypes.func
 }
 
 ProficiencyCalculation.defaultProps = {
   method: defaultProficiencyCalculation,
   updateError: null,
-  update: () => {}
+  update: () => {},
+  calcIntInputRef: () => {}
 }
 
 export default ProficiencyCalculation

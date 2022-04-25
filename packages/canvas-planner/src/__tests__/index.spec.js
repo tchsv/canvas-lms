@@ -19,11 +19,13 @@ import moxios from 'moxios'
 import {findByTestId, render} from '@testing-library/react'
 import '@testing-library/jest-dom/extend-expect'
 import {
+  store,
   initializePlanner,
   loadPlannerDashboard,
   resetPlanner,
   renderToDoSidebar,
-  renderWeeklyPlannerHeader
+  renderWeeklyPlannerHeader,
+  reloadPlannerForObserver
 } from '../index'
 import {initialize as alertInitialize} from '../utilities/alertUtils'
 
@@ -48,6 +50,11 @@ function defaultPlannerOptions() {
     srFlashMessage: jest.fn(),
     convertApiUserContent: jest.fn()
   }
+}
+
+const defaultState = {
+  courses: [],
+  currentUser: {id: 13}
 }
 
 afterEach(() => {
@@ -124,6 +131,15 @@ describe('with mock api', () => {
       expect(document.querySelector('.PlannerApp')).toBeTruthy()
       expect(document.querySelector('.PlannerHeader')).toBeTruthy()
     })
+
+    it('dispatches getPlannerItems and getInitialOpportunities', async () => {
+      const originalDispatch = store.dispatch
+      store.dispatch = jest.fn().mockImplementationOnce(() => Promise.resolve())
+      loadPlannerDashboard()
+      await findByTestId(document.body, 'PlannerHeader')
+      expect(store.dispatch).toHaveBeenCalledTimes(2)
+      store.dispatch = originalDispatch
+    })
   })
 
   describe('renderToDoSidebar', () => {
@@ -151,6 +167,66 @@ describe('with mock api', () => {
 
       const wph = await findByTestId('WeeklyPlannerHeader')
       expect(wph).toBeInTheDocument()
+    })
+  })
+
+  describe('reloadPlannerForObserver', () => {
+    beforeEach(() => {
+      window.ENV ||= {}
+      ENV.FEATURES = {observer_picker: false}
+      store.dispatch = jest.fn()
+      store.getState = () => defaultState
+    })
+
+    afterEach(() => {
+      jest.resetAllMocks()
+    })
+
+    it('throws an exception unless the planner is initialized', () => {
+      expect(() => reloadPlannerForObserver('1')).toThrow()
+    })
+
+    it('does nothing if not passed an observee id', () => {
+      return initializePlanner(defaultPlannerOptions()).then(() => {
+        store.dispatch.mockClear()
+        reloadPlannerForObserver(null)
+        expect(store.dispatch).not.toHaveBeenCalled()
+      })
+    })
+
+    it('does nothing if given the existing selectedObservee id', () => {
+      store.getState = () => ({
+        ...defaultState,
+        selectedObservee: '17'
+      })
+
+      return initializePlanner(defaultPlannerOptions()).then(() => {
+        store.dispatch.mockClear()
+        reloadPlannerForObserver('17')
+        expect(store.dispatch).not.toHaveBeenCalled()
+      })
+    })
+
+    it('does nothing if not the weekly planner', () => {
+      return initializePlanner(defaultPlannerOptions()).then(() => {
+        store.dispatch.mockClear()
+        reloadPlannerForObserver('17')
+        expect(store.dispatch).not.toHaveBeenCalled()
+      })
+    })
+
+    it('dispatches reloadWithObservee when all conditions are met', () => {
+      store.getState = () => ({
+        ...defaultState,
+        selectedObservee: '1',
+        weeklyDashboard: {}
+      })
+
+      return initializePlanner(defaultPlannerOptions()).then(() => {
+        store.dispatch.mockClear()
+        reloadPlannerForObserver('17')
+        expect(store.dispatch).toHaveBeenCalled()
+      })
     })
   })
 })

@@ -19,7 +19,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import qs from 'qs'
-import I18n from 'i18n!image_search'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import ImageSearchActions from '../actions/ImageSearchActions'
 import ImageSearchStore from '../stores/ImageSearchStore'
 import ImageSearchItem from './ImageSearchItem'
@@ -33,6 +33,8 @@ import {Flex} from '@instructure/ui-flex'
 import {View} from '@instructure/ui-view'
 import {Alert} from '@instructure/ui-alerts'
 import {ScreenReaderContent} from '@instructure/ui-a11y-content'
+
+const I18n = useI18nScope('image_search')
 
 const unsplashParams = {
   w: 262,
@@ -177,9 +179,9 @@ export default class ImageSearch extends React.Component {
           {this.state.prevUrl && (
             <Button
               variant="link"
-              buttonRef={e => (this._imageSearchControlPrev = e)}
+              elementRef={e => (this._imageSearchControlPrev = e)}
               onClick={this.loadPreviousPage}
-              icon={IconArrowOpenStartLine}
+              renderIcon={IconArrowOpenStartLine}
             >
               {I18n.t('Previous Page')}
             </Button>
@@ -189,7 +191,7 @@ export default class ImageSearch extends React.Component {
           {this.state.nextUrl && (
             <Button
               variant="link"
-              buttonRef={e => (this._imageSearchControlNext = e)}
+              elementRef={e => (this._imageSearchControlNext = e)}
               onClick={this.loadNextPage}
               iconPlacement="end"
             >

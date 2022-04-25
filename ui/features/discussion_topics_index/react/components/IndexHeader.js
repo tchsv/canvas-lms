@@ -21,7 +21,7 @@ import {bindActionCreators} from 'redux'
 import {bool, func, string, arrayOf} from 'prop-types'
 import {connect} from 'react-redux'
 import {debounce} from 'lodash'
-import I18n from 'i18n!discussions_v2'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import propTypes from '../propTypes'
 import React, {Component} from 'react'
 import select from 'obj-select'
@@ -37,6 +37,8 @@ import {TextInput} from '@instructure/ui-text-input'
 import ReactDOM from 'react-dom'
 import ContentTypeExternalToolTray from '@canvas/trays/react/ContentTypeExternalToolTray'
 import {ltiState} from '@canvas/lti/jquery/messages'
+
+const I18n = useI18nScope('discussions_v2')
 
 const filters = {
   all: I18n.t('All'),
@@ -165,7 +167,7 @@ export default class IndexHeader extends Component {
   render() {
     return (
       <View display="block">
-        <Flex wrapItems wrap="wrap" justifyItems="end">
+        <Flex wrap="wrap" justifyItems="end">
           <Flex.Item grow>
             <FormField
               id="discussion-filter"
@@ -190,11 +192,11 @@ export default class IndexHeader extends Component {
           </Flex.Item>
           <Flex.Item grow margin="0 0 0 small">
             <TextInput
-              label={
+              renderLabel={
                 <ScreenReaderContent>{I18n.t('Search discussion by title')}</ScreenReaderContent>
               }
               placeholder={I18n.t('Search by title or author...')}
-              icon={() => <IconSearchLine />}
+              renderAfterInput={() => <IconSearchLine />}
               onChange={this.onSearchStringChange}
               name="discussion_search"
             />
@@ -203,7 +205,7 @@ export default class IndexHeader extends Component {
             {this.props.permissions.create && (
               <Button
                 href={`/${this.props.contextType}s/${this.props.contextId}/discussion_topics/new`}
-                variant="primary"
+                color="primary"
                 id="add_discussion"
               >
                 <IconPlusLine />

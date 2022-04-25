@@ -25,7 +25,7 @@ import ReactModal from '@canvas/react-modal'
 import {Button} from '@instructure/ui-buttons'
 import {TextInput} from '@instructure/ui-text-input'
 import {ScreenReaderContent} from '@instructure/ui-a11y-content'
-import I18n from 'i18n!calendar_color_picker'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import CourseNicknameEdit from './CourseNicknameEdit'
 import classnames from 'classnames'
 import {isRTL} from '@canvas/i18n/rtlHelper'
@@ -33,6 +33,8 @@ import '@canvas/rails-flash-notifications'
 import {Tooltip} from '@instructure/ui-tooltip'
 import {IconWarningSolid} from '@instructure/ui-icons'
 import {showFlashError, showFlashAlert} from '@canvas/alerts/react/FlashAlert'
+
+const I18n = useI18nScope('calendar_color_picker')
 
 export const PREDEFINED_COLORS = [
   {
@@ -493,7 +495,7 @@ const ColorPicker = createReactClass({
         tabIndex="-1"
       >
         {!this.isValidHex(this.state.currentColor) && (
-          <Tooltip tip={I18n.t('Invalid hexcode')}>
+          <Tooltip renderTip={I18n.t('Invalid hexcode')}>
             <IconWarningSolid color="warning" id="ColorPicker__InvalidHex" />
           </Tooltip>
         )}
@@ -527,7 +529,7 @@ const ColorPicker = createReactClass({
         <div className="ColorPicker__CustomInputContainer">
           {this.colorPreview()}
           <TextInput
-            label={
+            renderLabel={
               <ScreenReaderContent>
                 {this.isValidHex(this.state.currentColor)
                   ? I18n.t('Enter a hexcode here to use a custom color.')
@@ -551,7 +553,7 @@ const ColorPicker = createReactClass({
             {I18n.t('Cancel')}
           </Button>
           <Button
-            variant="primary"
+            color="primary"
             id="ColorPicker__Apply"
             size="small"
             onClick={this.onApply.bind(null, this.state.currentColor)}

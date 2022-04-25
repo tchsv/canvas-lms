@@ -972,6 +972,45 @@ module Canvas::LiveEvents
     }
   end
 
+  def self.master_template_created(master_template)
+    post_event_stringified("master_template_created", get_master_template_created_data(master_template))
+  end
+
+  def self.get_master_template_created_data(master_template)
+    {
+      master_template_id: master_template.id,
+      master_course_id: master_template.course_id,
+      root_account_id: master_template.root_account_id
+    }
+  end
+
+  def self.master_migration_completed(master_migration)
+    post_event_stringified("master_migration_completed", master_migration_completed_data(master_migration))
+  end
+
+  def self.master_migration_completed_data(master_migration)
+    {
+      master_migration_id: master_migration.id,
+      master_template_id: master_migration.master_template_id,
+      root_account_id: master_migration.root_account_id
+    }
+  end
+
+  def self.blueprint_subscription_created(blueprint_subscription)
+    post_event_stringified("blueprint_subscription_created", blueprint_subscription_created_data(blueprint_subscription))
+  end
+
+  def self.blueprint_subscription_created_data(blueprint_subscription)
+    {
+      master_template_account_uuid: blueprint_subscription.master_template.course.account.uuid,
+      master_template_id: blueprint_subscription.master_template_id,
+      master_course_uuid: blueprint_subscription.master_template.course.uuid,
+      child_subscription_id: blueprint_subscription.id,
+      child_course_uuid: blueprint_subscription.child_course.uuid,
+      child_course_account_uuid: blueprint_subscription.child_course.account.uuid
+    }
+  end
+
   def self.heartbeat
     data = {
       environment: Canvas.environment,

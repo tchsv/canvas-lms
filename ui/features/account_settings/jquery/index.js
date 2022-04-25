@@ -17,7 +17,7 @@
  */
 
 import 'jqueryui/dialog'
-import I18n from 'i18n!account_settings'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import $ from 'jquery'
 import htmlEscape from 'html-escape'
 import RichContentEditor from '@canvas/rce/RichContentEditor'
@@ -33,6 +33,8 @@ import '@canvas/jquery/jquery.instructure_misc_plugins' // confirmDelete, showIf
 import '@canvas/loading-image'
 import 'date' // Date.parse
 import 'jquery-scroll-to-visible/jquery.scrollTo'
+
+const I18n = useI18nScope('account_settings')
 
 let reportsTabHasLoaded = false
 
@@ -64,12 +66,11 @@ $(document).ready(function () {
     .getElementById('account_settings_tabs')
     ?.querySelectorAll('ul>li>a[id^="tab"]')
   // find the index of tab whose id matches the URL's hash
-  const initialTab =
-    ENV.FEATURES && ENV.FEATURES.remember_settings_tab
-      ? Array.from(settingsTabs || []).findIndex(t => `#${t.id}` === `${window.location.hash}-link`)
-      : -1
+  const initialTab = Array.from(settingsTabs || []).findIndex(
+    t => `#${t.id}` === `${window.location.hash}-link`
+  )
 
-  if (ENV.FEATURES && ENV.FEATURES.remember_settings_tab && !window.location.hash) {
+  if (settingsTabs && !window.location.hash) {
     // Sync the location hash with window.history, this fixes some issues with the browser back
     // button when going back to or from the settings tab
     const defaultTab = settingsTabs[0]?.href
@@ -152,20 +153,19 @@ $(document).ready(function () {
   globalAnnouncements.augmentView()
   globalAnnouncements.bindDomEvents()
 
-  if (ENV.FEATURES && ENV.FEATURES.remember_settings_tab) {
-    $('#account_settings_tabs').on('tabsactivate', (event, ui) => {
-      try {
-        const hash = new URL(ui.newTab.context.href).hash
-        if (window.location.hash !== hash) {
-          window.history.pushState(null, null, hash)
-        }
-        ui.newTab.focus(0)
-      } catch (_ignore) {
-        // get here if `new URL` throws, but it shouldn't, and
-        // there's really nothing we need to do about it
+  $('#account_settings_tabs').on('tabsactivate', (event, ui) => {
+    try {
+      const hash = new URL(ui.newTab.context.href).hash
+      if (window.location.hash !== hash) {
+        window.history.pushState(null, null, hash)
       }
-    })
-  }
+      ui.newTab.focus(0)
+    } catch (_ignore) {
+      // get here if `new URL` throws, but it shouldn't, and
+      // there's really nothing we need to do about it
+    }
+  })
+
   $('#account_settings_tabs')
     .on('tabsbeforeactivate tabscreate', (event, ui) => {
       const tabId =
@@ -534,12 +534,10 @@ $(document).ready(function () {
     onTermsTypeChange()
   }
 
-  if (ENV.FEATURES && ENV.FEATURES.remember_settings_tab) {
-    window.addEventListener('popstate', () => {
-      const openTab = window.location.hash
-      if (openTab) {
-        document.querySelector(`[href="${openTab}"]`)?.click()
-      }
-    })
-  }
+  window.addEventListener('popstate', () => {
+    const openTab = window.location.hash
+    if (openTab) {
+      document.querySelector(`[href="${openTab}"]`)?.click()
+    }
+  })
 })

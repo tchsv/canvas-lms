@@ -32,6 +32,7 @@ class ApplicationController < ActionController::Base
   include Api::V1::User
   include Api::V1::WikiPage
   include LegalInformationHelper
+  include FullStoryHelper
 
   helper :all
 
@@ -51,12 +52,16 @@ class ApplicationController < ActionController::Base
   prepend_before_action :activate_authlogic
 
   around_action :set_locale
+  around_action :set_timezone
   around_action :enable_request_cache
   around_action :batch_statsd
   around_action :compute_http_cost
 
   before_action :clear_idle_connections
+  before_action :set_normalized_route
+  before_action :set_sentry_trace
   before_action :annotate_apm
+  before_action :annotate_sentry
   before_action :check_pending_otp
   before_action :set_user_id_header
   before_action :set_time_zone
@@ -111,6 +116,10 @@ class ApplicationController < ActionController::Base
     end
   end
 
+  def supported_timezones
+    ActiveSupport::TimeZone.all.map { |tz| tz.tzinfo.name }
+  end
+
   add_crumb(proc do
     title = I18n.t("links.dashboard", "My Dashboard")
     crumb = <<~HTML
@@ -125,6 +134,16 @@ class ApplicationController < ActionController::Base
 
   def clear_js_env
     @js_env = nil
+  end
+
+  def set_normalized_route
+    # Presently used only by Sentry, and not needed for API requests
+    return unless request.format.html? && SentryExtensions::Settings.settings[:frontend_dsn]
+
+    ::Rails.application.routes.router.recognize(request) { |route, _| @route ||= route }
+    return unless @route
+
+    @normalized_route = CGI.unescape(@route.format(@route.parts.excluding(:format).index_with { |part| "{#{part}}" }))
   end
 
   def set_sentry_trace
@@ -175,14 +194,8 @@ class ApplicationController < ActionController::Base
           view_context.stylesheet_path(css_url_for("what_gets_loaded_inside_the_tinymce_editor", false, { force_high_contrast: true }))
         ]
 
-        # Cisco doesn't want to load lato extended. see LS-1559
-        if Setting.get("disable_lato_extended", "false") == "false"
-          editor_css << view_context.stylesheet_path(css_url_for("lato_extended"))
-          editor_hc_css << view_context.stylesheet_path(css_url_for("lato_extended"))
-        else
-          editor_css << view_context.stylesheet_path(css_url_for("lato"))
-          editor_hc_css << view_context.stylesheet_path(css_url_for("lato"))
-        end
+        editor_css << view_context.stylesheet_path(css_url_for("fonts"))
+        editor_hc_css << view_context.stylesheet_path(css_url_for("fonts"))
 
         @js_env_data_we_need_to_render_later = {}
         @js_env = {
@@ -191,16 +204,15 @@ class ApplicationController < ActionController::Base
           url_to_what_gets_loaded_inside_the_tinymce_editor_css: editor_css,
           url_for_high_contrast_tinymce_editor_css: editor_hc_css,
           current_user_id: @current_user&.id,
+          current_user_global_id: @current_user&.global_id,
           current_user_roles: @current_user&.roles(@domain_root_account),
           current_user_is_student: @context.respond_to?(:user_is_student?) && @context.user_is_student?(@current_user),
           current_user_types: @current_user.try { |u| u.account_users.active.map { |au| au.role.name } },
           current_user_disabled_inbox: @current_user&.disabled_inbox?,
-          discussions_reporting: Account.site_admin.feature_enabled?(:discussions_reporting),
+          discussions_reporting: @context.respond_to?(:feature_enabled?) && @context.feature_enabled?(:react_discussions_post),
           files_domain: HostUrl.file_host(@domain_root_account || Account.default, request.host_with_port),
           DOMAIN_ROOT_ACCOUNT_ID: @domain_root_account&.global_id,
           k12: k12?,
-          use_responsive_layout: use_responsive_layout?,
-          use_rce_a11y_checker_notifications: @context.try(:feature_enabled?, :rce_a11y_checker_notifications),
           help_link_name: help_link_name,
           help_link_icon: help_link_icon,
           use_high_contrast: @current_user&.prefers_high_contrast?,
@@ -216,11 +228,34 @@ class ApplicationController < ActionController::Base
             collapse_global_nav: @current_user&.collapse_global_nav?,
             release_notes_badge_disabled: @current_user&.release_notes_badge_disabled?,
           },
+          FULL_STORY_ENABLED: fullstory_enabled_for_session?(session)
         }
+        @js_env[:IN_PACED_COURSE] = @context.enable_course_paces? if @context.try(:enable_course_paces?)
+
+        unless SentryExtensions::Settings.settings.blank?
+          @js_env[:SENTRY_FRONTEND] = {
+            dsn: SentryExtensions::Settings.settings[:frontend_dsn],
+            org_slug: SentryExtensions::Settings.settings[:org_slug],
+            base_url: SentryExtensions::Settings.settings[:base_url],
+            normalized_route: @normalized_route,
+
+            errors_sample_rate: Setting.get("sentry_frontend_errors_sample_rate", "0.0"),
+            traces_sample_rate: Setting.get("sentry_frontend_traces_sample_rate", "0.0"),
+            url_deny_pattern: Setting.get("sentry_frontend_url_deny_pattern", ""), # regexp
+
+            # these values need to correlate with the backend for Sentry features to work properly
+            environment: Canvas.environment,
+            revision: "canvas-lms@#{Canvas.semver_revision}"
+          }
+        end
 
         dynamic_settings_tree = DynamicSettings.find(tree: :private)
         if dynamic_settings_tree["api_gateway_enabled"] == "true"
           @js_env[:API_GATEWAY_URI] = dynamic_settings_tree["api_gateway_uri"]
+        end
+
+        if dynamic_settings_tree["frontend_data_collection_endpoint"]
+          @js_env[:DATA_COLLECTION_ENDPOINT] = dynamic_settings_tree["frontend_data_collection_endpoint"]
         end
 
         @js_env[:flashAlertTimeout] = 1.day.in_milliseconds if @current_user&.prefers_no_toast_timeout?
@@ -241,11 +276,17 @@ class ApplicationController < ActionController::Base
         @js_env[:IS_LARGE_ROSTER] = true if !@js_env[:IS_LARGE_ROSTER] && @context.respond_to?(:large_roster?) && @context.large_roster?
         @js_env[:context_asset_string] = @context.try(:asset_string) unless @js_env[:context_asset_string]
         @js_env[:ping_url] = polymorphic_url([:api_v1, @context, :ping]) if @context.is_a?(Course)
-        @js_env[:TIMEZONE] = Time.zone.tzinfo.identifier unless @js_env[:TIMEZONE]
-        @js_env[:CONTEXT_TIMEZONE] = @context.time_zone.tzinfo.identifier if !@js_env[:CONTEXT_TIMEZONE] && @context.respond_to?(:time_zone) && @context.time_zone.present?
-        unless @js_env[:LOCALE]
+        if params[:session_timezone].present? && supported_timezones.include?(params[:session_timezone])
+          timezone = context_timezone = params[:session_timezone]
+        else
+          timezone = Time.zone.tzinfo.identifier unless @js_env[:TIMEZONE]
+          context_timezone = @context.time_zone.tzinfo.identifier if !@js_env[:CONTEXT_TIMEZONE] && @context.respond_to?(:time_zone) && @context.time_zone.present?
+        end
+        @js_env[:TIMEZONE] = timezone
+        @js_env[:CONTEXT_TIMEZONE] = context_timezone
+        unless @js_env[:LOCALES]
           I18n.set_locale_with_localizer
-          @js_env[:LOCALE] = I18n.locale.to_s
+          @js_env[:LOCALES] = I18n.fallbacks[I18n.locale].map(&:to_s)
           @js_env[:BIGEASY_LOCALE] = I18n.bigeasy_locale
           @js_env[:FULLCALENDAR_LOCALE] = I18n.fullcalendar_locale
           @js_env[:MOMENT_LOCALE] = I18n.moment_locale
@@ -269,14 +310,13 @@ class ApplicationController < ActionController::Base
   # put feature checks on Account.site_admin and @domain_root_account that we're loading for every page in here
   # so altogether we can get them faster the vast majority of the time
   JS_ENV_SITE_ADMIN_FEATURES = %i[
-    featured_help_links rce_buttons_and_icons important_dates feature_flag_filters k5_parent_support
-    conferencing_in_planner remember_settings_tab word_count_in_speed_grader observer_picker lti_platform_storage
-    scale_equation_images new_equation_editor
+    featured_help_links feature_flag_filters conferencing_in_planner word_count_in_speed_grader observer_picker
+    lti_platform_storage scale_equation_images new_equation_editor buttons_and_icons_cropper course_paces_blackout_dates
   ].freeze
   JS_ENV_ROOT_ACCOUNT_FEATURES = %i[
-    responsive_awareness responsive_misc product_tours files_dnd usage_rights_discussion_topics
+    product_tours files_dnd usage_rights_discussion_topics
     granular_permissions_manage_users create_course_subaccount_picker
-    lti_deep_linking_module_index_menu_modal lti_multiple_assignment_deep_linking
+    lti_deep_linking_module_index_menu_modal lti_multiple_assignment_deep_linking buttons_and_icons_root_account
   ].freeze
   JS_ENV_BRAND_ACCOUNT_FEATURES = [
     :embedded_release_notes
@@ -409,11 +449,6 @@ class ApplicationController < ActionController::Base
     @domain_root_account&.feature_enabled?(:k12)
   end
   helper_method :k12?
-
-  def use_responsive_layout?
-    @domain_root_account&.feature_enabled?(:responsive_layout)
-  end
-  helper_method :use_responsive_layout?
 
   def grading_periods?
     !!@context.try(:grading_periods?)
@@ -596,6 +631,10 @@ class ApplicationController < ActionController::Base
       params[:controller] != "question_banks"
   end
 
+  def user_url(*opts)
+    opts[0] == @current_user ? user_profile_url(@current_user) : super
+  end
+
   protected
 
   # we track the cost of each request in RequestThrottle in order
@@ -623,6 +662,7 @@ class ApplicationController < ActionController::Base
         # as global state on I18n (cleanup failure), we don't want it to
         # explode trying to access a non-existant request.
         context_hash[:session_locale] = session[:locale]
+        context_hash[:session_timezone] = session[:timezone]
         context_hash[:accept_language] = request.headers["Accept-Language"]
       else
         logger.warn("[I18N] localizer executed from context-less controller")
@@ -637,6 +677,11 @@ class ApplicationController < ActionController::Base
     yield if block_given?
   ensure
     I18n.localizer = nil
+  end
+
+  def set_timezone
+    store_session_timezone
+    yield if block_given?
   end
 
   def enable_request_cache(&block)
@@ -670,11 +715,23 @@ class ApplicationController < ActionController::Base
     )
   end
 
+  def annotate_sentry
+    Sentry.set_tags({
+                      db_cluster: @domain_root_account&.shard&.database_server&.id
+                    })
+  end
+
   def store_session_locale
     return unless (locale = params[:session_locale])
 
     supported_locales = I18n.available_locales.map(&:to_s)
     session[:locale] = locale if supported_locales.include? locale
+  end
+
+  def store_session_timezone
+    return unless (timezone = params[:session_timezone])
+
+    session[:timezone] = timezone if supported_timezones.include? params[:session_timezone]
   end
 
   def init_body_classes
@@ -733,7 +790,7 @@ class ApplicationController < ActionController::Base
       append_to_header("Content-Security-Policy", "frame-ancestors 'self' #{equivalent_domains.join(" ")};")
     end
     headers["Strict-Transport-Security"] = "max-age=31536000" if request.ssl?
-    RequestContext::Generator.store_request_meta(request, @context)
+    RequestContext::Generator.store_request_meta(request, @context, @sentry_trace)
     true
   end
 
@@ -748,10 +805,6 @@ class ApplicationController < ActionController::Base
       reset_session
       redirect_to login_url
     end
-  end
-
-  def user_url(*opts)
-    opts[0] == @current_user ? user_profile_url(@current_user) : super
   end
 
   def tab_enabled?(id, opts = {})
@@ -1388,7 +1441,11 @@ class ApplicationController < ActionController::Base
 
   def set_no_cache_headers
     response.headers["Pragma"] = "no-cache"
-    response.headers["Cache-Control"] = "no-cache, no-store"
+    response.headers["Cache-Control"] = if Setting.get("legacy_cache_control", "false") == "true"
+                                          "no-cache, no-store"
+                                        else
+                                          "no-store"
+                                        end
   end
 
   def set_page_view
@@ -1820,6 +1877,7 @@ class ApplicationController < ActionController::Base
                      Account.site_admin.feature_enabled?(:new_quizzes_modules_support) &&
                      @context.grants_right?(@current_user, :manage) &&
                      tag.quiz_lti
+      url_params[:quiz_lti] = true if use_edit_url
       redirect_symbol = use_edit_url ? :edit_context_assignment_url : :context_assignment_url
       redirect_to named_context_url(context, redirect_symbol, tag.content_id, url_params)
     elsif tag.content_type == "WikiPage"
@@ -1930,7 +1988,7 @@ class ApplicationController < ActionController::Base
                       return_url: @return_url,
                       expander: variable_expander,
                       opts: opts.merge(
-                        resource_link_for_custom_params: @tag.associated_asset_lti_resource_link
+                        resource_link: @tag.associated_asset_lti_resource_link
                       )
                     )
                   else
@@ -2355,7 +2413,6 @@ class ApplicationController < ActionController::Base
 
   def render(options = nil, extra_options = {}, &block)
     set_layout_options
-    set_sentry_trace
     if options.is_a?(Hash) && options.key?(:json)
       json = options.delete(:json)
       unless json.is_a?(String)
@@ -2907,11 +2964,11 @@ class ApplicationController < ActionController::Base
   end
   helper_method :should_show_migration_limitation_message
 
-  def uncached_k5_user?
-    if @current_user
+  def uncached_k5_user?(user, course_ids: nil)
+    if user
       # Collect global ids of all accounts in current region with k5 enabled
       global_k5_account_ids = []
-      Account.shard(@current_user.in_region_associated_shards).root_accounts.active.non_shadow
+      Account.shard(user.in_region_associated_shards).root_accounts.active.non_shadow
              .where("settings LIKE '%k5_accounts:\n- %'").select(:settings).each do |account|
         account.settings[:k5_accounts]&.each do |k5_account_id|
           global_k5_account_ids << Shard.global_id_for(k5_account_id, account.shard)
@@ -2919,17 +2976,29 @@ class ApplicationController < ActionController::Base
       end
       return false if global_k5_account_ids.blank?
 
+      provided_global_account_ids = course_ids.present? ? Course.where(id: course_ids).distinct.pluck(:account_id).map { |account_id| Shard.global_id_for(account_id) } : []
+
       # See if the user has associations with any k5-enabled accounts on each shard
       k5_associations = Shard.partition_by_shard(global_k5_account_ids) do |k5_account_ids|
-        enrolled_course_ids = @current_user.enrollments.shard(Shard.current).new_or_active_by_date.select(:course_id)
-        enrolled_account_ids = Course.where(id: enrolled_course_ids).distinct.pluck(:account_id)
-        break true if (enrolled_account_ids & k5_account_ids).any?
+        if course_ids.present?
+          # Use only provided course_ids' account ids if passed
+          provided_account_ids = provided_global_account_ids.select { |account_id| Shard.shard_for(account_id) == Shard.current }.map { |global_id| Shard.local_id_for(global_id)[0] }
+          break true if (provided_account_ids & k5_account_ids).any?
 
-        enrolled_account_ids += @current_user.account_users.shard(Shard.current).active.pluck(:account_id)
-        break true if (enrolled_account_ids & k5_account_ids).any?
+          provided_account_chain_ids = Account.multi_account_chain_ids(provided_account_ids)
+          break true if (provided_account_chain_ids & k5_account_ids).any?
+        else
+          # If course_ids isn't passed, check all their enrollments and account_users
+          enrolled_course_ids = user.enrollments.shard(Shard.current).new_or_active_by_date.select(:course_id)
+          enrolled_account_ids = Course.where(id: enrolled_course_ids).distinct.pluck(:account_id)
+          break true if (enrolled_account_ids & k5_account_ids).any?
 
-        enrolled_account_chain_ids = Account.multi_account_chain_ids(enrolled_account_ids)
-        break true if (enrolled_account_chain_ids & k5_account_ids).any?
+          enrolled_account_ids += user.account_users.shard(Shard.current).active.pluck(:account_id)
+          break true if (enrolled_account_ids & k5_account_ids).any?
+
+          enrolled_account_chain_ids = Account.multi_account_chain_ids(enrolled_account_ids)
+          break true if (enrolled_account_chain_ids & k5_account_ids).any?
+        end
       end
       k5_associations == true
     else
@@ -2941,20 +3010,27 @@ class ApplicationController < ActionController::Base
   def k5_disabled?
     # Only admins and teachers can opt-out of being considered a k5 user
     can_disable = @current_user.roles(@domain_root_account).any? { |role| %w[admin teacher].include?(role) }
-    can_disable && @current_user.elementary_dashboard_disabled?
+    manually_disabled = can_disable && @current_user.elementary_dashboard_disabled?
+    disabled_for_observer = @current_user.roles(@domain_root_account).include?("observer") &&
+                            Account.site_admin.feature_enabled?(:observer_picker) &&
+                            @selected_observed_user.present? &&
+                            @selected_observed_user != @current_user &&
+                            !k5_user?(user: @selected_observed_user, check_disabled: false)
+    manually_disabled || disabled_for_observer
   end
 
-  def k5_user?(check_disabled = true)
-    RequestCache.cache("k5_user", @current_user, @domain_root_account, check_disabled, @current_user&.elementary_dashboard_disabled?) do
-      if @current_user
+  # When course_ids is provided, use only those course ids to determine k5 status
+  def k5_user?(user: @current_user, course_ids: nil, check_disabled: true)
+    RequestCache.cache("k5_user", user, @current_user, @domain_root_account, @selected_observed_user, check_disabled, @current_user&.elementary_dashboard_disabled?) do
+      if user
         next false if check_disabled && k5_disabled?
 
         # This key is also invalidated when the k5 setting is toggled at the account level or when enrollments change
-        Rails.cache.fetch_with_batched_keys("k5_user", batch_object: @current_user, batched_keys: %i[k5_user enrollments account_users], expires_in: 12.hours) do
-          uncached_k5_user?
+        Rails.cache.fetch_with_batched_keys(["k5_user", course_ids].cache_key, batch_object: user, batched_keys: %i[k5_user enrollments account_users], expires_in: 12.hours) do
+          uncached_k5_user?(user, course_ids: course_ids)
         end
       else
-        uncached_k5_user?
+        uncached_k5_user?(user, course_ids: course_ids)
       end
     end
   end

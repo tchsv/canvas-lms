@@ -16,7 +16,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import I18n from 'i18n!dashcards'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import React from 'react'
 import ReactDOM from 'react-dom'
 import PropTypes from 'prop-types'
@@ -25,6 +25,8 @@ import {Modal} from '@instructure/ui-modal'
 import {Button, CloseButton} from '@instructure/ui-buttons'
 import {Heading} from '@instructure/ui-heading'
 import {Alert} from '@instructure/ui-alerts'
+
+const I18n = useI18nScope('dashcards')
 
 export function showConfirmUnfavorite(props) {
   const parent = document.createElement('div')
@@ -54,7 +56,7 @@ export function showNoFavoritesAlert() {
   ReactDOM.render(
     <Alert
       variant="info"
-      closeButtonLabel="Close"
+      renderCloseButtonLabel="Close"
       label={I18n.t('No courses favorited')}
       margin="small"
     >
@@ -115,9 +117,12 @@ export default class ConfirmUnfavoriteCourseModal extends React.Component {
         size="small"
       >
         <Modal.Header>
-          <CloseButton placement="end" offset="medium" variant="icon" onClick={this.hide}>
-            Close
-          </CloseButton>
+          <CloseButton
+            placement="end"
+            offset="medium"
+            onClick={this.hide}
+            screenReaderLabel="\n            Close\n          "
+          />
           <Heading>
             {I18n.t(`Unfavorite %{courseName}`, {courseName: this.props.courseName})}
           </Heading>
@@ -135,7 +140,7 @@ export default class ConfirmUnfavoriteCourseModal extends React.Component {
             {I18n.t('Close')}
           </Button>
           <Button
-            variant="primary"
+            color="primary"
             id="confirm_unfavorite_course"
             onClick={this.handleSubmitUnfavorite}
           >

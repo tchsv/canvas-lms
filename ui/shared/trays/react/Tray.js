@@ -16,7 +16,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import I18n from 'i18n!tray'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import React from 'react'
 import {string, node} from 'prop-types'
 import {CloseButton} from '@instructure/ui-buttons'
@@ -28,6 +28,10 @@ import {Tray} from '@instructure/ui-tray'
 import ErrorBoundary from '@canvas/error-boundary'
 import GenericErrorPage from '@canvas/generic-error-page'
 import errorShipUrl from '@canvas/images/ErrorShip.svg'
+
+import {TruncateText} from '@instructure/ui-truncate-text'
+
+const I18n = useI18nScope('tray')
 
 /**
 This is a wrapper around an InstUi Tray component that provides:
@@ -86,12 +90,12 @@ export default function CanvasTray({
     return (
       <Flex as="div" padding={headerPadding}>
         <Flex.Item grow>
-          <Heading ellipsis>{title}</Heading>
+          <Heading>
+            <TruncateText>{title}</TruncateText>
+          </Heading>
         </Flex.Item>
         <Flex.Item>
-          <CloseButton onClick={onDismiss} size="small">
-            {I18n.t('Close')}
-          </CloseButton>
+          <CloseButton onClick={onDismiss} size="small" screenReaderLabel={I18n.t('Close')} />
         </Flex.Item>
       </Flex>
     )

@@ -24,12 +24,14 @@ import DashboardCard from '@canvas/dashboard-card/react/DashboardCard'
 import DraggableDashboardCard from '@canvas/dashboard-card/react/DraggableDashboardCard'
 import getDroppableDashboardCardBox from '@canvas/dashboard-card/react/getDroppableDashboardCardBox'
 import fakeENV from 'helpers/fakeENV'
+import {render} from '@testing-library/react'
 
 let cards
 let fakeServer
 
 QUnit.module('DashboardCard Reordering', {
   setup() {
+    fakeENV.setup()
     cards = [
       {
         id: '1',
@@ -63,6 +65,10 @@ QUnit.module('DashboardCard Reordering', {
     sandbox.fetch.mock('path:/api/v1/courses/1/activity_stream/summary', 200)
     sandbox.fetch.mock('path:/api/v1/courses/2/activity_stream/summary', 200)
     sandbox.fetch.mock('path:/api/v1/courses/3/activity_stream/summary', 200)
+    sandbox.fetch.mock(new RegExp(`\/api\/v1\/users\/${ENV.current_user_id}\/colors.*`), {
+      status: 200,
+      body: '{}'
+    })
   },
   teardown() {
     fakeENV.teardown()
@@ -79,8 +85,8 @@ test('it renders', () => {
   ok(root)
 })
 
-test('cards have opacity of 0 while moving', () => {
-  const card = TestUtils.renderIntoDocument(
+test('cards have opacity of 0 while moving', assert => {
+  const {container} = render(
     <DashboardCard
       cardComponent={DashboardCard}
       {...cards[0]}
@@ -89,8 +95,8 @@ test('cards have opacity of 0 while moving', () => {
       isDragging
     />
   )
-  const div = TestUtils.findRenderedDOMComponentWithClass(card, 'ic-DashboardCard')
-  equal(div.style.opacity, 0)
+
+  assert.equal(container.firstChild.style.opacity, 0)
 })
 
 test('moving a card adjusts the position property', () => {

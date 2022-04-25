@@ -18,7 +18,7 @@
 # with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-gem "bundler", ">= 2.2.17", "<= 2.2.30"
+gem "bundler", "~> 2.2.17"
 
 if Gem::Version.new(Bundler::VERSION) >= Gem::Version.new("1.14.0") &&
    Gem::Version.new(Gem::VERSION) < Gem::Version.new("2.6.9")
@@ -32,22 +32,19 @@ elsif RUBY_VERSION >= "3.0.0" && RUBY_VERSION < "3.1"
 end
 ruby ">= 2.7.0", "< 3.1"
 
-# force a different lockfile for next rails
-unless CANVAS_RAILS6_0
-  Bundler::SharedHelpers.class_eval do
-    class << self
-      def default_lockfile
-        lockfile = +"#{Bundler.default_gemfile}.lock"
-        lockfile << ".next" unless CANVAS_RAILS6_0
-        Pathname.new(lockfile)
-      end
+# Add the version number to the Gemfile.lock as Gemfile.<version>.lock
+Bundler::SharedHelpers.class_eval do
+  class << self
+    def default_lockfile
+      lockfile = "#{Bundler.default_gemfile}.rails#{CANVAS_RAILS.delete(".")}.lock"
+      Pathname.new(lockfile)
     end
   end
+end
 
-  Bundler::Dsl.class_eval do
-    def to_definition(_lockfile, unlock)
-      @sources << @rubygems_source if @sources.respond_to?(:include?) && !@sources.include?(@rubygems_source)
-      Definition.new(Bundler.default_lockfile, @dependencies, @sources, unlock, @ruby_version)
-    end
+Bundler::Dsl.class_eval do
+  def to_definition(_lockfile, unlock)
+    @sources << @rubygems_source if @sources.respond_to?(:include?) && !@sources.include?(@rubygems_source)
+    Definition.new(Bundler.default_lockfile, @dependencies, @sources, unlock, @ruby_version)
   end
 end

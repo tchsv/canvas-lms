@@ -16,10 +16,14 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import React from 'react'
+import ReactDOM from 'react-dom'
 import round from 'round'
-import I18n from 'i18n!submissions'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import $ from 'jquery'
+import isNumber from 'lodash/isNumber'
 import GradeFormatHelper from '@canvas/grading/GradeFormatHelper'
+import {EmojiPicker, EmojiQuickPicker} from '@canvas/emoji'
 import '@canvas/jquery/jquery.ajaxJSON'
 import '@canvas/forms/jquery/jquery.instructure_forms' /* ajaxJSONFiles */
 import '@canvas/datetime' /* datetimeString */
@@ -29,7 +33,10 @@ import '@canvas/util/templateData'
 import '@canvas/media-comments'
 import '@canvas/media-comments/jquery/mediaCommentThumbnail'
 import 'jquery-scroll-to-visible/jquery.scrollTo'
-import '@canvas/rubrics/jquery/rubric_assessment' /* global rubricAssessment */
+import '@canvas/rubrics/jquery/rubric_assessment'
+
+const I18n = useI18nScope('submissions')
+/* global rubricAssessment */
 
 const rubricAssessments = ENV.rubricAssessments
 
@@ -180,8 +187,27 @@ function closeRubric() {
 function openRubric() {
   $('#rubric_holder').fadeIn(function () {
     toggleRubric($(this))
+    toggleSaveCommentButton($(this))
     $(this).find('.hide_rubric_link').focus()
   })
+}
+function toggleSaveCommentButton($rubricHolder) {
+  const $rubric = $rubricHolder.find('.rubric')
+  const rubricData = rubricAssessment.assessmentData($rubric)
+  const complete = isRubricComplete(rubricData)
+
+  $('.save_rubric_button').prop('disabled', !complete)
+}
+function isRubricComplete(rubricData) {
+  return Object.keys(rubricData).some(key => {
+    return hasPoints(key, rubricData) || hasComments(key, rubricData)
+  })
+}
+function hasComments(key, data) {
+  return key.indexOf('[comments]') !== -1 && data[key].trim() !== ''
+}
+function hasPoints(key, data) {
+  return key.indexOf('[points]') !== -1 && isNumber(data[key])
 }
 function windowResize() {
   const $frame = $('#preview_frame')
@@ -192,11 +218,27 @@ function windowResize() {
   $('.comments').height(height)
 }
 
+function insertEmoji(emoji) {
+  const $textarea = $('.grading_comment')
+  $textarea.val((_i, text) => text + emoji.native)
+  $textarea.focus()
+}
+
 // This `setup` function allows us to control when the setup is triggered.
 // submissions.coffee requires this file and then immediately triggers it,
 // while submissionsSpec.jsx triggers it after setup is complete.
 export function setup() {
   $(document).ready(function () {
+    if (ENV.EMOJIS_ENABLED) {
+      ReactDOM.render(
+        <EmojiPicker insertEmoji={insertEmoji} />,
+        document.getElementById('emoji-picker-container')
+      )
+      ReactDOM.render(
+        <EmojiQuickPicker insertEmoji={insertEmoji} />,
+        document.getElementById('emoji-quick-picker-container')
+      )
+    }
     $('.comments .comment_list .play_comment_link').mediaCommentThumbnail('small')
     $(window).bind('resize', windowResize).triggerHandler('resize')
     $('.comments_link').click(event => {
@@ -300,6 +342,12 @@ export function setup() {
     $('.save_rubric_button').click(function () {
       const $rubric = $(this).parents('#rubric_holder').find('.rubric')
       const submitted_data = rubricAssessment.assessmentData($rubric)
+
+      if (!isRubricComplete(submitted_data)) {
+        $('.save_rubric_button').prop('disabled', true)
+        return false
+      }
+
       const url = $('.update_rubric_assessment_url').attr('href')
       const method = 'POST'
       $rubric.loadingImage()
@@ -385,6 +433,22 @@ export function setup() {
         $('#rubric_holder .save_rubric_button').showIf(current_user)
       })
       .change()
+    $('#rubric_holder .rubric tbody input').on('change', () => {
+      const $rubricHolder = $('#rubric_holder')
+      toggleSaveCommentButton($rubricHolder)
+    })
+    // uses event delegation since the text area isn't on the DOM until you click on the comment icon
+    $('#rubric_holder .rubric tbody').on('change', 'textarea', () => {
+      const $rubricHolder = $('#rubric_holder')
+      toggleSaveCommentButton($rubricHolder)
+    })
+    $('#rubric_holder .rubric .rating-tier').on('click', () => {
+      // wait for next tick so that rubric data is populated with latest change
+      setTimeout(() => {
+        const $rubricHolder = $('#rubric_holder')
+        toggleSaveCommentButton($rubricHolder)
+      }, 0)
+    })
     $('.media_comment_link').click(event => {
       event.preventDefault()
       $('#media_media_recording').show()

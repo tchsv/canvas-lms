@@ -18,22 +18,22 @@
 
 import React from 'react'
 import {render, act, fireEvent} from '@testing-library/react'
-import getCookie from 'get-cookie'
+import getCookie from '@instructure/get-cookie'
 
 import ObserverOptions from '../ObserverOptions'
 import {OBSERVER_COOKIE_PREFIX} from '../../ObserverGetObservee'
-import {MOCK_OBSERVER_LIST} from './fixtures'
+import {MOCK_OBSERVED_USERS_LIST} from './fixtures'
 
 const userId = '13'
 const observedUserCookieName = `${OBSERVER_COOKIE_PREFIX}${userId}`
 
 describe('ObserverOptions', () => {
   const getProps = (overrides = {}) => ({
-    observerList: MOCK_OBSERVER_LIST,
+    observedUsersList: MOCK_OBSERVED_USERS_LIST,
     currentUser: {
       id: userId,
       display_name: 'Zelda',
-      avatar_image_url: 'http://avatar'
+      avatarUrl: 'http://avatar'
     },
     handleChangeObservedUser: jest.fn(),
     canAddObservee: false,
@@ -45,13 +45,22 @@ describe('ObserverOptions', () => {
   })
 
   it('displays students in the select', () => {
+    const props = getProps()
     const {getByRole, getByText} = render(<ObserverOptions {...getProps()} />)
     const select = getByRole('combobox', {name: 'Select a student to view'})
     expect(select).toBeInTheDocument()
     expect(select.value).toBe('Zelda')
     act(() => select.click())
-    expect(getByText('Student 2')).toBeInTheDocument()
-    expect(getByText('Student 4')).toBeInTheDocument()
+
+    const student2 = props.observedUsersList[2]
+    expect(getByText(student2.name)).toBeInTheDocument()
+    expect(
+      getByText(student2.name).parentElement.querySelector(`[src="${student2.avatar_url}"]`)
+    ).toBeInTheDocument()
+
+    const student4 = props.observedUsersList[1]
+    expect(getByText(student4.name)).toBeInTheDocument()
+    expect(getByText('S4')).toBeInTheDocument()
   })
 
   it('allows searching the select', async () => {
@@ -77,7 +86,7 @@ describe('ObserverOptions', () => {
 
   it('renders a label if there is only one observed student', () => {
     const {getByText, queryByRole} = render(
-      <ObserverOptions {...getProps({observerList: [MOCK_OBSERVER_LIST[2]]})} />
+      <ObserverOptions {...getProps({observedUsersList: [MOCK_OBSERVED_USERS_LIST[2]]})} />
     )
     expect(getByText('You are observing Student 2')).toBeInTheDocument()
     expect(getByText('Student 2')).toBeInTheDocument()
@@ -85,13 +94,13 @@ describe('ObserverOptions', () => {
   })
 
   it('does not render for non-observers', () => {
-    const {container} = render(<ObserverOptions {...getProps({observerList: []})} />)
+    const {container} = render(<ObserverOptions {...getProps({observedUsersList: []})} />)
     expect(container).toBeEmptyDOMElement()
   })
 
   it('does not render if only user is self', () => {
     const {container} = render(
-      <ObserverOptions {...getProps({observerList: [MOCK_OBSERVER_LIST[0]]})} />
+      <ObserverOptions {...getProps({observedUsersList: [MOCK_OBSERVED_USERS_LIST[0]]})} />
     )
     expect(container).toBeEmptyDOMElement()
   })
@@ -128,5 +137,20 @@ describe('ObserverOptions', () => {
     act(() => select.click())
     act(() => getByText('Add Student').click())
     expect(getByText('Pair with student')).toBeInTheDocument()
+  })
+
+  it('highlights only the currently selected student', () => {
+    const {getByRole} = render(<ObserverOptions {...getProps()} />)
+    const select = getByRole('combobox', {name: 'Select a student to view'})
+    act(() => select.click())
+    expect(getByRole('option', {name: 'Zelda', selected: true})).toBeInTheDocument()
+    expect(getByRole('option', {name: 'Student 2', selected: false})).toBeInTheDocument()
+    const student4 = getByRole('option', {name: 'Student 4', selected: false})
+    expect(student4).toBeInTheDocument()
+    act(() => student4.click())
+    act(() => select.click())
+    expect(getByRole('option', {name: 'Student 4', selected: true})).toBeInTheDocument()
+    expect(getByRole('option', {name: 'Zelda', selected: false})).toBeInTheDocument()
+    expect(getByRole('option', {name: 'Student 2', selected: false})).toBeInTheDocument()
   })
 })

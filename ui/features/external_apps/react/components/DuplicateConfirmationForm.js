@@ -19,7 +19,9 @@
 import React from 'react'
 import {func, object, string} from 'prop-types'
 import {Button} from '@instructure/ui-buttons'
-import I18n from 'i18n!external_tools'
+import {useScope as useI18nScope} from '@canvas/i18n'
+
+const I18n = useI18nScope('external_tools')
 
 export default function DuplicateConfirmationForm(props) {
   const forceSaveTool =
@@ -43,7 +45,7 @@ export default function DuplicateConfirmationForm(props) {
         <div className="ReactModal__Footer-Actions">
           <Button
             id="cancel-install"
-            variant="primary"
+            color="primary"
             margin="0 x-small 0 0"
             onClick={props.onCancel}
           >

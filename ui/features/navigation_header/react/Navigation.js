@@ -17,7 +17,7 @@
  */
 
 import $ from 'jquery'
-import I18n from 'i18n!Navigation'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import React from 'react'
 import {func} from 'prop-types'
 import {Tray} from '@instructure/ui-tray'
@@ -29,6 +29,8 @@ import preventDefault from 'prevent-default'
 import parseLinkHeader from 'link-header-parsing/parseLinkHeaderFromXHR'
 import tourPubSub from '@canvas/tour-pubsub'
 import {savedObservedId} from '@canvas/observer-picker/ObserverGetObservee'
+
+const I18n = useI18nScope('Navigation')
 
 const CoursesTray = React.lazy(() => import('./trays/CoursesTray'))
 const GroupsTray = React.lazy(() => import('./trays/GroupsTray'))
@@ -185,9 +187,9 @@ export default class Navigation extends React.Component {
     // only retrive the courses for my observee
     if (type === 'courses' && ENV.current_user_roles.includes('observer')) {
       let forceLoad = false
-      const k5_observed_user_id = savedObservedId(ENV.current_user_id) // only returns a value if k5_parent_support is on
+      const k5_observed_user_id = savedObservedId(ENV.current_user_id)
       if (k5_observed_user_id) {
-        url = `${url}&observed_user=${k5_observed_user_id}`
+        url = `${url}&observed_user_id=${k5_observed_user_id}`
         if (k5_observed_user_id !== this.state.observedUserId) {
           this.setState({
             observedUserId: k5_observed_user_id,
@@ -436,9 +438,11 @@ export default class Navigation extends React.Component {
           }}
         >
           <div className={`navigation-tray-container ${this.state.type}-tray`}>
-            <CloseButton placement="end" onClick={this.closeTray}>
-              {I18n.t('Close')}
-            </CloseButton>
+            <CloseButton
+              placement="end"
+              onClick={this.closeTray}
+              screenReaderLabel={I18n.t('Close')}
+            />
             <div className="tray-with-space-for-global-nav">
               <React.Suspense
                 fallback={

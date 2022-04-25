@@ -16,7 +16,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import I18n from 'i18n!QRMobileLogin'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import React, {useState, useEffect} from 'react'
 import {showFlashAlert} from '@canvas/alerts/react/FlashAlert'
 import doFetchApi from '@canvas/do-fetch-api-effect'
@@ -31,6 +31,8 @@ import {Text} from '@instructure/ui-text'
 import {View} from '@instructure/ui-view'
 import {fromNow} from '../fromNowFuzzy'
 import {number, bool} from 'prop-types'
+
+const I18n = useI18nScope('QRMobileLogin')
 
 const REFRESH_INTERVAL = 1000 * (9 * 60 + 45) // 9 min 45 sec
 const POLL_INTERVAL = 1000 * 5 // 5 sec
@@ -195,9 +197,8 @@ export function QRMobileLogin({refreshInterval, pollInterval, withWarning}) {
             placement="end"
             offset="medium"
             onClick={onModalCancel}
-          >
-            {I18n.t('Cancel')}
-          </CloseButton>
+            screenReaderLabel={I18n.t('Cancel')}
+          />
           <Heading>{modalLabel()}</Heading>
         </Modal.Header>
         <Modal.Body>
@@ -225,7 +226,7 @@ export function QRMobileLogin({refreshInterval, pollInterval, withWarning}) {
           </Button>
           <Button
             data-testid="qr-proceed-button"
-            variant="primary"
+            color="primary"
             margin="none x-small"
             onClick={onModalProceed}
           >

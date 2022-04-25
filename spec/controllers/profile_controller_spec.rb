@@ -368,7 +368,7 @@ describe ProfileController do
           get "communication"
 
           expect(assigns[:js_env][:NOTIFICATION_PREFERENCES_OPTIONS][:weekly_notification_range][:weekday]).to eq("Friday")
-          expect(assigns[:js_env][:NOTIFICATION_PREFERENCES_OPTIONS][:weekly_notification_range].keys).to eq([:weekday, :start_time, :end_time])
+          expect(assigns[:js_env][:NOTIFICATION_PREFERENCES_OPTIONS][:weekly_notification_range].keys).to eq(%i[weekday start_time end_time])
           expect(assigns[:js_env][:NOTIFICATION_PREFERENCES_OPTIONS][:weekly_notification_range][:start_time]).to eq "10pm"
           expect(assigns[:js_env][:NOTIFICATION_PREFERENCES_OPTIONS][:weekly_notification_range][:end_time]).to eq "12am"
         end
@@ -379,7 +379,7 @@ describe ProfileController do
         Timecop.freeze(Time.zone.local(2021, 9, 22, 1, 0, 0)) do
           get "communication"
 
-          expect(assigns[:js_env][:NOTIFICATION_PREFERENCES_OPTIONS][:daily_notification_time]).to eq(" 6pm")
+          expect(assigns[:js_env][:NOTIFICATION_PREFERENCES_OPTIONS][:daily_notification_time]).to eq("6pm")
         end
       end
     end

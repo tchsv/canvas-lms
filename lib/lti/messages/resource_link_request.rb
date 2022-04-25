@@ -38,7 +38,7 @@ module Lti::Messages
 
     def generate_post_payload_message(validate_launch: true)
       add_resource_link_request_claims! if include_claims?(:rlid)
-      add_assignment_and_grade_service_claims if include_assignment_and_grade_service_claims?
+      add_line_item_url_to_ags_claim! if include_assignment_and_grade_service_claims?
       super(validate_launch: validate_launch)
     end
 
@@ -63,11 +63,9 @@ module Lti::Messages
     end
 
     def add_resource_link_request_claims!
-      resource_link = assignment_resource_link
-      assignment = line_item_for_assignment&.assignment
       @message.resource_link.id = launch_resource_link_id
-      @message.resource_link.description = resource_link && assignment&.description
-      @message.resource_link.title = resource_link && assignment&.title
+      @message.resource_link.description = @assignment&.description
+      @message.resource_link.title = @assignment&.title
     end
 
     def add_lti1p1_claims!
@@ -85,21 +83,20 @@ module Lti::Messages
       @assignment && launch_resource_link_id != @assignment.lti_resource_link_id
     end
 
+    # whenever possible, use the correct resource link id whether that comes from
+    # the associated assignment or from the request parameters. fall back to the
+    # context rlid only if needed
     def launch_resource_link_id
-      assignment_resource_link&.resource_link_uuid || context_resource_link_id
+      resource_link&.resource_link_uuid || Lti::Asset.opaque_identifier_for(@context)
     end
 
     def unexpanded_custom_parameters
       # Add in link-specific custom params (e.g. created by deep linking)
-      super.merge!(resource_link_for_custom_parameters&.custom || {})
+      super.merge!(resource_link&.custom || {})
     end
 
-    def resource_link_for_custom_parameters
-      assignment_resource_link || @opts[:resource_link_for_custom_params]
-    end
-
-    def context_resource_link_id
-      Lti::Asset.opaque_identifier_for(@context)
+    def resource_link
+      assignment_resource_link || @opts[:resource_link]
     end
 
     def assignment_resource_link
@@ -120,39 +117,20 @@ module Lti::Messages
       @assignment_resource_link
     end
 
-    def assignment_line_item_url
-      @assignment_line_item_url ||=
-        if (line_item = line_item_for_assignment).present?
-          # assume @context is either Group or Course, per #include_assignment_and_grade_service_claims?
-          @expander.controller.lti_line_item_show_url(
-            course_id: @context.is_a?(Group) ? context.context_id : @context.id,
-            id: line_item.id
-          )
-        end
-    end
-
     def line_item_for_assignment
-      @_line_item ||= @assignment&.line_items&.find(&:assignment_line_item?)
+      @line_item_for_assignment ||= @assignment&.line_items&.find(&:assignment_line_item?)
     end
 
-    def include_assignment_and_grade_service_claims?
-      include_claims?(:assignment_and_grade_service) &&
-        (@context.is_a?(Course) || @context.is_a?(Group)) &&
-        (@tool.developer_key.scopes & TokenScopes::LTI_AGS_SCOPES).present?
-    end
+    # follows the spec at https://www.imsglobal.org/spec/lti-ags/v2p0/#assignment-and-grade-service-claim
+    # and only adds the 'lineitem' property "when the LTI message is launching a resource associated
+    # to one and only one line item"
+    def add_line_item_url_to_ags_claim!
+      return if line_item_for_assignment.blank?
 
-    def add_assignment_and_grade_service_claims
-      @message.assignment_and_grade_service.scope = @tool.developer_key.scopes & TokenScopes::LTI_AGS_SCOPES
-      @message.assignment_and_grade_service.lineitems = line_items_url
-      # line_item_url won't exist except when launching an assignment, but nested claims dont get compacted on
-      # serialization, so explicit logic here to skip attr set
-      ali_url = assignment_line_item_url
-      @message.assignment_and_grade_service.lineitem = ali_url if ali_url.present?
-    end
-
-    def line_items_url
-      # assume @context is either Group or Course, per #include_assignment_and_grade_service_claims?
-      @expander.controller.lti_line_item_index_url(course_id: @context.is_a?(Group) ? @context.context_id : @context.id)
+      @message.assignment_and_grade_service.lineitem = @expander.controller.lti_line_item_show_url(
+        course_id: course_id_for_ags_url,
+        id: line_item_for_assignment.id
+      )
     end
   end
 end

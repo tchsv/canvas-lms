@@ -22,7 +22,7 @@
 @import "components/ui.selectmenu";
 @import "vendor/_xflex.scss";
 @import "components/rubric";
-
+@import "components/emoji";
 
 .ic-Layout-contentMain {
   padding: 0;
@@ -35,8 +35,11 @@
 $gradebook_header_height: 3.5em;
 
 #gradebook_header_container {
-  height: $gradebook_header_height;
   overflow: hidden;
+}
+
+.speed_grader_nav_form {
+  margin: 0;
 }
 
 #speed_grader_loading {
@@ -235,15 +238,7 @@ $icon-size: 1.4rem;
 }
 
 #full_width_container {
-  position: absolute;
-  top: $gradebook_header_height + 0.0625em;
-  bottom: 0;
-  #{direction(left)}: 0;
-  #{direction(right)}: 0;
-  min-width: 960px;
-  &.with_enrollment_notice {
-    top: $gradebook_header_height + 3.3625em;
-  }
+  position: relative;
 }
 
 .full_width {
@@ -284,7 +279,6 @@ $icon-size: 1.4rem;
 }
 
 #enrollment_inactive_notice, #enrollment_concluded_notice, #closed_gp_notice {
-  width: 100%;
   border-bottom: 1px solid $ic-border-light;
   border-radius: 0;
   text-align: center;
@@ -475,6 +469,8 @@ $icon-size: 1.4rem;
   }
 
   .attach_things {
+    align-self: center;
+    display: flex;
     list-style: none;
 
     //Chrome has a nice bug where clicking on block element
@@ -500,6 +496,10 @@ $icon-size: 1.4rem;
       float: direction(left);
       margin-#{direction(right)}: 5px;
     }
+
+    &.emojis {
+      flex-direction: row-reverse;
+    }
   }
   #comment_attachments {
     padding: $ic-sp*0.5 0;
@@ -508,6 +508,13 @@ $icon-size: 1.4rem;
       float: direction(right);
     }
   }
+}
+
+#emojis-attachments-container {
+  display: flex;
+  align-self: stretch;
+  flex: 1;
+  justify-content: space-between;
 }
 
 body .ui-selectmenu-dropdown {
@@ -943,6 +950,10 @@ body .ui-selectmenu-dropdown:hover .ui-selectmenu-icon, body .ui-state-active .u
   float: direction(right);
 }
 
+#textarea-container {
+  position: relative;
+}
+
 .secondary_mount_point_container {
   position: relative;
 
@@ -957,4 +968,14 @@ body .ui-selectmenu-dropdown:hover .ui-selectmenu-icon, body .ui-state-active .u
   float: left;
   display: inline-block;
   margin-top: 1em;
+}
+
+.emoji-picker-container {
+  position: absolute;
+  bottom: 0px;
+  #{direction(right)}: 0px;
+}
+
+figure {
+  margin: 0;
 }

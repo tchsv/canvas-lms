@@ -26,12 +26,14 @@ import {View} from '@instructure/ui-view'
 import {Link} from '@instructure/ui-link'
 import {Responsive} from '@instructure/ui-responsive'
 import {string} from 'prop-types'
-import I18n from 'i18n!bounced_emails'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import doFetchApi from '@canvas/do-fetch-api-effect'
 import CanvasDateInput from '@canvas/datetime/react/components/DateInput'
 import FriendlyDatetime from '@canvas/datetime/react/components/FriendlyDatetime'
 import tz from '@canvas/timezone'
 import $ from 'jquery'
+
+const I18n = useI18nScope('bounced_emails')
 
 BouncedEmailsView.propTypes = {
   accountId: string.isRequired
@@ -125,9 +127,7 @@ export default function BouncedEmailsView({accountId}) {
     setCsvReportPath(
       `/api/v1/accounts/${accountId}/bounced_communication_channels.csv?${$.param(params)}`
     )
-    doFetchApi({path, params})
-      .then(onFetch)
-      .catch(onError)
+    doFetchApi({path, params}).then(onFetch).catch(onError)
   }, [accountId, searchTerm, onFetch, onError, before, after])
 
   const renderTable = useCallback(

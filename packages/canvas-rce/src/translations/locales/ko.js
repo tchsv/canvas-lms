@@ -92,7 +92,6 @@ const locale = {
   "no_results_940393cf": { "message": "No results." },
   "none_3b5e34d2": { "message": "없음" },
   "operators_a2ef9a93": { "message": "연산자" },
-  "options_3ab0ea65": { "message": "옵션" },
   "pages_e5414c2c": { "message": "페이지" },
   "people_b4ebb13c": { "message": "사용자" },
   "percentage_34ab7c2c": { "message": "퍼센트" },
@@ -107,6 +106,9 @@ const locale = {
   "star_8d156e09": { "message": "별표 표시" },
   "submit_a3cc6859": { "message": "제출" },
   "syllabus_f191f65b": { "message": "요강" },
+  "this_equation_cannot_be_rendered_in_basic_view_9b6c07ae": {
+    "message": "이 수식은 기본 뷰에 렌더링할 수 없습니다."
+  },
   "title_ee03d132": { "message": "제목" },
   "upload_file_fd2361b8": { "message": "파일 업로드" },
   "uploading_19e8a4e7": { "message": "업로드 중" },

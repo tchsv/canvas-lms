@@ -19,7 +19,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import classnames from 'classnames'
-import I18n from 'i18n!upload_drop_zone'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import {Billboard} from '@instructure/ui-billboard'
 import {Text} from '@instructure/ui-text'
 import {FileDrop} from '@instructure/ui-file-drop'
@@ -28,6 +28,8 @@ import FileOptionsCollection from '@canvas/files/react/modules/FileOptionsCollec
 import Folder from '@canvas/files/backbone/models/Folder'
 import '@canvas/rails-flash-notifications'
 import CurrentUploads from '@canvas/files/react/components/CurrentUploads'
+
+const I18n = useI18nScope('upload_drop_zone')
 
 class FileUpload extends React.Component {
   static displayName = 'FileUpload'
@@ -121,11 +123,11 @@ class FileUpload extends React.Component {
     const isEmpty = this.props.currentFolder.isEmpty()
     return (
       <FileDrop
-        allowMultiple
+        shouldAllowMultiple
         // Called when dropping files or when clicking,
         // after the file dialog window exits successfully
         onDrop={this.handleDrop}
-        label={
+        renderLabel={
           <Billboard
             size="small"
             hero={<IconUploadLine color={isDragging ? `brand` : `primary`} />}

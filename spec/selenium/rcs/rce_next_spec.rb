@@ -221,24 +221,11 @@ describe "RCE next tests", ignore_js_errors: true do
           body: "<p id='para'><a id='lnk' href='http://example.com'>delete me</a></p>"
         )
         visit_existing_wiki_edit(@course, "title")
-
         f("##{rce_page_body_ifr_id}").click
-        f("##{rce_page_body_ifr_id}").send_keys(
-          %i[shift arrow_left],
-          %i[shift arrow_left],
-          %i[shift arrow_left],
-          %i[shift arrow_left],
-          %i[shift arrow_left],
-          %i[shift arrow_left],
-          %i[shift arrow_left],
-          %i[shift arrow_left],
-          %i[shift arrow_left],
-          %i[shift arrow_left]
-        )
-        f("##{rce_page_body_ifr_id}").send_keys(:enter)
+        f("##{rce_page_body_ifr_id}").send_keys([:control, "a"], :backspace)
 
         in_frame rce_page_body_ifr_id do
-          expect(f("#para").text).to eql ""
+          expect(f("#tinymce").text).to eql ""
         end
       end
 
@@ -943,8 +930,7 @@ describe "RCE next tests", ignore_js_errors: true do
         expect(a11y_checker_tray).to be_displayed
       end
 
-      it "with the rce_a11y_checker_notifications flag on should show notification badge" do
-        Account.site_admin.enable_feature! :rce_a11y_checker_notifications
+      it "shows notification badge" do
         visit_front_page_edit(@course)
 
         switch_to_html_view
@@ -962,23 +948,6 @@ describe "RCE next tests", ignore_js_errors: true do
         html_view = f("textarea#wiki_page_body")
         html_view.clear
         html_view.send_keys("test text")
-        switch_to_editor_view
-
-        expect(
-          wait_for_no_such_element(method: nil, timeout: 5) do
-            fxpath('//button[@data-btn-id="rce-a11y-btn"]/following-sibling::span')
-          end
-        ).to be_truthy
-      end
-
-      it "with the rce_a11y_checker_notifications flag off should show not notification badge" do
-        Account.site_admin.disable_feature! :rce_a11y_checker_notifications
-        visit_front_page_edit(@course)
-
-        switch_to_html_view
-        switch_to_raw_html_editor
-        html_view = f("textarea#wiki_page_body")
-        html_view.send_keys('<img src="image.jpg" alt="image.jpg" />')
         switch_to_editor_view
 
         expect(
@@ -1175,7 +1144,7 @@ describe "RCE next tests", ignore_js_errors: true do
       it "opens keyboard shortcut modal with alt-f8" do
         visit_front_page_edit(@course)
         rce = f(".tox-edit-area__iframe")
-        rce.send_keys %i[alt f8]
+        rce.send_keys(:alt, :f8)
 
         expect(keyboard_shortcut_modal).to be_displayed
       end
@@ -1184,7 +1153,7 @@ describe "RCE next tests", ignore_js_errors: true do
         visit_front_page_edit(@course)
         rce = f(".tox-edit-area__iframe")
         expect(f(".tox-menubar")).to be_displayed # always show menubar now
-        rce.send_keys %i[alt f9]
+        rce.send_keys(:alt, :f9)
 
         expect(f(".tox-menubar")).to be_displayed
         expect(fj('.tox-menubar button:contains("Edit")')).to eq(driver.switch_to.active_element)
@@ -1193,7 +1162,7 @@ describe "RCE next tests", ignore_js_errors: true do
       it "focuses the toolbar with alt-f10" do
         visit_front_page_edit(@course)
         rce = f(".tox-edit-area__iframe")
-        rce.send_keys %i[alt f10]
+        rce.send_keys(:alt, :f10)
 
         expect(fj('.tox-toolbar__primary button:contains("12pt")')).to eq(
           driver.switch_to.active_element
@@ -1265,11 +1234,11 @@ describe "RCE next tests", ignore_js_errors: true do
 
         visit_existing_wiki_edit(@course, page_title)
 
-        expect(lti_tools_button).to be_displayed
+        expect(lti_tools_button_with_mru).to be_displayed
       end
 
-      # if there's mru data in local_storage we get the menu button
-      # if not we get a button that opens the modal directly
+      # we are now only using the menu button regardless of presence/absence
+      # of mru data in local storage
       it "displays the lti tool modal", ignore_js_errors: true do
         page_title = "Page1"
         create_wiki_page_with_embedded_image(page_title)
@@ -1280,7 +1249,10 @@ describe "RCE next tests", ignore_js_errors: true do
 
         visit_existing_wiki_edit(@course, page_title)
         driver.local_storage.delete("ltimru")
-        lti_tools_button.click
+
+        wait_for_tiny(edit_wiki_css)
+        lti_tools_button_with_mru.click
+        menu_item_by_name("View All").click
 
         expect(lti_tools_modal).to be_displayed
       end

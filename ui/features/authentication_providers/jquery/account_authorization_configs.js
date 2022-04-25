@@ -16,28 +16,37 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import I18n from 'i18n!authentication_providers'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import htmlEscape from 'html-escape'
 import React from 'react'
 import ReactDOM from 'react-dom'
 import AuthTypePicker from '../react/AuthTypePicker'
 import authenticationProviders from './index'
 import $ from 'jquery'
-import '@canvas/forms/jquery/jquery.instructure_forms' /* formSubmit */
+import ready from '@instructure/ready'
+import '@canvas/forms/jquery/jquery.instructure_forms'/* formSubmit */
 import '@canvas/keycodes'
 import '@canvas/loading-image'
 
-const selectorNode = document.getElementById('add-authentication-provider')
-const authTypeOptions = JSON.parse(selectorNode.getAttribute('data-options'))
-authTypeOptions.unshift({
-  name: I18n.t('Choose an authentication service'),
-  value: 'default'
-})
+const I18n = useI18nScope('authentication_providers')
 
-ReactDOM.render(
-  <AuthTypePicker authTypes={authTypeOptions} onChange={authenticationProviders.changedAuthType} />,
-  selectorNode
-)
+ready(() => {
+  const selectorNode = document.getElementById('add-authentication-provider')
+  const authTypeOptions = JSON.parse(selectorNode.getAttribute('data-options'))
+
+  authTypeOptions.unshift({
+    name: I18n.t('Choose an authentication service'),
+    value: 'default'
+  })
+
+  ReactDOM.render(
+    <AuthTypePicker
+      authTypes={authTypeOptions}
+      onChange={authenticationProviders.changedAuthType}
+    />,
+    selectorNode
+  )
+})
 
 $('.parent_reg_warning').click(function() {
   let msg

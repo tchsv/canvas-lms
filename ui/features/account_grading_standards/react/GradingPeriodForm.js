@@ -22,10 +22,12 @@ import ReactDOM from 'react-dom'
 import update from 'immutability-helper'
 import _ from 'underscore'
 import {Button} from '@instructure/ui-buttons'
-import I18n from 'i18n!gradingPeriodForm'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import DueDateCalendarPicker from '@canvas/due-dates/react/DueDateCalendarPicker'
 import numberHelper from '@canvas/i18n/numberHelper'
 import round from 'round'
+
+const I18n = useI18nScope('gradingPeriodForm')
 
 function roundWeight(val) {
   const value = numberHelper.parse(val)
@@ -148,7 +150,7 @@ class GradingPeriodForm extends React.Component {
       </Button>
       &nbsp;
       <Button
-        variant="primary"
+        color="primary"
         aria-label={I18n.t('Save Grading Period')}
         disabled={this.props.disabled}
         onClick={this.triggerSave}

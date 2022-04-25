@@ -17,7 +17,7 @@
 
 import {ApolloProvider, Query, gql, createClient} from '@canvas/apollo'
 import React, {useState} from 'react'
-import I18n from 'i18n!mutationActivity'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import tz from '@canvas/timezone'
 import {Button} from '@instructure/ui-buttons'
 import {TextInput} from '@instructure/ui-text-input'
@@ -27,6 +27,8 @@ import {Table} from '@instructure/ui-table'
 import {Spinner} from '@instructure/ui-spinner'
 import {View} from '@instructure/ui-view'
 import {Grid} from '@instructure/ui-grid'
+
+const I18n = useI18nScope('mutationActivity')
 
 function formatDate(date) {
   return tz.format(date, 'date.formats.medium_with_weekday')
@@ -48,16 +50,16 @@ const AuditLogForm = ({onSubmit}) => {
   }
 
   return (
-    <View background="light" as="div" padding="medium" borderWidth="small">
+    <View background="secondary" as="div" padding="medium" borderWidth="small">
       <form onSubmit={submit} style={{margin: 0}}>
         <TextInput
-          label={I18n.t('Asset String')}
+          renderLabel={I18n.t('Asset String')}
           placeholder="course_123"
           value={assetString}
           onChange={e => {
             setAssetString(e.target.value)
           }}
-          required
+          isRequired
         />
 
         <div style={{marginTop: '1.5em'}} />
@@ -85,7 +87,7 @@ const AuditLogForm = ({onSubmit}) => {
               />
             </Grid.Col>
             <Grid.Col vAlign="middle">
-              <Button variant="primary" type="submit" margin="small 0 0" disabled={formDisabled}>
+              <Button color="primary" type="submit" margin="small 0 0" disabled={formDisabled}>
                 {I18n.t('Find')}
               </Button>
             </Grid.Col>

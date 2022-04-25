@@ -16,7 +16,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import I18n from 'i18n!announcements_v2'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import React from 'react'
 import {bool, func} from 'prop-types'
 import {connect} from 'react-redux'
@@ -36,6 +36,8 @@ import {ConnectedRSSFeedList} from './RSSFeedList'
 
 import actions from '../actions'
 import select from 'obj-select'
+
+const I18n = useI18nScope('announcements_v2')
 
 const verbosityTypes = [
   {value: 'full', label: I18n.t('Full article')},
@@ -137,7 +139,7 @@ export default class AddExternalFeed extends React.Component {
       <View margin="small" display="block">
         <TextInput
           name={name}
-          label={<ScreenReaderContent>{text}</ScreenReaderContent>}
+          renderLabel={<ScreenReaderContent>{text}</ScreenReaderContent>}
           placeholder={text}
           onChange={onTextChange}
           value={value}
@@ -194,7 +196,7 @@ export default class AddExternalFeed extends React.Component {
           id="external-rss-feed__submit-button"
           disabled={!this.isDoneSelecting()}
           type="submit"
-          variant="primary"
+          color="primary"
           onClick={this.addRssSelection}
           margin="0 x-small 0 0"
         >

@@ -17,13 +17,16 @@
  */
 
 import natcompare from '@canvas/util/natcompare'
+import doFetchApi from '@canvas/do-fetch-api-effect'
 
-export const parseObserverList = users =>
-  users.map(u => ({
-    id: u.id,
-    name: u.name,
-    avatarUrl: u.avatar_url
-  }))
+export const parseObservedUsersList = users =>
+  users
+    ? users.map(u => ({
+        id: u.id,
+        name: u.name,
+        avatarUrl: u.avatar_url
+      }))
+    : []
 
 export const parseObservedUsersResponse = (enrollments, isOnlyObserver, currentUser) => {
   const users = enrollments
@@ -49,3 +52,6 @@ export const parseObservedUsersResponse = (enrollments, isOnlyObserver, currentU
   }
   return users
 }
+
+export const fetchShowK5Dashboard = id =>
+  doFetchApi({path: `/api/v1/users/${id}/show_k5_dashboard`}).then(({json}) => json.k5_user)

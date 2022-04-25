@@ -18,7 +18,7 @@
 
 import FriendlyDatetime from '@canvas/datetime/react/components/FriendlyDatetime'
 import {func, object, shape, string} from 'prop-types'
-import I18n from 'i18n!assignments_2'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import React from 'react'
 import tz from '@canvas/timezone'
 
@@ -34,9 +34,11 @@ import {TruncateText} from '@instructure/ui-truncate-text'
 import {Text} from '@instructure/ui-text'
 import {Tooltip} from '@instructure/ui-tooltip'
 
+const I18n = useI18nScope('assignments_2')
+
 const FolderButton = props => {
   return (
-    <Tooltip tip={props.tip} as="div" variant="inverse">
+    <Tooltip renderTip={props.tip} as="div" color="primary">
       <div
         className="file-select-item"
         id={props.elementId || `folder-${props.folderID}`}

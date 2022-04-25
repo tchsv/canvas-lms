@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Affero General Public License along
 // with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import I18n from 'i18n!react_files'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import React from 'react'
 import _ from 'lodash'
 import $ from 'jquery'
@@ -38,6 +38,8 @@ import {getRootFolder, uploadFile} from '@canvas/files/util/apiFileUtils'
 import parseLinkHeader from 'link-header-parsing/parseLinkHeader'
 import {showFlashSuccess, showFlashError} from '@canvas/alerts/react/FlashAlert'
 import natcompare from '@canvas/util/natcompare'
+
+const I18n = useI18nScope('react_files')
 
 class FileBrowser extends React.Component {
   static propTypes = {
@@ -384,8 +386,9 @@ class FileBrowser extends React.Component {
           id="image-upload__upload"
           onClick={this.selectLocalFile}
           disabled={disabled}
-          variant="ghost"
-          icon={IconUploadSolid}
+          color="primary"
+          withBackground={false}
+          renderIcon={IconUploadSolid}
         >
           {I18n.t('Upload File')} {srError}
         </Button>

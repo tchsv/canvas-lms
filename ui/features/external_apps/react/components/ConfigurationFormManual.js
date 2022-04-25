@@ -16,7 +16,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import I18n from 'i18n!external_tools'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import _ from 'underscore'
 import $ from 'jquery'
 import React from 'react'
@@ -26,6 +26,8 @@ import TextAreaInput from './TextAreaInput'
 import SelectInput from './SelectInput'
 import CheckboxInput from './CheckboxInput'
 import '@canvas/rails-flash-notifications'
+
+const I18n = useI18nScope('external_tools')
 
 const PRIVACY_OPTIONS = {
   anonymous: I18n.t('Anonymous'),
@@ -130,8 +132,8 @@ export default class ConfigurationFormManual extends React.Component {
           ref="name"
           id="name"
           defaultValue={this.props.name}
-          label={I18n.t('Name')}
-          required
+          renderLabel={I18n.t('Name')}
+          isRequired
           errors={this.state.errors}
         />
 
@@ -141,7 +143,7 @@ export default class ConfigurationFormManual extends React.Component {
               ref="consumerKey"
               id="consumerKey"
               defaultValue={this.props.consumerKey}
-              label={I18n.t('Consumer Key')}
+              renderLabel={I18n.t('Consumer Key')}
               errors={this.state.errors}
             />
           </div>
@@ -151,7 +153,7 @@ export default class ConfigurationFormManual extends React.Component {
               id="sharedSecret"
               defaultValue={this.props.sharedSecret}
               placeholder={this.props.consumerKey ? I18n.t('[Unchanged]') : null} // Assume that if we have a consumer key, we have a secret
-              label={I18n.t('Shared Secret')}
+              renderLabel={I18n.t('Shared Secret')}
               errors={this.state.errors}
             />
           </div>
@@ -163,8 +165,8 @@ export default class ConfigurationFormManual extends React.Component {
           ref="url"
           id="url"
           defaultValue={this.props.url ? this.props.url : ''}
-          label={I18n.t('Launch URL')}
-          required
+          renderLabel={I18n.t('Launch URL')}
+          isRequired
           errors={this.state.errors}
         />
 
@@ -174,7 +176,7 @@ export default class ConfigurationFormManual extends React.Component {
               ref="domain"
               id="domain"
               defaultValue={this.props.domain ? this.props.domain : ''}
-              label={I18n.t('Domain')}
+              renderLabel={I18n.t('Domain')}
               errors={this.state.errors}
             />
           </div>

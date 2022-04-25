@@ -20,7 +20,7 @@ import {bindActionCreators} from 'redux'
 import {bool, func, number, string} from 'prop-types'
 import {connect} from 'react-redux'
 import {debounce} from 'lodash'
-import I18n from 'i18n!announcements_v2'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import React, {Component} from 'react'
 import {Button} from '@instructure/ui-buttons'
 import {FormField} from '@instructure/ui-form-field'
@@ -41,6 +41,8 @@ import ExternalFeedsTray from './ExternalFeedsTray'
 import propTypes from '../propTypes'
 import select from 'obj-select'
 import {showConfirmDelete} from './ConfirmDeleteModal'
+
+const I18n = useI18nScope('announcements_v2')
 
 // Delay the search so as not to overzealously read out the number
 // of search results to the user
@@ -111,7 +113,7 @@ export default class IndexHeader extends Component {
     return (
       <View>
         <View margin="0 0 medium" display="block">
-          <Flex wrapItems wrap="wrap" justifyItems="end">
+          <Flex wrap="wrap" justifyItems="end">
             <Flex.Item grow>
               <FormField
                 id="announcement-filter"
@@ -137,20 +139,20 @@ export default class IndexHeader extends Component {
 
             <Flex.Item grow margin="0 0 0 small">
               <TextInput
-                label={
+                renderLabel={
                   <ScreenReaderContent>
                     {I18n.t('Search announcements by title')}
                   </ScreenReaderContent>
                 }
                 placeholder={I18n.t('Search')}
-                icon={() => <IconSearchLine />}
+                renderAfterInput={() => <IconSearchLine />}
                 ref={this.searchInputRef}
                 onChange={this.onSearch}
                 name="announcements_search"
               />
             </Flex.Item>
             <Flex.Item margin="0 0 0 small">
-              {this.props.permissions.manage_content &&
+              {this.props.permissions.manage_course_content_edit &&
                 !this.props.announcementsLocked &&
                 (this.props.isToggleLocking ? (
                   <Button
@@ -179,7 +181,7 @@ export default class IndexHeader extends Component {
                     </ScreenReaderContent>
                   </Button>
                 ))}
-              {this.props.permissions.manage_content && (
+              {this.props.permissions.manage_course_content_delete && (
                 <Button
                   disabled={this.props.isBusy || this.props.selectedCount === 0}
                   size="medium"
@@ -199,7 +201,7 @@ export default class IndexHeader extends Component {
               {this.props.permissions.create && (
                 <Button
                   href={`/${this.props.contextType}s/${this.props.contextId}/discussion_topics/new?is_announcement=true`}
-                  variant="primary"
+                  color="primary"
                   id="add_announcement"
                 >
                   <IconPlusLine />

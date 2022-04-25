@@ -52,6 +52,42 @@ describe DiscussionTopicsController do
     @entry = @topic.discussion_entries.create(message: "some message", user: @user)
   end
 
+  def topic_params(course, opts = {})
+    {
+      course_id: course.id,
+      title: "Topic Title",
+      is_announcement: false,
+      discussion_type: "side_comment",
+      require_initial_post: true,
+      podcast_has_student_posts: false,
+      delayed_post_at: "",
+      locked: true,
+      lock_at: "",
+      message: "Message",
+      delay_posting: false,
+      threaded: false,
+      specific_sections: "all"
+    }.merge(opts)
+  end
+
+  def assignment_params(course, opts = {})
+    course.require_assignment_group
+    {
+      assignment: {
+        points_possible: 1,
+        grading_type: "points",
+        assignment_group_id: @course.assignment_groups.first.id,
+      }.merge(opts)
+    }
+  end
+
+  def group_topic_params(group, opts = {})
+    params = topic_params(group, opts)
+    params[:group_id] = group.id
+    params.delete(:course_id)
+    params
+  end
+
   describe "GET 'index'" do
     it "requires authorization" do
       get "index", params: { course_id: @course.id }
@@ -262,14 +298,43 @@ describe DiscussionTopicsController do
 
     it "sets discussions reporting and anonymity when their flags are enabled" do
       Account.site_admin.enable_feature! :react_discussions_post
-      Account.site_admin.enable_feature! :discussions_reporting
-      Account.site_admin.enable_feature! :discussion_anonymity
 
       user_session(@teacher)
       get "index", params: { course_id: @course.id }
       expect(assigns[:js_env][:student_reporting_enabled]).to be(true)
       expect(assigns[:js_env][:discussion_anonymity_enabled]).to be(true)
       expect(assigns[:js_env][:FEATURE_FLAGS_URL]).to eq("/courses/#{@course.id}/settings#tab-features")
+    end
+
+    describe "Metrics for the index page" do
+      before do
+        allow(InstStatsd::Statsd).to receive(:increment)
+        allow(InstStatsd::Statsd).to receive(:count)
+      end
+
+      it "count discussion_topic.index.visit" do
+        user_session(@teacher)
+        get "index", params: { course_id: @course.id }
+        expect(InstStatsd::Statsd).to have_received(:increment).with("discussion_topic.index.visit").at_least(:once)
+      end
+
+      it "count number of pinned discussions discussion_topic.index.pinned" do
+        user_session(@teacher)
+        get "index", params: { course_id: @course.id }
+        expect(InstStatsd::Statsd).to have_received(:count).with("discussion_topic.index.visit.pinned", 0).at_least(:once)
+      end
+
+      it "count number of discussion_topic.index.visit.discussions" do
+        user_session(@teacher)
+        get "index", params: { course_id: @course.id }
+        expect(InstStatsd::Statsd).to have_received(:count).with("discussion_topic.index.visit.discussions", 0).at_least(:once)
+      end
+
+      it "count number of discussion_topic.index.visit.closed_for_comments" do
+        user_session(@teacher)
+        get "index", params: { course_id: @course.id }
+        expect(InstStatsd::Statsd).to have_received(:count).with("discussion_topic.index.visit.closed_for_comments", 0).at_least(:once)
+      end
     end
   end
 
@@ -423,6 +488,7 @@ describe DiscussionTopicsController do
     end
 
     context 'with the "react_discussions_post" FF enabled' do
+      render_views
       subject { get "show", params: { course_id: course.id, id: discussion.id } }
 
       let!(:discussion) do
@@ -474,15 +540,15 @@ describe DiscussionTopicsController do
           discussion.save
 
           subject
-          expect(response.to_a.to_s).to match(/.+enrollment.+\.rss/)
-          expect(response.to_a.to_s).to include("Discussion Podcast Feed")
+          expect(response.body).to match(/.+enrollment.+\.rss/)
+          expect(response.body).to include("Discussion Podcast Feed")
         end
       end
 
       it "adds Discussion Atom Feed to header" do
         subject
-        expect(response.to_a.to_s).to match(/.+enrollment.+\.atom/)
-        expect(response.to_a.to_s).to include("Discussion Atom Feed")
+        expect(response.body).to match(/.+enrollment.+\.atom/)
+        expect(response.body).to include("Discussion Atom Feed")
       end
     end
 
@@ -1383,42 +1449,6 @@ describe DiscussionTopicsController do
       allow(controller).to receive_messages(form_authenticity_token: "abc", form_authenticity_param: "abc")
     end
 
-    def topic_params(course, opts = {})
-      {
-        course_id: course.id,
-        title: "Topic Title",
-        is_announcement: false,
-        discussion_type: "side_comment",
-        require_initial_post: true,
-        podcast_has_student_posts: false,
-        delayed_post_at: "",
-        locked: true,
-        lock_at: "",
-        message: "Message",
-        delay_posting: false,
-        threaded: false,
-        specific_sections: "all"
-      }.merge(opts)
-    end
-
-    def group_topic_params(group, opts = {})
-      params = topic_params(group, opts)
-      params[:group_id] = group.id
-      params.delete(:course_id)
-      params
-    end
-
-    def assignment_params(course, opts = {})
-      course.require_assignment_group
-      {
-        assignment: {
-          points_possible: 1,
-          grading_type: "points",
-          assignment_group_id: @course.assignment_groups.first.id,
-        }.merge(opts)
-      }
-    end
-
     describe "create_announcements_unlocked preference" do
       before do
         @teacher.create_announcements_unlocked(false)
@@ -1581,7 +1611,6 @@ describe DiscussionTopicsController do
     describe "discussion anonymity" do
       it "allows full_anonymity" do
         Account.site_admin.enable_feature! :react_discussions_post
-        Account.site_admin.enable_feature! :discussion_anonymity
         user_session @teacher
         post "create", params: topic_params(@course, { anonymous_state: "full_anonymity" }), format: :json
         expect(response).to be_successful
@@ -1591,7 +1620,6 @@ describe DiscussionTopicsController do
 
       it "allows full_anonymity with course feature flag" do
         @course.enable_feature! :react_discussions_post
-        Account.site_admin.enable_feature! :discussion_anonymity
         user_session @teacher
         post "create", params: topic_params(@course, { anonymous_state: "full_anonymity" }), format: :json
         expect(response).to be_successful
@@ -1601,7 +1629,6 @@ describe DiscussionTopicsController do
 
       it "allows partial_anonymity" do
         Account.site_admin.enable_feature! :react_discussions_post
-        Account.site_admin.enable_feature! :discussion_anonymity
         user_session @teacher
         post "create", params: topic_params(@course, { anonymous_state: "partial_anonymity" }), format: :json
         expect(response).to be_successful
@@ -1611,7 +1638,6 @@ describe DiscussionTopicsController do
 
       it "nullifies anonymous_state when unaccounted for" do
         Account.site_admin.enable_feature! :react_discussions_post
-        Account.site_admin.enable_feature! :discussion_anonymity
         user_session @teacher
         post "create", params: topic_params(@course, { anonymous_state: "thisisunaccountedfor" }), format: :json
         expect(response).to be_successful
@@ -1621,7 +1647,6 @@ describe DiscussionTopicsController do
 
       it "nullifies anonymous_state when feature flag is OFF" do
         Account.site_admin.disable_feature! :react_discussions_post
-        Account.site_admin.enable_feature! :discussion_anonymity
         user_session @teacher
         post "create", params: topic_params(@course, { anonymous_state: "full_anonymity" }), format: :json
         expect(response).to be_successful
@@ -2141,6 +2166,282 @@ describe DiscussionTopicsController do
       expect(response).to be_successful
       topics.each(&:reload)
       expect(topics.map(&:position)).to eq [2, 1, 3]
+    end
+  end
+
+  describe "Metrics" do
+    before do
+      allow(InstStatsd::Statsd).to receive(:increment)
+      allow(InstStatsd::Statsd).to receive(:count)
+    end
+
+    it "increment discussion_topic.created" do
+      user_session @teacher
+      post "create", params: topic_params(@course), format: :json
+      expect(response).to be_successful
+      expect(InstStatsd::Statsd).to have_received(:increment).with("discussion_topic.created").at_least(:once)
+    end
+
+    it "does not increment discussion_topic.created when topic is not successfully created" do
+      user_session @observer
+      post "create", params: topic_params(@course), format: :json
+      expect(response).to have_http_status :unauthorized
+      expect(InstStatsd::Statsd).not_to have_received(:increment).with("discussion_topic.created")
+    end
+
+    it "increment discussion_topic.created.partial_anonymity" do
+      Account.site_admin.enable_feature! :react_discussions_post
+      user_session @teacher
+      post "create", params: topic_params(@course, { anonymous_state: "partial_anonymity" }), format: :json
+      expect(response).to be_successful
+      expect(InstStatsd::Statsd).to have_received(:increment).with("discussion_topic.created.partial_anonymity").at_least(:once)
+    end
+
+    it "does not increment discussion_topic.created.partial_anonymity if topic can not be partially anonymous" do
+      Account.site_admin.disable_feature! :react_discussions_post
+      user_session @teacher
+      post "create", params: topic_params(@course, { anonymous_state: "partial_anonymity" }), format: :json
+      expect(response).to be_successful
+      expect(InstStatsd::Statsd).not_to have_received(:increment).with("discussion_topic.created.partial_anonymity")
+    end
+
+    it "increment discussion_topic.created.full_anonymity" do
+      Account.site_admin.enable_feature! :react_discussions_post
+      user_session @teacher
+      post "create", params: topic_params(@course, { anonymous_state: "full_anonymity" }), format: :json
+      expect(response).to be_successful
+      expect(InstStatsd::Statsd).to have_received(:increment).with("discussion_topic.created.full_anonymity").at_least(:once)
+    end
+
+    it "does not increment discussion_topic.created.full_anonymity if topic can not be anonymous" do
+      Account.site_admin.disable_feature! :react_discussions_post
+      user_session @teacher
+      post "create", params: topic_params(@course, { anonymous_state: "full_anonymity" }), format: :json
+      expect(response).to be_successful
+      expect(InstStatsd::Statsd).not_to have_received(:increment).with("discussion_topic.created.full_anonymity")
+    end
+
+    it "increment discussion_topic.created.podcast_feed_enabled" do
+      user_session @teacher
+      post "create", params: topic_params(@course, { podcast_enabled: 1 }), format: :json
+      expect(response).to be_successful
+      expect(InstStatsd::Statsd).to have_received(:increment).with("discussion_topic.created.podcast_feed_enabled").at_least(:once)
+    end
+
+    it "does not increment discussion_topic.created.podcast_feed_enabled" do
+      user_session @teacher
+      post "create", params: topic_params(@course, { podcast_enabled: 0 }), format: :json
+      expect(response).to be_successful
+      expect(InstStatsd::Statsd).not_to have_received(:increment).with("discussion_topic.created.podcast_feed_enabled")
+    end
+
+    it "increment discussion_topic.created.allow_liking_enabled" do
+      user_session @teacher
+      post "create", params: topic_params(@course, { allow_rating: 1 }), format: :json
+      expect(response).to be_successful
+      expect(InstStatsd::Statsd).to have_received(:increment).with("discussion_topic.created.allow_liking_enabled").at_least(:once)
+    end
+
+    it "does not increment discussion_topic.created.allow_liking_enabled" do
+      user_session @teacher
+      post "create", params: topic_params(@course, { allow_rating: 0 }), format: :json
+      expect(response).to be_successful
+      expect(InstStatsd::Statsd).not_to have_received(:increment).with("discussion_topic.created.allow_liking_enabled")
+    end
+
+    it "increment discussion_topic.created.attachment" do
+      user_session @teacher
+      data = fixture_file_upload("docs/txt.txt", "text/plain", true)
+      attachment_model context: @course, uploaded_data: data, folder: Folder.unfiled_folder(@course)
+      post "create", params: topic_params(@course, { attachment: data }), format: :json
+      expect(response).to be_successful
+      expect(InstStatsd::Statsd).to have_received(:increment).with("discussion_topic.created.attachment").at_least(:once)
+    end
+
+    it "does not increment discussion_topic.created.attachment" do
+      user_session @teacher
+      post "create", params: topic_params(@course, {}), format: :json
+      expect(response).to be_successful
+      expect(InstStatsd::Statsd).not_to have_received(:increment).with("discussion_topic.created.attachment")
+    end
+
+    it "increment discussion_topic.created.scheduled when delayed_post_at is not nil" do
+      user_session @teacher
+      post "create", params: topic_params(@course, { delayed_post_at: "2022-04-21T06:00:00.000Z" }), format: :json
+      expect(response).to be_successful
+      expect(InstStatsd::Statsd).to have_received(:increment).with("discussion_topic.created.scheduled").at_least(:once)
+    end
+
+    it "increment discussion_topic.created.scheduled when lock at is not nil" do
+      user_session @teacher
+      post "create", params: topic_params(@course, { lock_at: "2022-04-21T06:00:00.000Z" }), format: :json
+      expect(response).to be_successful
+      expect(InstStatsd::Statsd).to have_received(:increment).with("discussion_topic.created.scheduled").at_least(:once)
+    end
+
+    it "does not increment discussion_topic.created.scheduled without delayed_post_at and lock_at" do
+      user_session @teacher
+      post "create", params: topic_params(@course), format: :json
+      expect(response).to be_successful
+      expect(InstStatsd::Statsd).not_to have_received(:increment).with("discussion_topic.created.scheduled")
+    end
+
+    it "increment discussion_topic.created.graded" do
+      user_session @teacher
+      obj_params = topic_params(@course).merge(assignment_params(@course))
+      post "create", params: obj_params, format: :json
+      expect(InstStatsd::Statsd).to have_received(:increment).with("discussion_topic.created.graded").at_least(:once)
+    end
+
+    it "does not increment discussion_topic.created.graded for non graded topics" do
+      user_session @teacher
+      post "create", params: topic_params(@course), format: :json
+      expect(InstStatsd::Statsd).not_to have_received(:increment).with("discussion_topic.created.graded")
+    end
+
+    describe "assignment multiple due dates" do
+      describe "should increment" do
+        it "discussion_topic.created.multiple_due_dates" do
+          user_session @teacher
+          obj_params = topic_params(@course).merge(assignment_params(@course))
+          obj_params[:assignment][:assignment_overrides] = [{ "due_at" => "2022-04-23T05:59:59.000Z", "due_at_overridden" => false, "lock_at" => "2022-04-24T05:59:59.000Z", "lock_at_overridden" => false, "unlock_at" => "2022-04-21T06:00:00.000Z", "unlock_at_overridden" => false, "rowKey" => "0", "course_section_id" => "2", "title" => "Section 1", "all_day" => false, "all_day_date" => nil, "persisted" => false },
+                                                            { "due_at" => "2022-04-30T05:59:59.000Z", "due_at_overridden" => false, "lock_at" => "2022-05-01T05:59:59.000Z", "lock_at_overridden" => false, "unlock_at" => "2022-04-28T06:00:00.000Z", "unlock_at_overridden" => false, "rowKey" => "1", "course_section_id" => "3", "title" => "Section 2", "all_day" => false, "all_day_date" => nil, "persisted" => false }]
+          post "create", params: obj_params, format: :json
+          expect(InstStatsd::Statsd).to have_received(:increment).with("discussion_topic.created.multiple_due_dates").at_least(:once)
+        end
+      end
+
+      describe "should not increment" do
+        it "discussion_topic.created.multiple_due_dates" do
+          user_session @teacher
+          post "create", params: topic_params(@course), format: :json
+          expect(InstStatsd::Statsd).not_to have_received(:increment).with("discussion_topic.created.multiple_due_dates")
+        end
+      end
+    end
+
+    it "increment discussion_topic.visit.redesign" do
+      @course.enable_feature! :react_discussions_post
+
+      course_topic
+      user_session @teacher
+      get "show", params: { course_id: @course.id, id: @topic.id }
+      expect(InstStatsd::Statsd).to have_received(:increment).with("discussion_topic.visit.redesign").at_least(:once)
+    end
+
+    it "does not increment discussion_topic.visit.redesign with unauthorized visit" do
+      @course.enable_feature! :react_discussions_post
+
+      course_topic
+      get "show", params: { course_id: @course.id, id: @topic.id }
+      assert_unauthorized
+      expect(InstStatsd::Statsd).not_to have_received(:increment).with("discussion_topic.visit.redesign")
+    end
+
+    it "count discussion_topic.visit.entries.redesign" do
+      @course.enable_feature! :react_discussions_post
+
+      course_topic
+      user_session @teacher
+      get "show", params: { course_id: @course.id, id: @topic.id }
+      expect(InstStatsd::Statsd).to have_received(:count).with("discussion_topic.visit.entries.redesign", 0).at_least(:once)
+    end
+
+    it "does not count discussion_topic.visit.entries.redesign with unauthorized visit" do
+      @course.enable_feature! :react_discussions_post
+
+      course_topic
+      get "show", params: { course_id: @course.id, id: @topic.id }
+      assert_unauthorized
+      expect(InstStatsd::Statsd).not_to have_received(:count).with("discussion_topic.visit.entries.redesign", 0)
+    end
+
+    it "count discussion_topic.visit.pages.redesign" do
+      @course.enable_feature! :react_discussions_post
+
+      course_topic
+      user_session @teacher
+      get "show", params: { course_id: @course.id, id: @topic.id }
+      expect(InstStatsd::Statsd).to have_received(:count).with("discussion_topic.visit.pages.redesign", 0).at_least(:once)
+    end
+
+    it "does not count discussion_topic.visit.pages.redesign with unauthorized visit" do
+      @course.enable_feature! :react_discussions_post
+
+      course_topic
+      get "show", params: { course_id: @course.id, id: @topic.id }
+      assert_unauthorized
+      expect(InstStatsd::Statsd).not_to have_received(:count).with("discussion_topic.visit.pages.redesign", 0)
+    end
+
+    it "increment discussion_topic.visit.legacy" do
+      @course.disable_feature! :react_discussions_post
+
+      course_topic
+      user_session @teacher
+      get "show", params: { course_id: @course.id, id: @topic.id }
+      expect(InstStatsd::Statsd).to have_received(:increment).with("discussion_topic.visit.legacy").at_least(:once)
+    end
+
+    it "does not increment discussion_topic.visit.legacy with unauthorized visit" do
+      @course.disable_feature! :react_discussions_post
+
+      course_topic
+      get "show", params: { course_id: @course.id, id: @topic.id }
+      assert_unauthorized
+      expect(InstStatsd::Statsd).not_to have_received(:increment).with("discussion_topic.visit.legacy")
+    end
+
+    it "increment discussion_topic.created.group" do
+      user_session @teacher
+      @group_category = @course.group_categories.create(name: "gc")
+      @group = @course.groups.create!(group_category: @group_category)
+
+      post "create", params: group_topic_params(@group), format: :json
+      expect(response).to be_successful
+      expect(InstStatsd::Statsd).to have_received(:increment).with("discussion_topic.created.group").at_least(:once)
+    end
+
+    it "does not increment discussion_topic.created.group when topic is not successfully created" do
+      user_session @teacher
+      post "create", params: topic_params(@course), format: :json
+      expect(InstStatsd::Statsd).not_to have_received(:increment).with("discussion_topic.created.group")
+    end
+
+    it "count discussion_topic.visit.entries.legacy" do
+      @course.disable_feature! :react_discussions_post
+
+      course_topic
+      user_session @teacher
+      get "show", params: { course_id: @course.id, id: @topic.id }
+      expect(InstStatsd::Statsd).to have_received(:count).with("discussion_topic.visit.entries.legacy", 0).at_least(:once)
+    end
+
+    it "does not count discussion_topic.visit.entries.legacy with unauthorized visit" do
+      @course.disable_feature! :react_discussions_post
+
+      course_topic
+      get "show", params: { course_id: @course.id, id: @topic.id }
+      assert_unauthorized
+      expect(InstStatsd::Statsd).not_to have_received(:count).with("discussion_topic.visit.entries.legacy", 0)
+    end
+
+    it "count discussion_topic.visit.pages.legacy" do
+      @course.disable_feature! :react_discussions_post
+
+      course_topic
+      user_session @teacher
+      get "show", params: { course_id: @course.id, id: @topic.id }
+      expect(InstStatsd::Statsd).to have_received(:count).with("discussion_topic.visit.pages.legacy", 0).at_least(:once)
+    end
+
+    it "does not count discussion_topic.visit.pages.legacy with unauthorized visit" do
+      @course.disable_feature! :react_discussions_post
+
+      course_topic
+      get "show", params: { course_id: @course.id, id: @topic.id }
+      assert_unauthorized
+      expect(InstStatsd::Statsd).not_to have_received(:count).with("discussion_topic.visit.pages.legacy", 0)
     end
   end
 end

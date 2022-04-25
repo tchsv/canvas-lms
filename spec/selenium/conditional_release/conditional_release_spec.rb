@@ -27,7 +27,9 @@ describe "native canvas conditional release" do
 
   include_context "in-process server selenium tests"
   before(:once) do
-    Account.default.enable_feature! :conditional_release
+    account = Account.default
+    account.settings[:conditional_release] = { value: true }
+    account.save!
   end
 
   before do
@@ -41,7 +43,9 @@ describe "native canvas conditional release" do
     end
 
     it "does not show Allow in Mastery Paths when feature disabled" do
-      Account.default.disable_feature! :conditional_release
+      account = Account.default
+      account.settings[:conditional_release] = { value: false }
+      account.save!
       get "/courses/#{@course.id}/pages/new/edit"
       expect(ConditionalReleaseObjects.conditional_content_exists?).to eq(false)
     end
@@ -126,8 +130,8 @@ describe "native canvas conditional release" do
       assignment = assignment_model(course: @course, points_possible: 100)
       get "/courses/#{@course.id}/assignments/#{assignment.id}/edit"
       ConditionalReleaseObjects.conditional_release_link.click
-      replace_content(ConditionalReleaseObjects.division_cutoff1, "72")
-      replace_content(ConditionalReleaseObjects.division_cutoff2, "47")
+      ConditionalReleaseObjects.replace_mastery_path_scores(ConditionalReleaseObjects.division_cutoff1, "70", "72")
+      ConditionalReleaseObjects.replace_mastery_path_scores(ConditionalReleaseObjects.division_cutoff2, "40", "47")
       ConditionalReleaseObjects.division_cutoff2.send_keys :tab
 
       expect(ConditionalReleaseObjects.division_cutoff1.attribute("value")).to eq("72 pts")
@@ -188,10 +192,10 @@ describe "native canvas conditional release" do
       get "/courses/#{@course.id}/assignments/#{assignment.id}/edit"
       ConditionalReleaseObjects.conditional_release_link.click
 
-      replace_content(ConditionalReleaseObjects.division_cutoff1, "")
+      ConditionalReleaseObjects.replace_mastery_path_scores(ConditionalReleaseObjects.division_cutoff1, "70", "")
       expect(ConditionalReleaseObjects.must_not_be_empty_exists?).to eq(true)
 
-      replace_content(ConditionalReleaseObjects.division_cutoff1, "35")
+      ConditionalReleaseObjects.replace_mastery_path_scores(ConditionalReleaseObjects.division_cutoff1, "", "35")
       expect(ConditionalReleaseObjects.these_scores_are_out_of_order_exists?).to eq(true)
     end
 

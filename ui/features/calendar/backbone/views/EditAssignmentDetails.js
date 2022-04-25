@@ -16,7 +16,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import I18n from 'i18n!calendar'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import $ from 'jquery'
 import moment from 'moment'
 import natcompare from '@canvas/util/natcompare'
@@ -34,6 +34,8 @@ import '@canvas/datetime'
 import '@canvas/forms/jquery/jquery.instructure_forms'
 import '@canvas/jquery/jquery.instructure_misc_helpers'
 import '../../fcMomentHandlebarsHelpers'
+
+const I18n = useI18nScope('calendar')
 
 export default class EditAssignmentDetailsRewrite extends ValidatedFormView {
   initialize(selector, event, contextChangeCB, closeCB) {
@@ -129,10 +131,8 @@ export default class EditAssignmentDetailsRewrite extends ValidatedFormView {
     this.$el
       .find('.assignment_group')
       .html(genericSelectOptionsTemplate(assignmentGroupsSelectOptionsInfo))
-    // Only show important date checkbox if selected context is k5 subject and the feature is enabled
-    this.$el
-      .find('#important_dates')
-      .toggle(this.currentContextInfo.k5_course && ENV.FEATURES?.important_dates)
+    // Only show important date checkbox if selected context is k5 subject
+    this.$el.find('#important_dates').toggle(this.currentContextInfo.k5_course)
 
     // Update the edit and more options links with the new context
     this.$el.attr('action', this.currentContextInfo.create_assignment_url)

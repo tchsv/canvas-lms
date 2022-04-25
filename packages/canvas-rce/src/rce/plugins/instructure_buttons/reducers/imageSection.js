@@ -22,16 +22,26 @@ export const initialState = {
   mode: '',
   image: '',
   imageName: '',
+  icon: '',
+  iconFillColor: '#000000',
+  collectionOpen: false,
   loading: false,
-  error: undefined
+  error: undefined,
+  scrolled: false
 }
 
 export const actions = {
+  RESET_ALL: {type: 'ResetAll'},
   SET_IMAGE: {type: 'SetImage'},
   SET_IMAGE_NAME: {type: 'SetImageName'},
+  CLEAR_IMAGE: {type: 'ClearImage'},
+  SET_ICON: {type: 'SetIcon'},
+  SET_ICON_FILL_COLOR: {type: 'SetIconFillColor'},
+  SET_IMAGE_COLLECTION_OPEN: {type: 'SetImageCollectionOpen'},
   START_LOADING: {type: 'StartLoading'},
   STOP_LOADING: {type: 'StopLoading'},
-  CLEAR_MODE: {type: 'ClearMode'}
+  CLEAR_MODE: {type: 'ClearMode'},
+  SET_SCROLLED: {type: 'SetScrolled'}
 }
 
 export const modes = {
@@ -51,8 +61,20 @@ const imageSection = (state, action) => {
       return {...state, image: action.payload}
     case actions.SET_IMAGE_NAME.type:
       return {...state, imageName: action.payload}
+    case actions.CLEAR_IMAGE.type:
+      return {...state, image: '', imageName: ''}
+    case actions.SET_ICON.type:
+      return {...state, icon: action.payload}
+    case actions.SET_ICON_FILL_COLOR.type:
+      return {...state, iconFillColor: action.payload}
     case actions.CLEAR_MODE.type:
       return {...state, mode: ''}
+    case actions.SET_IMAGE_COLLECTION_OPEN.type:
+      return {...state, collectionOpen: action.payload}
+    case actions.RESET_ALL.type:
+      return {...state, ...initialState}
+    case actions.SET_SCROLLED.type:
+      return {...state, scrolled: action.payload}
     case modes.uploadImages.type:
       return {...state, mode: modes.uploadImages.type}
     case modes.singleColorImages.type:

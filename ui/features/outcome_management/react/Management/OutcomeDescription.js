@@ -17,7 +17,7 @@
  */
 
 import React from 'react'
-import I18n from 'i18n!OutcomeManagement'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import PropTypes from 'prop-types'
 import {Text} from '@instructure/ui-text'
 import {View} from '@instructure/ui-view'
@@ -25,9 +25,11 @@ import {PresentationContent, ScreenReaderContent} from '@instructure/ui-a11y-con
 import {stripHtmlTags} from '@canvas/outcomes/stripHtmlTags'
 import useCanvasContext from '@canvas/outcomes/react/hooks/useCanvasContext'
 import ProficiencyCalculation from '../MasteryCalculation/ProficiencyCalculation'
-import {prepareRatings} from '@canvas/outcomes/react/helpers/ratingsHelpers'
+import {prepareRatings} from '@canvas/outcomes/react/hooks/useRatings'
 import Ratings from './Ratings'
 import {ratingsShape} from './shapes'
+
+const I18n = useI18nScope('OutcomeManagement')
 
 const OutcomeDescription = ({
   description,
@@ -38,8 +40,7 @@ const OutcomeDescription = ({
   masteryPoints,
   ratings
 }) => {
-  const {friendlyDescriptionFF, isStudent, individualOutcomeRatingAndCalculationFF} =
-    useCanvasContext()
+  const {friendlyDescriptionFF, isStudent, accountLevelMasteryScalesFF} = useCanvasContext()
   const shouldShowFriendlyDescription = friendlyDescriptionFF && friendlyDescription
   let fullDescription = description
   let truncatedDescription = stripHtmlTags(fullDescription || '')
@@ -54,7 +55,7 @@ const OutcomeDescription = ({
     !isStudent &&
     truncatedDescription !== friendlyDescription
 
-  if (!description && !friendlyDescription && !individualOutcomeRatingAndCalculationFF) return null
+  if (!description && !friendlyDescription && accountLevelMasteryScalesFF) return null
 
   return (
     <View>
@@ -112,9 +113,16 @@ const OutcomeDescription = ({
         </View>
       )}
 
-      {!truncated && individualOutcomeRatingAndCalculationFF && (
+      {!truncated && !accountLevelMasteryScalesFF && (
         <View>
-          <Ratings ratings={prepareRatings(ratings, masteryPoints)} canManage={false} />
+          <Ratings
+            ratings={prepareRatings(ratings)}
+            masteryPoints={{
+              value: masteryPoints,
+              error: null
+            }}
+            canManage={false}
+          />
           <ProficiencyCalculation
             method={{calculationMethod, calculationInt}}
             individualOutcome="display"

@@ -52,9 +52,11 @@ export default {
         criterion: 'name',
         direction: 'ascending'
       },
+      hideTotal: true,
       showNotes: true,
       showUnpublishedAssignments: true,
       showSeparateFirstLastNames: true,
+      hideAssignmentGroupTotals: true,
       statusColors: {
         dropped: '#FEF0E5',
         excused: '#E5F7E5',

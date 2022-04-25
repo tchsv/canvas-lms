@@ -16,7 +16,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import I18n from 'i18n!assignments_bulk_edit'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import React, {useState, useCallback} from 'react'
 import {Button} from '@instructure/ui-buttons'
 import {Checkbox, CheckboxGroup} from '@instructure/ui-checkbox'
@@ -27,6 +27,8 @@ import {Text} from '@instructure/ui-text'
 import {View} from '@instructure/ui-view'
 import CanvasModal from '@canvas/instui-bindings/react/Modal'
 import useNumberInputDriver from '../hooks/useNumberInputDriver'
+
+const I18n = useI18nScope('assignments_bulk_edit')
 
 export default function MoveDatesModal({onShiftDays, onRemoveDates, onCancel, ...otherModalProps}) {
   const [mode, setMode] = useState('shift')
@@ -59,7 +61,7 @@ export default function MoveDatesModal({onShiftDays, onRemoveDates, onCancel, ..
     setDatesToRemove(newValue)
   }, [])
 
-  const okDisabled = (function() {
+  const okDisabled = (function () {
     if (mode === 'shift' && shiftDaysState.numberValue === null) return true
     if (mode === 'remove' && datesToRemove.length === 0) return true
     return false
@@ -73,7 +75,7 @@ export default function MoveDatesModal({onShiftDays, onRemoveDates, onCancel, ..
         </Button>
         <Button
           margin="0 0 0 small"
-          variant="primary"
+          color="primary"
           onClick={handleOk}
           interaction={okDisabled ? 'disabled' : 'enabled'}
         >

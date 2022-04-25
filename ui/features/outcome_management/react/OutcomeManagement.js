@@ -15,9 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+
 import React, {useState, useEffect, useMemo, useRef, useCallback} from 'react'
 import ReactDOM from 'react-dom'
-import I18n from 'i18n!OutcomeManagement'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import WithBreakpoints, {breakpointsShape} from 'with-breakpoints'
 import {Tabs} from '@instructure/ui-tabs'
 import MasteryScale from './MasteryScale/index'
@@ -30,6 +31,8 @@ import {
   showOutcomesImporter,
   showOutcomesImporterIfInProgress
 } from '@canvas/outcomes/react/OutcomesImporter'
+
+const I18n = useI18nScope('OutcomeManagement')
 
 const unmount = mount => ReactDOM.unmountComponentAtNode(mount)
 
@@ -51,7 +54,6 @@ export const OutcomePanel = () => {
 
 export const OutcomeManagementWithoutGraphql = ({breakpoints}) => {
   const improvedManagement = ENV?.IMPROVED_OUTCOMES_MANAGEMENT
-  const accountLevelMasteryScales = ENV?.ACCOUNT_LEVEL_MASTERY_SCALES
   const [importRef, setImportRef] = useState(null)
   const [importNumber, setImportNumber] = useState(0)
   const [isImporting, setIsImporting] = useState(false)
@@ -61,6 +63,13 @@ export const OutcomeManagementWithoutGraphql = ({breakpoints}) => {
     const tabs = {'#mastery_scale': 1, '#mastery_calculation': 2}
     return window.location.hash in tabs ? tabs[window.location.hash] : 0
   })
+  const isMobileView = !breakpoints?.tablet
+  const contextValues = getContext(isMobileView)
+  const {accountLevelMasteryScalesFF, outcomeAlignmentSummaryFF, canManage, contextType} =
+    contextValues.env
+  const shouldDisplayAlignmentsTab =
+    improvedManagement && outcomeAlignmentSummaryFF && canManage && contextType === 'Course'
+  const alignmentTabIndex = accountLevelMasteryScalesFF ? 3 : 1
 
   const onSetImportRef = useCallback(node => {
     setImportRef(node)
@@ -162,8 +171,6 @@ export const OutcomeManagementWithoutGraphql = ({breakpoints}) => {
     setCreatedOutcomeGroupIds(selectedGroupAncestorIds)
   }
 
-  const isMobileView = !breakpoints?.tablet
-
   const onAddOutcomes = addedOutcomes => {
     if (addedOutcomes) {
       setImportNumber(prevState => prevState + 1)
@@ -171,7 +178,7 @@ export const OutcomeManagementWithoutGraphql = ({breakpoints}) => {
   }
 
   return (
-    <OutcomesContext.Provider value={getContext(isMobileView)}>
+    <OutcomesContext.Provider value={contextValues}>
       {improvedManagement && (
         <ManagementHeader
           handleAddOutcomes={onAddOutcomes}
@@ -200,12 +207,14 @@ export const OutcomeManagementWithoutGraphql = ({breakpoints}) => {
             <OutcomePanel />
           )}
         </Tabs.Panel>
-        {accountLevelMasteryScales && (
+        {accountLevelMasteryScalesFF && (
           <Tabs.Panel renderTitle={I18n.t('Mastery')} isSelected={selectedIndex === 1} id="scale">
-            <MasteryScale onNotifyPendingChanges={setHasUnsavedChanges} />
+            <div style={{paddingTop: '24px'}}>
+              <MasteryScale onNotifyPendingChanges={setHasUnsavedChanges} />
+            </div>
           </Tabs.Panel>
         )}
-        {accountLevelMasteryScales && (
+        {accountLevelMasteryScalesFF && (
           <Tabs.Panel
             renderTitle={I18n.t('Calculation')}
             isSelected={selectedIndex === 2}
@@ -213,6 +222,13 @@ export const OutcomeManagementWithoutGraphql = ({breakpoints}) => {
           >
             <MasteryCalculation onNotifyPendingChanges={setHasUnsavedChanges} />
           </Tabs.Panel>
+        )}
+        {shouldDisplayAlignmentsTab && (
+          <Tabs.Panel
+            renderTitle={I18n.t('Alignments')}
+            isSelected={selectedIndex === alignmentTabIndex}
+            id="alignments"
+          />
         )}
       </Tabs>
       <div ref={onSetImportRef} />

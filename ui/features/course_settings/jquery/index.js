@@ -16,7 +16,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import I18n from 'i18n!course_settings'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import $ from 'jquery'
 import _ from 'underscore'
 import {tabIdFromElement} from './course_settings_helper'
@@ -38,6 +38,8 @@ import 'jquery-scroll-to-visible/jquery.scrollTo'
 import 'jqueryui/autocomplete'
 import 'jqueryui/sortable'
 import 'jqueryui/tabs'
+
+const I18n = useI18nScope('course_settings')
 
 var GradePublishing = {
   status: null,
@@ -167,38 +169,32 @@ $(document).ready(function () {
     $enrollment_dialog = $('#enrollment_dialog'),
     $tabBar = $('#course_details_tabs')
 
-  if (ENV.FEATURES && ENV.FEATURES.remember_settings_tab) {
-    const settingsTabs = $tabBar[0].querySelectorAll('ul>li>a[href*="#tab"]')
-    // find the index of the tab whose href matches the URL's hash
-    const initialTab = Array.from(settingsTabs || []).findIndex(
-      t => `#${t.id}` === `${window.location.hash}-link`
-    )
-    // Sync the location hash with window.history, this fixes some issues with the browser back
-    // button when going back to or from the details tab
-    if (!window.location.hash) {
-      const defaultTab = settingsTabs[0]?.href
-      window.history.replaceState(null, null, defaultTab)
-    }
-    $tabBar
-      .on('tabsactivate', (event, ui) => {
-        try {
-          const hash = new URL(ui.newTab.context.href).hash
-          if (window.location.hash !== hash) {
-            window.history.pushState(null, null, hash)
-          }
-          ui.newTab.focus(0)
-        } catch (_ignore) {
-          // if the URL can't be parsed, so be it.
-        }
-      })
-      .tabs({active: initialTab >= 0 ? initialTab : null})
-      .show()
-  } else {
-    // as of jqueryui 1.9, the cookie trumps the fragment :(. so we hack
-    // around that here
-    const initialTab = _.indexOf(_.pluck($tabBar.find('> ul a'), 'hash'), location.hash)
-    $tabBar.tabs({cookie: {}, active: initialTab >= 0 ? initialTab : null}).show()
+  const settingsTabs = $tabBar[0].querySelectorAll('ul>li>a[href*="#tab"]')
+  // find the index of the tab whose href matches the URL's hash
+  const initialTab = Array.from(settingsTabs || []).findIndex(
+    t => `#${t.id}` === `${window.location.hash}-link`
+  )
+  // Sync the location hash with window.history, this fixes some issues with the browser back
+  // button when going back to or from the details tab
+  if (!window.location.hash) {
+    const defaultTab = settingsTabs[0]?.href
+    window.history.replaceState(null, null, defaultTab)
   }
+  $tabBar
+    .on('tabsactivate', (event, ui) => {
+      try {
+        const hash = new URL(ui.newTab.context.href).hash
+        if (window.location.hash !== hash) {
+          window.history.pushState(null, null, hash)
+        }
+        ui.newTab.focus(0)
+      } catch (_ignore) {
+        // if the URL can't be parsed, so be it.
+      }
+    })
+    .tabs({active: initialTab >= 0 ? initialTab : null})
+    .show()
+
   $add_section_form.formSubmit({
     required: ['course_section[name]'],
     beforeSubmit(data) {
@@ -231,7 +227,7 @@ $(document).ready(function () {
         .addClass('option_for_section_' + section.id)
       $('#sections .section_blank').before($section)
       $section.slideDown()
-      $('#course_section_name').val()
+      $('#course_section_name').val('')
       $('#add_section_form button[type="submit"]').focus()
     },
     error(data) {
@@ -621,18 +617,20 @@ $(document).ready(function () {
     $('#course_home_page_announcement_limit').prop('disabled', !$(this).prop('checked'))
   })
 
-  $('#course_enable_pace_plans')
+  $('#course_enable_course_paces')
     .change(function () {
-      $('#pace_plans_caution_text').toggleClass('shown', this.checked)
+      $('#course_paces_caution_text').toggleClass('shown', this.checked)
     })
     .trigger('change')
 
-  if (ENV.FEATURES && ENV.FEATURES.remember_settings_tab) {
-    window.addEventListener('popstate', () => {
-      const openTab = window.location.hash
-      if (openTab) {
-        document.querySelector(`[href="${openTab}"]`)?.click()
-      }
-    })
-  }
+  $('#course_conditional_release').change(function () {
+    $('#conditional_release_caution_text').toggleClass('shown', !this.checked)
+  })
+
+  window.addEventListener('popstate', () => {
+    const openTab = window.location.hash
+    if (openTab) {
+      document.querySelector(`[href="${openTab}"]`)?.click()
+    }
+  })
 })

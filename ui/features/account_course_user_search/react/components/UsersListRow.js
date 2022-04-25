@@ -22,10 +22,12 @@ import {Button} from '@instructure/ui-buttons'
 import {Table} from '@instructure/ui-table'
 import {Tooltip} from '@instructure/ui-tooltip'
 import {IconMasqueradeLine, IconMessageLine, IconEditLine} from '@instructure/ui-icons'
-import I18n from 'i18n!account_course_user_search'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import FriendlyDatetime from '@canvas/datetime/react/components/FriendlyDatetime'
 import CreateOrUpdateUserModal from './CreateOrUpdateUserModal'
 import UserLink from './UserLink'
+
+const I18n = useI18nScope('account_course_user_search')
 
 export default function UsersListRow({accountId, user, permissions, handleSubmitEditUserForm}) {
   return (
@@ -46,7 +48,7 @@ export default function UsersListRow({accountId, user, permissions, handleSubmit
         {permissions.can_masquerade && (
           <Tooltip
             data-testid="user-list-row-tooltip"
-            tip={I18n.t('Act as %{name}', {name: user.name})}
+            renderTip={I18n.t('Act as %{name}', {name: user.name})}
           >
             <Button variant="icon" size="small" href={`/users/${user.id}/masquerade`}>
               <IconMasqueradeLine title={I18n.t('Act as %{name}', {name: user.name})} />
@@ -56,7 +58,7 @@ export default function UsersListRow({accountId, user, permissions, handleSubmit
         {permissions.can_message_users && (
           <Tooltip
             data-testid="user-list-row-tooltip"
-            tip={I18n.t('Send message to %{name}', {name: user.name})}
+            renderTip={I18n.t('Send message to %{name}', {name: user.name})}
           >
             <Button
               variant="icon"
@@ -77,7 +79,7 @@ export default function UsersListRow({accountId, user, permissions, handleSubmit
             <span>
               <Tooltip
                 data-testid="user-list-row-tooltip"
-                tip={I18n.t('Edit %{name}', {name: user.name})}
+                renderTip={I18n.t('Edit %{name}', {name: user.name})}
               >
                 <Button variant="icon" size="small">
                   <IconEditLine title={I18n.t('Edit %{name}', {name: user.name})} />

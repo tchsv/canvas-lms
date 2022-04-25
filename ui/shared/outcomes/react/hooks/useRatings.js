@@ -16,32 +16,43 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {useMemo, useState} from 'react'
-import I18n from 'i18n!ProficiencyTable'
+import {useMemo, useState, useCallback} from 'react'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import uuid from 'uuid/v1'
+import useBoolean from './useBoolean'
+
+const I18n = useI18nScope('useRatings')
 
 const floatRegex = /^[+-]?\d+(\.\d+)?$/
 
-export const createRating = (description, points, color, mastery = false) => ({
+export const createRating = (description, points, focusField = null) => ({
   description,
   points,
-  key: uuid(),
-  color,
-  mastery
+  focusField,
+  key: uuid()
 })
 
-export const defaultOutcomesManagementRatings = [
-  createRating(I18n.t('Exceeds Mastery'), 4, '127A1B'),
-  createRating(I18n.t('Mastery'), 3, '00AC18', true),
-  createRating(I18n.t('Near Mastery'), 2, 'FAB901'),
-  createRating(I18n.t('Below Mastery'), 1, 'FD5D10'),
-  createRating(I18n.t('Well Below Mastery'), 0, 'EE0612')
+export const defaultRatings = [
+  createRating(I18n.t('Exceeds Mastery'), 4),
+  createRating(I18n.t('Mastery'), 3),
+  createRating(I18n.t('Near Mastery'), 2),
+  createRating(I18n.t('Below Mastery'), 1),
+  createRating(I18n.t('No Evidence'), 0)
 ]
+
+export const defaultMasteryPoints = 3
+
+export const prepareRatings = ratings =>
+  (ratings || []).map(({description, points, focusField}) =>
+    createRating(description, points, focusField)
+  )
 
 const invalidDescription = description => (description?.trim() || '').length === 0
 
-const useRatings = ({initialRatings}) => {
-  const [ratings, setRatings] = useState(initialRatings)
+const useRatings = ({initialRatings, initialMasteryPoints}) => {
+  const [ratings, setRatings] = useState(() => prepareRatings(initialRatings))
+  const [masteryPoints, setMasteryPoints] = useState(initialMasteryPoints)
+  const [hasChanged, setHasChanged] = useBoolean(false)
 
   const ratingsWithValidations = useMemo(() => {
     const allPoints = ratings.map(r => r.points)
@@ -70,27 +81,104 @@ const useRatings = ({initialRatings}) => {
 
       return {
         ...r,
+        points,
         pointsError,
         descriptionError
       }
     })
   }, [ratings])
 
-  const hasError = useMemo(() => {
-    return ratingsWithValidations.some(r => r.pointsError || r.descriptionError)
-  }, [ratingsWithValidations])
+  const masteryPointsWithValidations = useMemo(() => {
+    let error = null
+    const masteryPointsFloat = masteryPoints ? parseFloat(masteryPoints) : null
 
-  const hasChanged = useMemo(
-    () => JSON.stringify(ratings) !== JSON.stringify(initialRatings),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [ratings]
+    if (ratings.length > 0) {
+      const sortedRatings = [...ratings].sort((a, b) => parseFloat(a.points) - parseFloat(b.points))
+      const minRatingPoints = parseFloat(sortedRatings[0].points)
+      const maxRatingPoints = parseFloat(sortedRatings[sortedRatings.length - 1].points)
+
+      if ([null, undefined, ''].includes(masteryPoints)) {
+        error = I18n.t('Missing required points')
+      } else if (!floatRegex.test(masteryPoints)) {
+        error = I18n.t('Invalid points')
+      } else if (masteryPointsFloat < 0) {
+        error = I18n.t('Negative points')
+      } else if (masteryPointsFloat > maxRatingPoints) {
+        error = I18n.t('Above max rating')
+      } else if (masteryPointsFloat < minRatingPoints) {
+        error = I18n.t('Below min rating')
+      }
+    }
+
+    return {
+      value: masteryPointsFloat,
+      error
+    }
+  }, [ratings, masteryPoints])
+
+  const hasError = useMemo(() => {
+    return (
+      ratingsWithValidations.some(r => r.pointsError || r.descriptionError) ||
+      masteryPointsWithValidations.error
+    )
+  }, [ratingsWithValidations, masteryPointsWithValidations])
+
+  const ratingsError = useMemo(
+    () => ratingsWithValidations.some(r => r.pointsError || r.descriptionError),
+    [ratingsWithValidations]
   )
+
+  const masteryPointsError = useMemo(
+    () => Boolean(masteryPointsWithValidations.error),
+    [masteryPointsWithValidations]
+  )
+
+  const changeRatings = useCallback(
+    value => {
+      if (!hasChanged) setHasChanged()
+      setRatings(value)
+    },
+    [hasChanged, setHasChanged]
+  )
+
+  const changeMasteryPoints = useCallback(
+    value => {
+      if (!hasChanged) setHasChanged()
+      setMasteryPoints(value)
+    },
+    [hasChanged, setHasChanged]
+  )
+
+  const prepareFocusClear = ratingsArr => ratingsArr.map(r => ({...r, focusField: null}))
+
+  const clearRatingsFocus = useCallback(() => setRatings(prepareFocusClear(ratings)), [ratings])
+
+  const focusOnRatingsError = useCallback(() => {
+    const updatedRatings = prepareFocusClear(ratings)
+
+    for (let i = 0; i < updatedRatings.length; i++) {
+      if (ratingsWithValidations[i].descriptionError) {
+        updatedRatings[i].focusField = 'description'
+      } else if (ratingsWithValidations[i].pointsError) {
+        updatedRatings[i].focusField = 'points'
+      }
+      if (updatedRatings[i].focusField) break
+    }
+
+    setRatings(updatedRatings)
+  }, [ratings, ratingsWithValidations])
 
   return {
     ratings: ratingsWithValidations,
-    setRatings,
+    masteryPoints: masteryPointsWithValidations,
+    setRatings: changeRatings,
+    setMasteryPoints: changeMasteryPoints,
     hasError,
-    hasChanged
+    hasChanged,
+    ratingsError,
+    masteryPointsError,
+    clearRatingsFocus,
+    focusOnRatingsError
   }
 }
 

@@ -16,7 +16,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import I18n from 'i18n!conversations_2'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import PropTypes from 'prop-types'
 import React from 'react'
 
@@ -24,7 +24,9 @@ import {CloseButton} from '@instructure/ui-buttons'
 import {Heading} from '@instructure/ui-heading'
 import {Modal} from '@instructure/ui-modal'
 
-const ModalHeader = (props) => (
+const I18n = useI18nScope('conversations_2')
+
+const ModalHeader = props => (
   <Modal.Header>
     <CloseButton
       placement="end"
@@ -32,12 +34,13 @@ const ModalHeader = (props) => (
       onClick={props.onDismiss}
       screenReaderLabel={I18n.t('Close')}
     />
-    <Heading>{I18n.t('Compose Message')}</Heading>
+    <Heading>{props?.headerTitle ? props.headerTitle : I18n.t('Compose Message')}</Heading>
   </Modal.Header>
 )
 
 ModalHeader.propTypes = {
   onDismiss: PropTypes.func,
+  headerTitle: PropTypes.string
 }
 
 export default ModalHeader

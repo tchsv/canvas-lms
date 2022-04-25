@@ -23,13 +23,15 @@ import _ from 'underscore'
 import $ from 'jquery'
 import {Button} from '@instructure/ui-buttons'
 import {Checkbox} from '@instructure/ui-checkbox'
-import I18n from 'i18n!GradingPeriodSetForm'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import EnrollmentTermInput from './EnrollmentTermInput'
 import '@canvas/rails-flash-notifications'
 
+const I18n = useI18nScope('GradingPeriodSetForm')
+
 const {array, bool, func, shape, string} = PropTypes
 
-const buildSet = function(attr = {}) {
+const buildSet = function (attr = {}) {
   return {
     id: attr.id,
     title: attr.title || '',
@@ -39,7 +41,7 @@ const buildSet = function(attr = {}) {
   }
 }
 
-const validateSet = function(set) {
+const validateSet = function (set) {
   if (!(set.title || '').trim()) {
     return [I18n.t('All grading period sets must have a title')]
   }
@@ -130,7 +132,7 @@ class GradingPeriodSetForm extends React.Component {
       </Button>
       &nbsp;
       <Button
-        variant="primary"
+        color="primary"
         disabled={this.props.disabled}
         aria-label={I18n.t('Save Grading Period Set')}
         onClick={this.triggerSave}

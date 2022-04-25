@@ -69,7 +69,7 @@
     <% if can_do(@context, @current_user, :manage_account_settings) && @account.root_account? && @account.feature_enabled?(:microsoft_group_enrollments_syncing) %>
     <li><a href="#tab-integrations" id="tab-integrations-link"><%= t(:tab_integrations, "Integrations") %></a></li>
     <% end %>
-    <% if can_do(@context, @current_user, :manage_account_settings) && @account.root_account? && !@account.site_admin? %>
+    <% if can_do(@context, @current_user, :manage_account_settings) && @account.primary_settings_root_account? && !@account.site_admin? %>
     <li><a href="#tab-notifications" id="tab-notifications-link"><%= t(:tab_notifications, "Notifications") %></a></li>
     <% end %>
     <li><a href="#tab-users" id="tab-users-link"><%= t(:tab_admins, "Admins") %></a></li>
@@ -124,11 +124,26 @@
                              [[no_language, nil]] + available_locales.invert.sort_by { |desc, _| Canvas::ICU.collation_key(desc) },
                              {:selected => @context.default_locale}, {:class => 'locale'} %>
                 <%= render :partial => 'shared/locale_warning' %>
-                <p style="font-size: 0.9em;"><%= t(:default_language_description, "This will override any browser/OS language settings. Preferred languages can still be set at the course/user level.") %></p>
+                <p class="aside"><%= t(:default_language_description, "This will override any browser/OS language settings. Preferred languages can still be set at the course/user level.") %></p>
               </td>
             </tr>
             <% end %>
-            <% if @account.root_account? %>
+            <% if !@account.site_admin? && @account.root_account.feature_enabled?(:default_due_time) %>
+              <%= f.fields_for :settings do |settings| %>
+                <%= settings.fields_for :default_due_time do |ddt| %>
+                  <tr>
+                    <td><%= ddt.blabel :value, t("Default Due Time") %></td>
+                    <td>
+                        <%= ddt.select :value, options_for_select(default_due_time_options(@account), default_due_time_key(@account)) %>
+                        <p class="aside">
+                          <%= t("This influences the user interface for setting due dates. It does not change the time due for any existing assignments.") %>
+                        </p>
+                    </td>
+                  </tr>
+                 <% end %>
+              <% end %>
+            <% end %>
+            <% if @account.primary_settings_root_account? %>
               <tr>
                 <td><%= f.blabel :default_time_zone, :en => "Default Time Zone" %></td>
                 <td>
@@ -176,7 +191,7 @@
                                               :value => @account.settings[:trusted_referers],
                                               :class => 'same-width-as-select',
                                               :placeholder => "https://example.edu" %>
-                      <p style="font-size: 0.9em;"><%= t("This is a comma separated list of URL's to trust.  Trusting any URL's in this list will bypass the CSRF token when logging in to Canvas.") %></p>
+                      <p class="aside"><%= t("This is a comma separated list of URL's to trust.  Trusting any URL's in this list will bypass the CSRF token when logging in to Canvas.") %></p>
                     </td>
                   </tr>
 
@@ -185,7 +200,7 @@
                       <td><%= settings.blabel :default_dashboard_view, t("Default View for Dashboard") %></td>
                       <td>
                         <%= settings.select :default_dashboard_view, options_for_select(dashboard_view_options, @account.default_dashboard_view) %>
-                        <p style="font-size: 0.9em;"><%= settings.check_box :force_default_dashboard_view, :checked => false %>  <%= settings.label :force_default_dashboard_view, t("Overwrite all users' existing default dashboard preferences") %></p>
+                        <p class="aside"><%= settings.check_box :force_default_dashboard_view, :checked => false %>  <%= settings.label :force_default_dashboard_view, t("Overwrite all users' existing default dashboard preferences") %></p>
                       </td>
                     </tr>
                   <% end %>
@@ -293,6 +308,24 @@
                   <% end %>
                 <% end %>
 
+                <%= settings.fields_for :conditional_release do |r| %>
+                  <% hash = @account.conditional_release %>
+                  <% disabled = hash[:locked] && hash[:inherited] %>
+                  <tr>
+                    <td colspan="2"><%= r.check_box :value, :checked => hash[:value], :disabled => disabled %>
+                      <%= r.label :value, t("Mastery Paths") %>
+                    </td>
+                  </tr>
+                  <% unless disabled %>
+                    <tr>
+                      <td colspan="2" class="sub_checkbox">
+                        <%= r.check_box :locked, :checked => hash[:locked] %>
+                        <%= r.label :locked, :en => "Lock this setting for sub-accounts and courses" %>
+                      </td>
+                    </tr>
+                  <% end %>
+                <% end %>
+
                 <%= settings.fields_for :enable_offline_web_export do |r| %>
                   <% hash = @account.enable_offline_web_export %>
                   <% disabled = hash[:locked] && hash[:inherited] %>
@@ -348,7 +381,7 @@
 
         <%= render partial: 'additional_settings', locals: { f: f } %>
 
-        <% if !@account.site_admin? && @account.root_account? && @account.feature_enabled?(:slack_notifications)%>
+        <% if !@account.site_admin? && @account.primary_settings_root_account? && @account.feature_enabled?(:slack_notifications)%>
           <% slack_api_key = @account.root_account.settings[:encrypted_slack_key] ? Canvas::Security.decrypt_password(@account.root_account.settings[:encrypted_slack_key], @account.root_account.settings[:encrypted_slack_key_salt], 'instructure_slack_encrypted_key') : '' %>
           <fieldset>
             <legend><%= t("Slack Api Key") %></legend>
@@ -362,7 +395,7 @@
             <% end %>
           </fieldset>
         <% end %>
-        <% if !@account.site_admin? && @account.root_account? %>
+        <% if !@account.site_admin? && @account.primary_settings_root_account? %>
           <fieldset>
             <legend><%= t("Personal Pronouns") %></legend>
             <%= f.fields_for :settings do |settings| %>
@@ -400,7 +433,7 @@
           <div id="terms_of_service_preview_link"></div>
         <% end %>
         <% if !@account.site_admin? &&
-               @account.root_account? &&
+               @account.primary_settings_root_account? &&
                @account.feature_enabled?(:google_docs_domain_restriction) &&
                @account.grants_right?(@current_user, :manage_site_settings) %>
           <fieldset id="google-docs-domain">
@@ -495,7 +528,7 @@
               </div>
             <% end %>
 
-            <% if @account.root_account? %>
+            <% if @account.primary_settings_root_account? %>
               <% if @account.grants_right?(@current_user, :manage_site_settings) %>
                 <div>
                   <%= settings.check_box :admins_can_change_passwords, :checked => @account.settings[:admins_can_change_passwords] == true %>
@@ -528,7 +561,7 @@
                     <div>
                       <%= f.fields_for :settings do |settings| %>
                         <%= settings.check_box :include_integration_ids_in_gradebook_exports, :checked => @account.settings[:include_integration_ids_in_gradebook_exports] == true %>
-                        <%= settings.label :include_integration_ids_in_gradebook_exports, t("Include Integration IDs in the gradebook exports.") %>
+                        <%= settings.label :include_integration_ids_in_gradebook_exports, t("Include Integration IDs in the gradebook exports") %>
                       <% end %>
                     </div>
                   <% end %>
@@ -666,7 +699,7 @@
             <% end %>
         <% end %>
 
-        <% if @account.root_account? && !@account.site_admin? %>
+        <% if @account.primary_settings_root_account? && !@account.site_admin? %>
           <div id="custom_help_link_settings"></div>
         <% end %>
 
@@ -753,7 +786,14 @@
           <% end %>
         <% end %>
 
-        <% if @account.root_account? and not (exposed_services = Account.services_exposed_to_ui_hash(:service, @current_user)).empty? %>
+        <% if !@account.site_admin? &&
+            @account.primary_settings_root_account? &&
+            @account.feature_allowed?(:submission_comment_emojis) &&
+            @account.grants_right?(@current_user, :manage_account_settings) %>
+            <div id="emoji-deny-list"></div>
+        <% end %>
+
+        <% if @account.primary_settings_root_account? and not (exposed_services = Account.services_exposed_to_ui_hash(:service, @current_user)).empty? %>
           <fieldset>
             <h2 class="screenreader-only"><%= t('Enabled Web Services') %></h2>
             <legend><%= t('Enabled Web Services') %></legend>
@@ -827,7 +867,7 @@ acknowledge that you have read and agreed to the
           </fieldset>
         <% end %>
 
-        <% if @account.root_account? && !@account.site_admin? %>
+        <% if @account.primary_settings_root_account? && !@account.site_admin? %>
           <fieldset>
             <h2 class="screenreader-only"><%= t('Who Can Create New Courses') %></h2>
             <legend><%= t(:create_courses_title, "Who Can Create New Courses") %></legend>
@@ -930,7 +970,7 @@ acknowledge that you have read and agreed to the
     <div id="tab-integrations">
     </div>
   <% end %>
-  <% if can_do(@context, @current_user, :manage_account_settings) && @account.root_account? && !@account.site_admin? %>
+  <% if can_do(@context, @current_user, :manage_account_settings) && @account.primary_settings_root_account? && !@account.site_admin? %>
     <div id="tab-notifications">
       <%= form_for :account, :url => account_url(@account), :html => {:method => :put, :id => "account_settings_notifications"} do |f| %>
         <h2><%= t(:email_notification_from_settings, 'E-mail Notification "From" Settings') %></h2>

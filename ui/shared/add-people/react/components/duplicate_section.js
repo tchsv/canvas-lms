@@ -16,7 +16,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import I18n from 'i18n!add_people_duplicate_section'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import React from 'react'
 import PropTypes from 'prop-types'
 import {duplicateSetShape} from './shapes'
@@ -26,6 +26,8 @@ import {ScreenReaderContent} from '@instructure/ui-a11y-content'
 import {RadioInput} from '@instructure/ui-radio-input'
 import {TextInput} from '@instructure/ui-text-input'
 import {Button} from '@instructure/ui-buttons'
+
+const I18n = useI18nScope('add_people_duplicate_section')
 
 const CREATE_NEW = '__CREATE_NEW__'
 const SKIP = '__SKIP'
@@ -162,22 +164,22 @@ class DuplicateSection extends React.Component {
             </Table.RowHeader>
             <Table.Cell>
               <TextInput
-                required
+                isRequired
                 name="name"
                 type="text"
                 placeholder={nameLabel}
-                label={<ScreenReaderContent>{nameLabel}</ScreenReaderContent>}
+                renderLabel={<ScreenReaderContent>{nameLabel}</ScreenReaderContent>}
                 value={duplicateSet.newUserInfo.name}
                 onChange={this.onNewForDuplicateChange}
               />
             </Table.Cell>
             <Table.Cell>
               <TextInput
-                required
+                isRequired
                 name="email"
                 type="email"
                 placeholder={emailLabel}
-                label={<ScreenReaderContent>{emailLabel}</ScreenReaderContent>}
+                renderLabel={<ScreenReaderContent>{emailLabel}</ScreenReaderContent>}
                 value={duplicateSet.newUserInfo.email}
                 onChange={this.onNewForDuplicateChange}
               />

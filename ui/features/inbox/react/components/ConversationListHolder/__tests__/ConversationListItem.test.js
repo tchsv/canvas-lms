@@ -20,53 +20,67 @@ import {render, fireEvent} from '@testing-library/react'
 import React from 'react'
 import {ConversationListItem} from '../ConversationListItem'
 import {responsiveQuerySizes} from '../../../../util/utils'
+import {SubmissionComment} from '../../../../graphql/SubmissionComment'
 
 jest.mock('../../../../util/utils', () => ({
   ...jest.requireActual('../../../../util/utils'),
   responsiveQuerySizes: jest.fn()
 }))
 
+const submissionsCommentsMock = () => {
+  return {
+    _id: 1,
+    subject: 'XavierSchool - This is an Assignment',
+    lastMessageCreatedAt: '2022-02-15T06:50:54-07:00',
+    lastMessageContent: 'Hey!',
+    participantString: 'Hank Mccoy',
+    messages: [SubmissionComment.mock(), SubmissionComment.mock(), SubmissionComment.mock()]
+  }
+}
+
 describe('ConversationListItem', () => {
   const createProps = overrides => {
     return {
       conversation: {
-        _id: '191',
+        _id: '1',
+        workflowState: 'unread',
         subject: 'This is the subject line',
-        conversationParticipantsConnection: {
-          nodes: [
-            {user: {name: 'Bob Barker'}},
-            {user: {name: 'Sally Ford'}},
-            {user: {name: 'Russel Franks'}}
-          ]
-        },
-        conversationMessagesConnection: {
-          nodes: [
-            {
-              author: {name: 'Bob Barker'},
-              conversationParticipantsConnection: {
-                nodes: [
+        lastMessageCreatedAt: 'November 5, 2020 at 2:25pm',
+        lastMessageContent: 'This is the body text for the message.',
+        participantString: 'Bob Barker, Sally Ford, Russel Franks',
+        messages: [
+          {
+            author: {name: 'Bob Barker'},
+            conversationParticipantsConnection: {
+              nodes: [
+                [
                   {user: {name: 'Bob Barker'}},
                   {user: {name: 'Sally Ford'}},
                   {user: {name: 'Russel Franks'}}
                 ]
-              },
-              createdAt: 'November 5, 2020 at 2:25pm',
-              body: 'This is the body text for the message.'
+              ]
             },
-            {
-              author: {name: 'Sally Ford'},
-              conversationParticipantsConnection: {
-                nodes: [
-                  {user: {name: 'Sally Ford'}},
-                  {user: {name: 'Bob Barker'}},
-                  {user: {name: 'Russel Franks'}}
-                ]
-              },
-              createdAt: 'November 4, 2020 at 2:25pm',
-              body: 'This is the body text for the message.'
-            }
-          ]
-        }
+            createdAt: 'November 5, 2020 at 2:25pm',
+            body: 'This is the body text for the message.'
+          },
+          {
+            author: {name: 'Sally Ford'},
+            conversationParticipantsConnection: {
+              nodes: [
+                {user: {name: 'Sally Ford'}},
+                {user: {name: 'Bob Barker'}},
+                {user: {name: 'Russel Franks'}}
+              ]
+            },
+            createdAt: 'November 4, 2020 at 2:25pm',
+            body: 'This is the body text for the message.'
+          }
+        ],
+        participants: [
+          {user: {name: 'Bob Barker'}},
+          {user: {name: 'Sally Ford'}},
+          {user: {name: 'Russel Franks'}}
+        ]
       },
       isUnread: false,
       onSelect: jest.fn(),
@@ -171,7 +185,7 @@ describe('ConversationListItem', () => {
 
       expect(changeReadState).toHaveBeenCalledWith({
         variables: {
-          conversationIds: ['191'],
+          conversationIds: ['1'],
           workflowState: 'unread'
         }
       })
@@ -207,6 +221,44 @@ describe('ConversationListItem', () => {
         const listItem = await container.findByTestId('list-item-desktop')
         expect(listItem).toBeTruthy()
       })
+    })
+  })
+
+  describe('submission comments', () => {
+    it('renders subject', () => {
+      const props = createProps({
+        conversation: submissionsCommentsMock()
+      })
+      const {getByText} = render(<ConversationListItem {...props} />)
+
+      expect(getByText('XavierSchool - This is an Assignment')).toBeTruthy()
+    })
+
+    it('renders create date', () => {
+      const props = createProps({
+        conversation: submissionsCommentsMock()
+      })
+      const {getByText} = render(<ConversationListItem {...props} />)
+
+      expect(getByText('Feb 15, 2022')).toBeTruthy()
+    })
+
+    it('renders author', () => {
+      const props = createProps({
+        conversation: submissionsCommentsMock()
+      })
+      const {getByText} = render(<ConversationListItem {...props} />)
+
+      expect(getByText('Hank Mccoy')).toBeTruthy()
+    })
+
+    it('renders comment', () => {
+      const props = createProps({
+        conversation: submissionsCommentsMock()
+      })
+      const {getByText} = render(<ConversationListItem {...props} />)
+
+      expect(getByText('Hey!')).toBeTruthy()
     })
   })
 })

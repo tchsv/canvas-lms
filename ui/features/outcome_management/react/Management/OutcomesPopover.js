@@ -18,7 +18,7 @@
 
 import React, {useState, forwardRef} from 'react'
 import PropTypes from 'prop-types'
-import I18n from 'i18n!OutcomeManagement'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import {Button, CloseButton} from '@instructure/ui-buttons'
 import {ApplyTheme} from '@instructure/ui-themeable'
 import {Heading} from '@instructure/ui-heading'
@@ -27,6 +27,8 @@ import {List} from '@instructure/ui-list'
 import {View} from '@instructure/ui-view'
 import {TruncateText} from '@instructure/ui-truncate-text'
 import {outcomeShape} from './shapes'
+
+const I18n = useI18nScope('OutcomeManagement')
 
 const OutcomesPopover = forwardRef(({outcomes, outcomeCount, onClearHandler}, ref) => {
   const [showOutcomesList, setShowOutcomesList] = useState(false)
@@ -50,13 +52,12 @@ const OutcomesPopover = forwardRef(({outcomes, outcomeCount, onClearHandler}, re
         on="click"
         placement="top center"
         screenReaderLabel={I18n.t('Outcomes Selected')}
-        show={showOutcomesList}
+        isShowingContent={showOutcomesList}
         onToggle={setShowOutcomesList}
         shouldContainFocus
         shouldReturnFocus
         positionTarget={() => (ref?.current == null ? null : ref.current)}
-      >
-        <Popover.Trigger>
+        renderTrigger={
           <Button
             variant="link"
             size="medium"
@@ -72,45 +73,44 @@ const OutcomesPopover = forwardRef(({outcomes, outcomeCount, onClearHandler}, re
               }
             )}
           </Button>
-        </Popover.Trigger>
-        <Popover.Content>
-          <View padding="small" display="block" as="div">
-            <CloseButton
-              placement="end"
-              offset="small"
-              onClick={closeOutcomesList}
-              screenReaderLabel={I18n.t('Close')}
-            />
-            <Heading margin="x-small none small none" level="h5">
-              {I18n.t('Selected')}
-            </Heading>
-            <View
-              as="div"
-              display="block"
-              width="260px"
-              maxHeight="210px"
-              maxWidth="260px"
-              overflowY="auto"
-              overflowX="hidden"
-              tabIndex={outcomeCount > 10 ? '0' : '-1'}
-            >
-              <List isUnstyled size="small" margin="none small none none">
-                {Object.values(outcomes)
-                  .sort((a, b) => a.title.localeCompare(b.title, ENV.LOCALE, {numeric: true}))
-                  .map(({linkId, title}) => (
-                    <List.Item key={linkId}>
-                      <TruncateText position="middle">{title}</TruncateText>
-                    </List.Item>
-                  ))}
-              </List>
-            </View>
+        }
+      >
+        <View padding="small" display="block" as="div">
+          <CloseButton
+            placement="end"
+            offset="small"
+            onClick={closeOutcomesList}
+            screenReaderLabel={I18n.t('Close')}
+          />
+          <Heading margin="x-small none small none" level="h5">
+            {I18n.t('Selected')}
+          </Heading>
+          <View
+            as="div"
+            display="block"
+            width="260px"
+            maxHeight="210px"
+            maxWidth="260px"
+            overflowY="auto"
+            overflowX="hidden"
+            tabIndex={outcomeCount > 10 ? '0' : '-1'}
+          >
+            <List isUnstyled size="small" margin="none small none none">
+              {Object.values(outcomes)
+                .sort((a, b) => a.title.localeCompare(b.title, ENV.LOCALE, {numeric: true}))
+                .map(({linkId, title}) => (
+                  <List.Item key={linkId}>
+                    <TruncateText position="middle">{title}</TruncateText>
+                  </List.Item>
+                ))}
+            </List>
           </View>
-          <View as="div" padding="small" borderWidth="small 0 0">
-            <Button variant="link" size="medium" onClick={closeAndClear}>
-              {I18n.t('Clear all')}
-            </Button>
-          </View>
-        </Popover.Content>
+        </View>
+        <View as="div" padding="small" borderWidth="small 0 0">
+          <Button variant="link" size="medium" onClick={closeAndClear}>
+            {I18n.t('Clear all')}
+          </Button>
+        </View>
       </Popover>
     </ApplyTheme>
   )

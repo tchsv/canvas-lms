@@ -18,7 +18,7 @@
 
 import React from 'react'
 import {bool, shape, string, func} from 'prop-types'
-import I18n from 'i18n!HelpLinks'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import {Link} from '@instructure/ui-link'
 import {Img} from '@instructure/ui-img'
 import {Heading} from '@instructure/ui-heading'
@@ -26,11 +26,13 @@ import {Text} from '@instructure/ui-text'
 import {View} from '@instructure/ui-view'
 import PandaMapSVGURL from '../../images/panda-map.svg'
 
+const I18n = useI18nScope('HelpLinks')
+
 export default function FeaturedHelpLink({featuredLink, handleClick}) {
   if (featuredLink && window.ENV.FEATURES.featured_help_links) {
     return (
       <View textAlign="center" display="block">
-        <Img alt={I18n.t('Cheerful panda holding a map')} src={PandaMapSVGURL} margin="small 0" />
+        <Img data-testid="cheerful-panda-svg" src={PandaMapSVGURL} margin="small 0" />
         {featuredLink.feature_headline && (
           <Heading level="h3">{featuredLink.feature_headline}</Heading>
         )}

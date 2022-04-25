@@ -25,7 +25,9 @@ import {SimpleSelect} from '@instructure/ui-simple-select'
 import {View} from '@instructure/ui-view'
 import StatusColorPanel from './StatusColorPanel'
 
-import I18n from 'i18n!gradebook'
+import {useScope as useI18nScope} from '@canvas/i18n'
+
+const I18n = useI18nScope('gradebook')
 
 function buildAssignmentSortOptions(includeModules) {
   const options = [
@@ -73,6 +75,8 @@ function renderCheckbox(setting, label, key) {
 
 export default function ViewOptionsTabPanel({
   columnSort,
+  hideAssignmentGroupTotals,
+  hideTotal,
   showNotes,
   showUnpublishedAssignments,
   showSeparateFirstLastNames,
@@ -129,6 +133,12 @@ export default function ViewOptionsTabPanel({
                 I18n.t('Split Student Names'),
                 'showSeparateFirstLastNames'
               )}
+            {renderCheckbox(
+              hideAssignmentGroupTotals,
+              I18n.t('Hide Assignment Group Totals'),
+              'hideAssignmentGroupTotals'
+            )}
+            {renderCheckbox(hideTotal, I18n.t('Hide Total and Override Columns'), 'hideTotal')}
             {viewUngradedAsZero.allowed &&
               renderCheckbox(
                 viewUngradedAsZero,
@@ -156,6 +166,14 @@ ViewOptionsTabPanel.propTypes = {
       direction: string.isRequired
     }),
     modulesEnabled: bool.isRequired,
+    onChange: func.isRequired
+  }).isRequired,
+  hideAssignmentGroupTotals: shape({
+    checked: bool.isRequired,
+    onChange: func.isRequired
+  }).isRequired,
+  hideTotal: shape({
+    checked: bool.isRequired,
     onChange: func.isRequired
   }).isRequired,
   showNotes: shape({

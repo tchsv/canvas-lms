@@ -29,8 +29,10 @@ import {List, Map} from 'immutable'
 
 import Path from '../assignment-path'
 import * as actions from '../actions'
-import I18n from 'i18n!conditional_release'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import {transformScore} from '../score-helpers'
+
+const I18n = useI18nScope('conditional_release')
 
 const {object, func} = PropTypes
 
@@ -92,7 +94,7 @@ export class AssignmentCardMenu extends React.Component {
     return (
       <Menu
         trigger={
-          <Button icon={IconMoreLine}>
+          <Button renderIcon={IconMoreLine}>
             <ScreenReaderContent>
               {I18n.t('assignment %{name} options', {name: this.props.assignment.get('name')})}
             </ScreenReaderContent>

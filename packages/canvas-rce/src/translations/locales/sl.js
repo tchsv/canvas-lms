@@ -51,11 +51,12 @@ const locale = {
   "announcement_list_da155734": { "message": "Seznam obvestil" },
   "announcements_a4b8ed4a": { "message": "Obvestila" },
   "apply_781a2546": { "message": "Uporabi" },
-  "apply_changes_to_all_instances_of_this_button_and__3a3bea34": {
-    "message": "Uveljavi spremembe za vse primerke tega gumba in ikone v predmetu"
+  "apply_changes_to_all_instances_of_this_icon_maker__2642f466": {
+    "message": "Uveljavi spremembe za vse primerke te ikone ustvarjalnika ikon pri predmetu"
   },
   "apps_54d24a47": { "message": "Aplikacije" },
   "arrows_464a3e54": { "message": "Puščice" },
+  "art_icon_8e1daad": { "message": "Ikona umetnosti" },
   "aspect_ratio_will_be_preserved_cb5fdfb8": {
     "message": "Razmerje med širino in višino bo ohranjeno."
   },
@@ -75,13 +76,10 @@ const locale = {
   "available_folders_694d0436": { "message": "Razpoložljive mape" },
   "basic_554cdc0a": { "message": "Osnovno" },
   "below_81d4dceb": { "message": "Spodaj" },
+  "black_4cb01371": { "message": "Črna" },
+  "blue_daf8fea9": { "message": "Modra" },
   "bottom_third_5f5fec1d": { "message": "Tretja spodaj" },
-  "button_color_608a0242": { "message": "Barva gumba" },
-  "button_outline_cf14f071": { "message": "Oris gumba" },
-  "button_outline_size_cc1d1df7": { "message": "Velikost orisa gumba" },
-  "button_shape_dbecb573": { "message": "Oblika gumba" },
-  "button_size_20f5fce1": { "message": "Velikost gumba" },
-  "buttons_and_icons_e66ee12c": { "message": "Gumbi in ikone" },
+  "brick_f2656265": { "message": "Opeka" },
   "c_2001_acme_inc_283f7f80": {
     "message": "Avtorske pravice (c) 2001 Acme Inc."
   },
@@ -95,6 +93,7 @@ const locale = {
     "message": "nerazvrščeni seznam s krogi"
   },
   "clear_2084585f": { "message": "Počisti" },
+  "clear_image_3213fe62": { "message": "Jasna slika" },
   "clear_selected_file_82388e50": { "message": "Počisti izbrano datoteko." },
   "clear_selected_file_filename_2fe8a58e": {
     "message": "Počisti izbrano datoteko: { filename }"
@@ -128,7 +127,10 @@ const locale = {
   "collapse_to_hide_types_1ab46d2e": {
     "message": "Strni za skrivanje { types }"
   },
-  "color_color_eb64b08": { "message": "Barva { color }" },
+  "color_picker_6b359edf": { "message": "Orodje za izbiranje barv" },
+  "color_picker_colorname_selected_ad4cf400": {
+    "message": "Izbirnik barv ({ colorName } izbranih)"
+  },
   "computer_1d7dfa6f": { "message": "Računalnik" },
   "content_1440204b": { "message": "Vsebina" },
   "content_is_still_being_uploaded_if_you_continue_it_8f06d0cb": {
@@ -150,16 +152,22 @@ const locale = {
   "course_links_b56959b9": { "message": "Povezave predmeta" },
   "course_media_ec759ad": { "message": "Mediji predmeta" },
   "course_navigation_dd035109": { "message": "Navigacija po predmetu" },
-  "create_button_and_icon_5c089934": { "message": "Ustvari gumb in ikono" },
+  "create_icon_110d6463": { "message": "Ustvari ikono" },
+  "create_icon_maker_icon_c716bffe": {
+    "message": "Ustvari ikono ustvarjalnika ikon"
+  },
   "creative_commons_license_725584ae": {
     "message": "Licenca Creative Commons:"
   },
+  "crop_image_41bf940c": { "message": "Obreži sliko" },
   "crop_image_807ebb08": { "message": "Obreži sliko" },
   "current_image_f16c249c": { "message": "Trenutna slika" },
   "custom_6979cd81": { "message": "Po meri" },
+  "cyan_c1d5f68a": { "message": "Cijan" },
   "date_added_ed5ad465": { "message": "Datum dodajanja" },
   "decorative_image_3c28aa7d": { "message": "Dekorativna slika" },
   "decrease_indent_de6343ab": { "message": "Povečaj zamik" },
+  "deep_purple_bb3e2907": { "message": "Temno škrlatna" },
   "default_bulleted_unordered_list_47079da8": {
     "message": "privzeti neurejeni seznam z alinejami"
   },
@@ -171,7 +179,6 @@ const locale = {
   "describe_the_video_2fe8f46a": { "message": "(Opišite videoposnetek)" },
   "details_98a31b68": { "message": "Podrobnosti" },
   "diamond_b8dfe7ae": { "message": "Diamant" },
-  "dimension_type_55c83e4e": { "message": "Vrsta mere" },
   "dimensions_45ddb7b7": { "message": "Mere" },
   "directionality_26ae9e08": { "message": "Usmerjenost" },
   "directly_edit_latex_b7e9235b": { "message": "Neposredno urejanje LaTeX" },
@@ -198,15 +205,16 @@ const locale = {
   "edit_existing_button_icon_3d0277bd": {
     "message": "Uredi obstoječi gumb/ikono"
   },
+  "edit_icon_2c6b0e91": { "message": "Uredi ikono" },
   "edit_link_7f53bebb": { "message": "Uredi povezavo" },
   "editor_statusbar_26ac81fc": { "message": "Vrstica stanja urejevalnika" },
   "embed_828fac4a": { "message": "Vdelaj" },
   "embed_code_314f1bd5": { "message": "Vdelaj kodo" },
   "embed_image_1080badc": { "message": "Vdelaj sliko" },
-  "embed_options_tray_901cfd19": { "message": "Vrstica z možnostmi vdelave" },
-  "embed_preview_2d741e1f": { "message": "Predogled vdelave" },
   "embed_video_a97a64af": { "message": "Vdelajte videoposnetek" },
   "embedded_content_aaeb4d3d": { "message": "vdelano vsebino" },
+  "engineering_icon_f8f3cf43": { "message": "Ikona inženirstva" },
+  "english_icon_25bfe845": { "message": "Angleška ikona" },
   "enter_at_least_3_characters_to_search_4f037ee0": {
     "message": "Za iskanje vnesite vsaj 3 znake"
   },
@@ -220,6 +228,7 @@ const locale = {
   "external_tools_6e77821": { "message": "Zunanja orodja" },
   "extra_large_b6cdf1ff": { "message": "Zelo veliko" },
   "extra_small_9ae33252": { "message": "Zelo majhen" },
+  "extracurricular_icon_67c8ca42": { "message": "Zunajštudijska ikona" },
   "file_url_c12b64be": { "message": "URL datoteke" },
   "filename_file_icon_602eb5de": { "message": "Ikona datoteke { filename }" },
   "filename_image_preview_6cef8f26": {
@@ -252,6 +261,8 @@ const locale = {
   },
   "grades_a61eba0a": { "message": "Ocene" },
   "greek_65c5b3f7": { "message": "grške" },
+  "green_15af4778": { "message": "Zeleno" },
+  "grey_a55dceff": { "message": "Siva" },
   "group_documents_8bfd6ae6": { "message": "Dokumenti skupine" },
   "group_files_4324f3df": { "message": "Datoteke skupine" },
   "group_files_82e5dcdb": { "message": "Datoteke skupine" },
@@ -262,6 +273,7 @@ const locale = {
   "heading_2_5b84eed2": { "message": "Glava 2" },
   "heading_3_2c83de44": { "message": "Glava 3" },
   "heading_4_b2e74be7": { "message": "Glava 4" },
+  "health_icon_8d292eb5": { "message": "Ikona zdravstva" },
   "height_69b03e15": { "message": "Višina" },
   "hexagon_d8468e0d": { "message": "Šesterokotnik" },
   "hide_description_bfb5502e": { "message": "Skrij opis" },
@@ -273,14 +285,22 @@ const locale = {
     "message": "Pridobil sem dovoljenje za uporabo te datoteke."
   },
   "i_hold_the_copyright_71ee91b1": { "message": "Imam avtorske pravice." },
+  "icon_color_b86dd6d6": { "message": "Barva ikone" },
+  "icon_maker_icons_cc560f7e": { "message": "Ikone ustvarjalnika ikon" },
+  "icon_outline_e978dc0c": { "message": "Oris ikone" },
+  "icon_outline_size_33f39b86": { "message": "Velikost orisa ikona" },
+  "icon_shape_30b61e7": { "message": "Oblika ikone" },
+  "icon_size_9353edea": { "message": "Velikost ikone" },
   "if_you_do_not_select_usage_rights_now_this_file_wi_14e07ab5": {
     "message": "Če ne izberete pravic uporabe zdaj, ta datoteka po nalaganju ne bo objavljena."
   },
   "image_8ad06": { "message": "Slika" },
   "image_options_5412d02c": { "message": "Možnosti slike" },
   "image_options_tray_90a46006": { "message": "Vrstica z možnostmi slike" },
+  "image_to_crop_3a34487d": { "message": "Slika za obrezovanje" },
   "images_7ce26570": { "message": "Slike" },
   "increase_indent_6d550a4a": { "message": "Povečaj zamik" },
+  "indigo_2035fc55": { "message": "Indigo" },
   "insert_593145ef": { "message": "Vstavi" },
   "insert_equella_links_49a8dacd": {
     "message": "Vstavi povezave storitve EQUELLA"
@@ -291,8 +311,12 @@ const locale = {
   "invalid_file_type_881cc9b2": { "message": "Neveljavna vrsta datoteke" },
   "invalid_url_cbde79f": { "message": "Neveljaven naslov URL" },
   "keyboard_shortcuts_ed1844bd": { "message": "Bližnjice" },
+  "language_arts_icon_a798b0f8": { "message": "Ikona za jezikovni predmet" },
+  "languages_icon_9d20539": { "message": "Ikona za jezike" },
   "large_9c5e80e7": { "message": "Velika" },
   "left_to_right_e9b4fd06": { "message": "Od leve proti desni" },
+  "library_icon_ae1e54cf": { "message": "Ikona knjižnice" },
+  "light_blue_5374f600": { "message": "Svetlo modra" },
   "link_7262adec": { "message": "Povezava" },
   "link_options_a16b758b": { "message": "Možnosti povezave" },
   "links_14b70841": { "message": "Povezave" },
@@ -306,13 +330,19 @@ const locale = {
   "loading_please_wait_d276220a": { "message": "Nalaganje, počakajte" },
   "loading_preview_9f077aa1": { "message": "Nalagam predogled" },
   "locked_762f138b": { "message": "Zaklenjeno" },
+  "magenta_4a65993c": { "message": "Magenta" },
+  "math_icon_ad4e9d03": { "message": "Ikona matematike" },
   "media_af190855": { "message": "Mediji" },
+  "media_file_is_processing_please_try_again_later_58a6d49": {
+    "message": "Predstavnostna datoteka je v obdelavi. Poskusite znova pozneje."
+  },
   "medium_5a8e9ead": { "message": "Srednja" },
   "middle_27dc1d5": { "message": "Sredina" },
   "misc_3b692ea7": { "message": "Razno" },
   "miscellaneous_e9818229": { "message": "Drugo" },
   "modules_c4325335": { "message": "Moduli" },
   "multi_color_image_63d7372f": { "message": "Večbarvna slika" },
+  "music_icon_4db5c972": { "message": "Ikona glasbe" },
   "must_be_at_least_percentage_22e373b6": {
     "message": "Mora biti vsaj { percentage }%."
   },
@@ -321,6 +351,7 @@ const locale = {
   },
   "my_files_2f621040": { "message": "Moje datoteke" },
   "name_1aed4a1b": { "message": "Ime" },
+  "name_color_ceec76ff": { "message": "{ name } ({ color })" },
   "navigate_through_the_menu_or_toolbar_415a4e50": {
     "message": "Navigirajte skozi meni ali orodno vrstico"
   },
@@ -340,6 +371,7 @@ const locale = {
   "none_3b5e34d2": { "message": "Brez" },
   "none_selected_b93d56d2": { "message": "Nobena ni izbrana" },
   "octagon_e48be9f": { "message": "Osmerokotnik" },
+  "olive_6a3e4d6b": { "message": "Olivna" },
   "open_this_keyboard_shortcuts_dialog_9658b83a": {
     "message": "Odpri to pogovorno okno z bližnjicami"
   },
@@ -347,7 +379,7 @@ const locale = {
     "message": "Odpri aplikacijo { title }"
   },
   "operators_a2ef9a93": { "message": "Upravljavci" },
-  "options_3ab0ea65": { "message": "Možnosti" },
+  "orange_81386a62": { "message": "Oranžno" },
   "ordered_and_unordered_lists_cfadfc38": {
     "message": "Urejeni in neurejeni seznami"
   },
@@ -365,6 +397,9 @@ const locale = {
   "percentage_must_be_a_number_8033c341": {
     "message": "Odstotek mora biti številka"
   },
+  "performing_arts_icon_f3497486": { "message": "Ikona odrskih umetnosti" },
+  "physical_education_icon_d7dffd3e": { "message": "Ikona športne vzgoje" },
+  "pink_68ad45cb": { "message": "Rožnato" },
   "pixels_52ece7d1": { "message": "Slikovne pike" },
   "posted_when_a578f5ab": { "message": "Objavljeno: { when }" },
   "preformatted_d0670862": { "message": "Predoblikovano" },
@@ -382,23 +417,32 @@ const locale = {
   },
   "published_c944a23d": { "message": "objavljeno" },
   "published_when_302d8e23": { "message": "Objavljeno: { when }" },
+  "pumpkin_904428d5": { "message": "Buča" },
+  "purple_7678a9fc": { "message": "Škrlatno" },
   "quizzes_7e598f57": { "message": "Kvizi" },
   "raw_html_editor_e3993e41": { "message": "Urejevalnik surovega HTML" },
   "record_7c9448b": { "message": "Posnemi" },
   "record_upload_media_5fdce166": { "message": "Posnemi/naloži medije" },
+  "red_8258edf3": { "message": "Rdeče" },
   "relationships_6602af70": { "message": "Razmerja" },
+  "religion_icon_246e0be1": { "message": "Ikona religije" },
   "remove_link_d1f2f4d0": { "message": "Odstrani povezavo" },
   "resize_ec83d538": { "message": "Spremeni velikost" },
   "restore_auto_save_deccd84b": {
     "message": "Obnovim samodejno shranjeno vsebino?"
   },
   "rich_content_editor_2708ef21": { "message": "Urejevalnik" },
+  "rich_text_area_press_alt_0_for_rich_content_editor_9d23437f": {
+    "message": "Območje besedila Pritisnite ALT+0 za bližnjico do urejevalnika."
+  },
   "right_to_left_9cfb092a": { "message": "Od desne proti levi" },
   "sadly_the_pretty_html_editor_is_not_keyboard_acces_50da7665": {
     "message": "Žal urejevalnik Pretty HTML Editor ni dostopen s tipkovnico. Tukaj lahko dostopate do surovega urejevalnika HTML."
   },
   "save_11a80ec3": { "message": "Shrani" },
-  "saved_buttons_and_icons_8278eed2": { "message": "Shranjeni gumbi in ikone" },
+  "saved_icon_maker_icons_df86e2a1": {
+    "message": "Shranene ikone ustvarjalnika ikon"
+  },
   "search_280d00bd": { "message": "Iskanje" },
   "search_term_b2d2235": { "message": "Iskalni izraz" },
   "select_crop_shape_d441feeb": { "message": "Izberite obliko izrezovanja" },
@@ -408,13 +452,13 @@ const locale = {
     "message": "Urejevalnik Pretty HTML Editor odprete s pritiskom na tipki Shift+O"
   },
   "show_audio_options_b489926b": { "message": "Prikaži možnosti zvoka" },
-  "show_embed_options_ef8d7ef": { "message": "Prikaži možnosti vdelave" },
   "show_image_options_1e2ecc6b": { "message": "Prikaži možnosti slike" },
   "show_link_options_545338fd": { "message": "Prikaži povezave na slike" },
   "show_video_options_6ed3721a": {
     "message": "Prikaži možnosti videoposnetka"
   },
   "single_color_image_4e5d4dbc": { "message": "Enobarvna slika" },
+  "single_color_image_color_95fa9a87": { "message": "Enobarvna barva slike" },
   "size_b30e1077": { "message": "Velikost" },
   "size_of_caption_file_is_greater_than_the_maximum_m_bff5f86e": {
     "message": "Velikost je večja od največje dovoljene velikosti datoteke { max } kB."
@@ -424,22 +468,14 @@ const locale = {
   "something_went_wrong_and_i_don_t_know_what_to_show_e0c54ec8": {
     "message": "Prišlo je do težav in ne vem, kaj vam naj prikažem."
   },
-  "something_went_wrong_check_your_connection_and_try_2a7b2d13": {
-    "message": "Prišlo je do težave; preverite svojo povezavo in poskusite znova."
-  },
   "something_went_wrong_d238c551": { "message": "Prišlo je do težav" },
-  "something_went_wrong_try_again_after_refreshing_th_e094eb8d": {
-    "message": "Prišlo je do težav; osvežite stran in poskusite znova."
-  },
-  "something_went_wrong_uploading_check_your_connecti_aa201f15": {
-    "message": "Pri nalaganju je prišlo do težav; preverite svojo povezavo in poskusite znova."
-  },
   "sort_by_e75f9e3e": { "message": "Razvrsti po" },
   "square_511eb3b3": { "message": "Kvadrat" },
   "square_unordered_list_b15ce93b": {
     "message": "nerazvrščeni seznam s kvadrati"
   },
   "star_8d156e09": { "message": "Zvezdica" },
+  "steel_blue_14296f08": { "message": "Kovinsko modra" },
   "styles_2aa721ef": { "message": "Slogi" },
   "submit_a3cc6859": { "message": "Pošlji" },
   "subscript_59744f96": { "message": "Podpisano" },
@@ -455,6 +491,7 @@ const locale = {
   },
   "syllabus_f191f65b": { "message": "Učni načrt" },
   "tab_arrows_4cf5abfc": { "message": "ZAVIHEK/puščične tipke" },
+  "teal_f729a294": { "message": "Zelenomodra" },
   "text_7f4593da": { "message": "Besedilo" },
   "text_background_color_16e61c3f": { "message": "Barva ozadja besedila" },
   "text_color_acf75eb6": { "message": "Barva besedila" },
@@ -504,9 +541,6 @@ const locale = {
   "upload_media_ce31135a": { "message": "Naloži medije" },
   "upload_record_media_e4207d72": { "message": "Naloži/posnemi medij" },
   "uploading_19e8a4e7": { "message": "Nalaganje" },
-  "uploading_closed_captions_subtitles_failed_bc093f3": {
-    "message": "Nalaganje razširjenih podnapisov/podnapisov ni uspelo."
-  },
   "uppercase_alphabetic_ordered_list_3f5aa6b2": {
     "message": "abecedno urejeni seznam z velikimi začetnicami"
   },
@@ -561,6 +595,7 @@ const locale = {
     "message": "Prikaz predhodno določenih barv"
   },
   "view_title_description_67940918": { "message": "Prikaz opisa { title }" },
+  "white_87fa64fd": { "message": "Belo" },
   "width_492fec76": { "message": "Širina" },
   "width_and_height_must_be_numbers_110ab2e3": {
     "message": "Širina in višina morata biti številki"
@@ -570,7 +605,9 @@ const locale = {
   "yes_dde87d5": { "message": "Da" },
   "you_may_not_upload_an_empty_file_11c31eb2": {
     "message": "Prazne datoteke ne smete naložiti."
-  }
+  },
+  "zoom_in_image_bb97d4f": { "message": "Povečaj sliko" },
+  "zoom_out_image_d0a0a2ec": { "message": "Pomanjšaj sliko" }
 }
 
 

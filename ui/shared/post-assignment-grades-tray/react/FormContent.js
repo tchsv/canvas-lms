@@ -27,10 +27,12 @@ import {Button} from '@instructure/ui-buttons'
 import {View} from '@instructure/ui-view'
 import {Flex} from '@instructure/ui-flex'
 
-import I18n from 'i18n!post_assignment_grades_tray'
+import {useScope as useI18nScope} from '@canvas/i18n'
 
 import PostTypes from './PostTypes'
 import SpecificSections from '@canvas/grading/react/SpecificSections'
+
+const I18n = useI18nScope('post_assignment_grades_tray')
 
 export default function FormContent({
   assignment: {anonymousGrading, gradesPublished},
@@ -112,7 +114,7 @@ export default function FormContent({
           </Flex.Item>
 
           <Flex.Item>
-            <Button disabled={!gradesPublished} onClick={onPostClick} variant="primary">
+            <Button disabled={!gradesPublished} onClick={onPostClick} color="primary">
               {I18n.t('Post')}
             </Button>
           </Flex.Item>

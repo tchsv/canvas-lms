@@ -24,7 +24,9 @@ import {nanoid} from 'nanoid'
 import {IconInfoLine} from '@instructure/ui-icons'
 import {ScreenReaderContent} from '@instructure/ui-a11y-content'
 import {Tooltip} from '@instructure/ui-tooltip'
-import I18n from 'i18n!PronounsInput'
+import {useScope as useI18nScope} from '@canvas/i18n'
+
+const I18n = useI18nScope('PronounsInput')
 
 export default class PronounsInput extends React.Component {
   constructor(props) {
@@ -82,10 +84,10 @@ export default class PronounsInput extends React.Component {
             document.querySelector(`#${this.state.input_id}`).value = ''
           }
         }}
-        label={
+        renderLabel={
           <>
             <Text>{I18n.t('Available Pronouns')}</Text>
-            <Tooltip tip={infoToolTip} on={['hover', 'focus']} variant="inverse">
+            <Tooltip renderTip={infoToolTip} on={['hover', 'focus']} color="primary">
               <span
                 style={{margin: '0 10px 0 10px'}}
                 // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex

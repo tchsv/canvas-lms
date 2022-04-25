@@ -159,10 +159,10 @@ const MentionUIManager = ({editor, onExited, onFocusedUserChange, rceRef}) => {
       return
     }
 
-    const messageType = e.data.messageType
+    const subject = e.data.subject
     const value = e.data.value
 
-    switch (messageType) {
+    switch (subject) {
       case NAVIGATION_MESSAGE:
         keyboardEvents(value)
         break
@@ -192,13 +192,6 @@ const MentionUIManager = ({editor, onExited, onFocusedUserChange, rceRef}) => {
       onExited(editor, false)
     }
   }, [editor, inputText, onExited])
-
-  // Make us maintain a focused user when open
-  useEffect(() => {
-    if (!filteredOptions.includes(focusedUser)) {
-      setFocusedUser(filteredOptions[0])
-    }
-  }, [filteredOptions, focusedUser])
 
   // Keep Focus User and active decendant always up to date
   useEffect(() => {

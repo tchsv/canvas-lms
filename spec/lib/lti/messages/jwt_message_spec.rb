@@ -161,6 +161,26 @@ describe Lti::Messages::JwtMessage do
       end
     end
 
+    context "when the target_link_uri is specified in the tool's placement settings" do
+      it 'use the placement-specific "target_link_uri"' do
+        # Just setting tool.course_navigation[:target_link_uri] doesn't seem to
+        # set it, I have to do this
+        tool.course_navigation = tool.course_navigation.merge(
+          target_link_uri: "http://www.example.com/basic_lti?coursenav"
+        )
+        tool.save!
+        expect(decoded_jwt["https://purl.imsglobal.org/spec/lti/claim/target_link_uri"]).to eq(
+          "http://www.example.com/basic_lti?coursenav"
+        )
+      end
+
+      it 'ignores the placement-specific "target_link_uri" if it is an empty string' do
+        tool.course_navigation = tool.course_navigation.merge(target_link_uri: "")
+        tool.save
+        expect(decoded_jwt["https://purl.imsglobal.org/spec/lti/claim/target_link_uri"]).to eq tool.url
+      end
+    end
+
     context "when security claim group disabled" do
       let(:opts) { super().merge({ claim_group_blacklist: [:security] }) }
 
@@ -432,6 +452,47 @@ describe Lti::Messages::JwtMessage do
     context "when context is a group" do
       include_context "with lti advantage group context"
       it_behaves_like "names and roles claim check"
+      it_behaves_like "lti advantage service claim group disabled check"
+      it_behaves_like "lti advantage scopes missing from developer key"
+    end
+  end
+
+  describe "assignment and grade service claim" do
+    include_context "lti advantage service claims context"
+    let(:lti_advantage_developer_key_scopes) { ags_scopes }
+    let(:lti_advantage_service_claim) { decoded_jwt["https://purl.imsglobal.org/spec/lti-ags/claim/endpoint"] }
+    let(:lti_advantage_service_claim_group) { :assignment_and_grade_service }
+
+    before do
+      allow(controller).to receive(:lti_line_item_index_url).and_return("lti_line_item_index_url")
+    end
+
+    shared_examples "assignment and grade service claim check" do
+      it "sets the AGS lineitems url" do
+        expect(lti_advantage_service_claim["lineitems"]).to eq "lti_line_item_index_url"
+      end
+
+      it "sets scopes from token" do
+        expect(lti_advantage_service_claim["scope"]).to eq ags_scopes
+      end
+    end
+
+    context "when context is a course" do
+      it_behaves_like "assignment and grade service claim check"
+      it_behaves_like "lti advantage service claim group disabled check"
+      it_behaves_like "lti advantage scopes missing from developer key"
+    end
+
+    context "when context is an account" do
+      include_context "with lti advantage account context"
+      it_behaves_like "absent lti advantage service claim check"
+      it_behaves_like "lti advantage service claim group disabled check"
+      it_behaves_like "lti advantage scopes missing from developer key"
+    end
+
+    context "when context is a group" do
+      include_context "with lti advantage group context"
+      it_behaves_like "assignment and grade service claim check"
       it_behaves_like "lti advantage service claim group disabled check"
       it_behaves_like "lti advantage scopes missing from developer key"
     end

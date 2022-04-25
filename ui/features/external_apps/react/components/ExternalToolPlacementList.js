@@ -16,7 +16,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import I18n from 'i18n!external_tools'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import React from 'react'
 import PropTypes from 'prop-types'
 import store from '../lib/ExternalAppsStore'
@@ -27,6 +27,8 @@ import {View} from '@instructure/ui-view'
 import {Flex} from '@instructure/ui-flex'
 import {IconCheckMarkSolid, IconEndSolid} from '@instructure/ui-icons'
 import {Spinner} from '@instructure/ui-spinner'
+
+const I18n = useI18nScope('external_tools')
 
 const ALL_PLACEMENTS = {
   account_navigation: I18n.t('Account Navigation'),
@@ -52,10 +54,11 @@ const ALL_PLACEMENTS = {
   homework_submission: I18n.t('Homework Submission'),
   link_selection: I18n.t('Link Selection'),
   migration_selection: I18n.t('Migration Selection'),
-  module_menu: I18n.t('Module Menu'),
   module_group_menu: I18n.t('Modules Group Menu'),
   module_index_menu: I18n.t('Modules Index Menu (Tray)'),
   module_index_menu_modal: I18n.t('Modules Index Menu (Modal)'),
+  module_menu: I18n.t('Module Menu'),
+  module_menu_modal: I18n.t('Module Menu (Modal)'),
   post_grades: I18n.t('Sync Grades'),
   quiz_menu: I18n.t('Quiz Menu'),
   quiz_index_menu: I18n.t('Quizzes Index Menu'),

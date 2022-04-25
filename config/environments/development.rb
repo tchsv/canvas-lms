@@ -28,8 +28,8 @@ environment_configuration(defined?(config) && config) do |config|
   config.cache_classes = false
 
   # Show full error reports and disable caching
-  config.consider_all_requests_local = true
-  config.action_controller.perform_caching = false
+  config.consider_all_requests_local = !ActiveModel::Type::Boolean.new.cast(ENV.fetch("SHOW_PRODUCTION_ERRORS", false))
+  config.action_controller.perform_caching = ActiveModel::Type::Boolean.new.cast(ENV.fetch("ACTION_CONTROLLER_CACHING", false))
 
   # run rake js:build to build the optimized JS if set to true
   # ENV['USE_OPTIMIZED_JS']                            = 'true'
@@ -65,6 +65,7 @@ environment_configuration(defined?(config) && config) do |config|
   # we use lots of db specific stuff - don't bother trying to dump to ruby
   # (it also takes forever)
   config.active_record.schema_format = :sql
+  config.active_record.dump_schema_after_migration = false
 
   config.eager_load = false
 

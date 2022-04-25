@@ -26,8 +26,10 @@ import {Text} from '@instructure/ui-text'
 import WithBreakpoints, {breakpointsShape} from 'with-breakpoints'
 
 import {showFlashError} from '@canvas/alerts/react/FlashAlert'
-import I18n from 'i18n!grade_summary'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import SelectMenu from './SelectMenu'
+
+const I18n = useI18nScope('grade_summary')
 
 class SelectMenuGroup extends React.Component {
   static propTypes = {
@@ -165,7 +167,7 @@ class SelectMenuGroup extends React.Component {
     return (
       <Flex
         alignItems={isVertical ? 'start' : 'end'}
-        wrapItems
+        wrap="wrap"
         margin="0 0 small 0"
         direction={isVertical ? 'column' : 'row'}
       >
@@ -232,7 +234,7 @@ class SelectMenuGroup extends React.Component {
             onClick={this.onSubmit}
             type="submit"
             size="medium"
-            variant="primary"
+            color="primary"
           >
             <PresentationContent>
               <Text>{I18n.t('Apply')}</Text>

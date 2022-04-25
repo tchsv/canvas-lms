@@ -16,7 +16,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import I18n from 'i18n!discussions'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import EntryView from './backbone/views/EntryView.coffee'
 import DiscussionFilterState from './backbone/models/DiscussionFilterState'
 import DiscussionToolbarView from './backbone/views/DiscussionToolbarView'
@@ -35,6 +35,8 @@ import EntriesView from './backbone/views/EntriesView'
 import SectionsTooltip from '@canvas/sections-tooltip'
 import DiscussionTopicKeyboardShortcutModal from './react/DiscussionTopicKeyboardShortcutModal'
 import ready from '@instructure/ready'
+
+const I18n = useI18nScope('discussions')
 
 import('@canvas/rubrics/jquery/rubricEditBinding')
 if (ENV.STUDENT_CONTEXT_CARDS_ENABLED)
@@ -216,7 +218,16 @@ ready(() => {
       $container.one('scroll', () => router.navigate(''))
     }, 10)
   })
-  router.route('entry-:id', 'id', entriesView.goToEntry.bind(entriesView))
+  router.route('entry-:id', 'id', entry => {
+    // Interval to deffer scrollng until page is fully loaded
+    const goToEntry = entriesView.goToEntry.bind(entriesView, entry)
+    const goToEntryIntervalId = setInterval(() => {
+      if (document.readyState === 'complete') {
+        goToEntry()
+        clearInterval(goToEntryIntervalId)
+      }
+    }, 500)
+  })
   router.route('page-:page', 'page', page => {
     entriesView.render(page)
     // TODO: can get a little bouncy when the page isn't as tall as the previous

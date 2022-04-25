@@ -18,18 +18,22 @@
 
 import React from 'react'
 import PropTypes from 'prop-types'
-import I18n from 'i18n!student_context_trayMetricsList'
-import {MetricsList as InstUIMetricsList} from '@instructure/ui-metric'
+import {useScope as useI18nScope} from '@canvas/i18n'
+import {Metric, MetricGroup} from '@instructure/ui-metric'
+
+const I18n = useI18nScope('student_context_trayMetricsList')
 
 class MetricsList extends React.Component {
   static propTypes = {
     analytics: PropTypes.object,
-    user: PropTypes.object
+    user: PropTypes.object,
+    allowFinalGradeOverride: PropTypes.bool
   }
 
   static defaultProps = {
     analytics: null,
-    user: {}
+    user: {},
+    allowFinalGradeOverride: false
   }
 
   get grade() {
@@ -38,11 +42,12 @@ class MetricsList extends React.Component {
     }
 
     const enrollment = this.props.user.enrollments[0]
+    const gradeOverride = this.props.allowFinalGradeOverride
     if (enrollment) {
       const grades = enrollment.grades
-      if (grades.override_grade != null) {
+      if (gradeOverride && grades.override_grade != null) {
         return grades.override_grade
-      } else if (grades.override_score != null) {
+      } else if (gradeOverride && grades.override_score != null) {
         return `${grades.override_score}%`
       } else if (grades.current_grade != null) {
         return grades.current_grade
@@ -74,11 +79,11 @@ class MetricsList extends React.Component {
     if (typeof this.props.user.enrollments !== 'undefined' && this.props.analytics) {
       return (
         <section className="StudentContextTray__Section StudentContextTray-MetricsList">
-          <InstUIMetricsList>
-            <InstUIMetricsList.Item label={I18n.t('Grade')} value={this.grade} />
-            <InstUIMetricsList.Item label={I18n.t('Missing')} value={this.missingCount} />
-            <InstUIMetricsList.Item label={I18n.t('Late')} value={this.lateCount} />
-          </InstUIMetricsList>
+          <MetricGroup>
+            <Metric renderLabel={I18n.t('Grade')} renderValue={this.grade} />
+            <Metric renderLabel={I18n.t('Missing')} renderValue={this.missingCount} />
+            <Metric renderLabel={I18n.t('Late')} renderValue={this.lateCount} />
+          </MetricGroup>
         </section>
       )
     } else {

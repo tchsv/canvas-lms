@@ -38,7 +38,9 @@ import {
 } from '@instructure/ui-icons'
 import sanitizeUrl from 'sanitize-url'
 
-import I18n from 'i18n!link_validator'
+import {useScope as useI18nScope} from '@canvas/i18n'
+
+const I18n = useI18nScope('link_validator')
 
 const TYPE_INFO = {
   course_card_image: {icon: IconSettingsLine, label: I18n.t('Course Settings')},
@@ -138,13 +140,13 @@ export default function ValidatorResultsRow(props) {
         </Flex.Item>
         <Flex.Item margin="none none none small">
           <Heading level="h3" as="h2">
-            <Button
-              variant="link"
+            <Link
               href={props.result.content_url}
+              isWithinText={false}
               theme={{mediumPaddingHorizontal: '0', mediumHeight: '1.25rem'}}
             >
               {props.result.name}
-            </Button>
+            </Link>
           </Heading>
           <Text
             size="x-small"

@@ -21,9 +21,11 @@ import PropTypes from 'prop-types'
 import React, {useEffect, useRef, useState} from 'react'
 import WebcamModal from './WebcamModal'
 import {hasMediaFeature} from '../util/mediaUtils'
-import I18n from 'i18n!attachment'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import {direction} from '@canvas/i18n/rtlHelper'
 import Focus from '@canvas/outcomes/react/Focus'
+
+const I18n = useI18nScope('attachment')
 
 const LegacyFileUpload = ({index}) => {
   return (
@@ -63,12 +65,12 @@ const Attachment = ({index, setBlob}) => {
     <>
       {!dataURL && !showFileInput && (
         <>
-          <Button icon={IconUploadLine} onClick={() => setShowFileInput(true)}>
+          <Button renderIcon={IconUploadLine} onClick={() => setShowFileInput(true)}>
             {I18n.t('Upload File')}
           </Button>
 
           <Button
-            icon={IconImageLine}
+            renderIcon={IconImageLine}
             onClick={() => setOpenWebcamModal(true)}
             margin="none small"
             ref={useWebcamRef}
@@ -97,9 +99,9 @@ const Attachment = ({index, setBlob}) => {
           >
             <Focus timeout={500}>
               <Button
-                icon={IconTrashLine}
+                renderIcon={IconTrashLine}
                 size="small"
-                variant="light"
+                color="primary-inverse"
                 data-testid="removePhotoButton"
                 onClick={() => {
                   setDataURL(null)

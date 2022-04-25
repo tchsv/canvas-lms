@@ -16,7 +16,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import I18n from 'i18n!BlueprintModal'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import React, {Component} from 'react'
 import PropTypes from 'prop-types'
 import cx from 'classnames'
@@ -25,6 +25,8 @@ import Modal from '@canvas/instui-bindings/react/InstuiModal'
 import {Button} from '@instructure/ui-buttons'
 import {Checkbox} from '@instructure/ui-checkbox'
 import {Flex} from '@instructure/ui-flex'
+
+const I18n = useI18nScope('BlueprintModal')
 
 export default class BlueprintModal extends Component {
   static propTypes = {
@@ -120,22 +122,20 @@ export default class BlueprintModal extends Component {
                 </Flex.Item>
               )}
               <Flex.Item margin="0 x-small 0 0">
-                <Button onClick={this.props.onCancel}>
-                  {I18n.t('Cancel')}
-                </Button>
+                <Button onClick={this.props.onCancel}>{I18n.t('Cancel')}</Button>
               </Flex.Item>
               {this.props.saveButton ? (
                 this.props.saveButton
               ) : (
                 <Flex.Item margin="0 x-small 0 0">
-                  <Button onClick={this.props.onSave} variant="primary">
+                  <Button onClick={this.props.onSave} color="primary">
                     {I18n.t('Save')}
                   </Button>
                 </Flex.Item>
               )}
             </Flex>
           ) : (
-            <Button ref={c => (this.doneBtn = c)} onClick={this.props.onCancel} variant="primary">
+            <Button ref={c => (this.doneBtn = c)} onClick={this.props.onCancel} color="primary">
               {I18n.t('Done')}
             </Button>
           )}

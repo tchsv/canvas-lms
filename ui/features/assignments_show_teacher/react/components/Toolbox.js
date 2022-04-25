@@ -19,7 +19,7 @@
 import React from 'react'
 import {bool, func} from 'prop-types'
 
-import I18n from 'i18n!assignments_2'
+import {useScope as useI18nScope} from '@canvas/i18n'
 
 import {Checkbox} from '@instructure/ui-checkbox'
 import {Flex} from '@instructure/ui-flex'
@@ -28,6 +28,8 @@ import {ScreenReaderContent} from '@instructure/ui-a11y-content'
 import {IconTrashLine} from '@instructure/ui-icons'
 import {TeacherAssignmentShape} from '../assignmentData'
 import AssignmentPoints from './Editables/AssignmentPoints'
+
+const I18n = useI18nScope('assignments_2')
 
 export default class Toolbox extends React.Component {
   static propTypes = {
@@ -75,7 +77,7 @@ export default class Toolbox extends React.Component {
 
   renderDelete() {
     return (
-      <Button margin="0 0 0 x-small" icon={<IconTrashLine />} onClick={this.props.onDelete}>
+      <Button margin="0 0 0 x-small" renderIcon={<IconTrashLine />} onClick={this.props.onDelete}>
         <ScreenReaderContent>{I18n.t('delete assignment')}</ScreenReaderContent>
       </Button>
     )

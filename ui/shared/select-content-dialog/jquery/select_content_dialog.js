@@ -17,7 +17,7 @@
  */
 
 import INST from 'browser-sniffer'
-import I18n from 'i18n!select_content_dialog'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import $ from 'jquery'
 import React from 'react'
 import ReactDOM from 'react-dom'
@@ -36,17 +36,19 @@ import SelectContent from '../select_content'
 import setDefaultToolValues from '../setDefaultToolValues'
 import processSingleContentItem from '@canvas/deep-linking/processors/processSingleContentItem'
 import {findLinkForService, getUserServices} from '@canvas/services/findLinkForService'
-import '@canvas/datetime' /* datetime_field */
+import '@canvas/datetime'/* datetime_field */
 import '@canvas/jquery/jquery.ajaxJSON'
-import '@canvas/forms/jquery/jquery.instructure_forms' /* formSubmit, ajaxJSONFiles, getFormData, errorBox */
+import '@canvas/forms/jquery/jquery.instructure_forms'/* formSubmit, ajaxJSONFiles, getFormData, errorBox */
 import 'jqueryui/dialog'
 import '@canvas/util/jquery/fixDialogButtons'
-import '@canvas/jquery/jquery.instructure_misc_helpers' /* replaceTags */
-import '@canvas/jquery/jquery.instructure_misc_plugins' /* showIf */
+import '@canvas/jquery/jquery.instructure_misc_helpers'/* replaceTags */
+import '@canvas/jquery/jquery.instructure_misc_plugins'/* showIf */
 import '@canvas/keycodes'
 import '@canvas/loading-image'
 import '@canvas/util/templateData'
 import processMultipleContentItems from '@canvas/deep-linking/processors/processMultipleContentItems'
+
+const I18n = useI18nScope('select_content_dialog')
 
 const SelectContentDialog = {}
 
@@ -57,7 +59,7 @@ SelectContentDialog.deepLinkingListener = event => {
   if (
     event.origin === ENV.DEEP_LINKING_POST_MESSAGE_ORIGIN &&
     event.data &&
-    event.data.messageType === 'LtiDeepLinkingResponse'
+    event.data.subject === 'LtiDeepLinkingResponse'
   ) {
     if (event.data.content_items.length > 1) {
       return processMultipleContentItems(event)
@@ -525,6 +527,11 @@ $(document).ready(function () {
       }
     } else if (item_type == 'context_external_tool') {
       var item_data = SelectContentDialog.extractContextExternalToolItemData()
+      if (item_data['item[assignment_id]']) {
+        // don't keep fields populated after an assignment was created
+        // since assignment creation via deep link requires another tool launch
+        SelectContentDialog.resetExternalToolFields()
+      }
 
       $dialog.find('.alert-error').remove()
 

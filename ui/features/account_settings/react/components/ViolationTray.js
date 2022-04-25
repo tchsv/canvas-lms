@@ -17,7 +17,7 @@
  */
 
 import React, {useReducer, useCallback} from 'react'
-import I18n from 'i18n!csp_violation_tray'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import {Heading} from '@instructure/ui-heading'
 import {Spinner} from '@instructure/ui-spinner'
 import {Alert} from '@instructure/ui-alerts'
@@ -25,6 +25,8 @@ import {CloseButton} from '@instructure/ui-buttons'
 import {View} from '@instructure/ui-view'
 import useFetchApi from '@canvas/use-fetch-api-hook'
 import ViolationTable from './ViolationTable'
+
+const I18n = useI18nScope('csp_violation_tray')
 
 const violationsReducer = (state, action) => {
   switch (action.type) {
@@ -58,9 +60,12 @@ export default function ViolationTray({handleClose, accountId, addDomain, whitel
 
   return (
     <>
-      <CloseButton placement="start" offset="none" onClick={handleClose}>
-        {I18n.t('Close')}
-      </CloseButton>
+      <CloseButton
+        placement="start"
+        offset="none"
+        onClick={handleClose}
+        screenReaderLabel={I18n.t('Close')}
+      />
       <View as="div" padding="large x-small">
         <Heading level="h3" as="h2">
           {I18n.t('Violation Log')}

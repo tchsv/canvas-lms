@@ -16,7 +16,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import I18n from 'i18n!discussion_posts'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import PropTypes from 'prop-types'
 import React from 'react'
 import {CondensedButton} from '@instructure/ui-buttons'
@@ -24,6 +24,8 @@ import {ScreenReaderContent} from '@instructure/ui-a11y-content'
 import {Text} from '@instructure/ui-text'
 import {Responsive} from '@instructure/ui-responsive'
 import {responsiveQuerySizes} from '../../utils'
+
+const I18n = useI18nScope('discussion_posts')
 
 export function Expansion({...props}) {
   return (
@@ -47,10 +49,18 @@ export function Expansion({...props}) {
           data-testid="expand-button"
           interaction={props.isReadOnly ? 'disabled' : 'enabled'}
         >
-          <ScreenReaderContent>
+          <ScreenReaderContent
+            data-testid={
+              props.isExpanded ? 'reply-expansion-btn-collapse' : 'reply-expansion-btn-expand'
+            }
+          >
             {props.isExpanded
-              ? I18n.t('Collapse discussion thread')
-              : I18n.t('Expand discussion thread')}
+              ? I18n.t('Collapse discussion thread from %{author}', {
+                  author: props.authorName
+                })
+              : I18n.t('Expand discussion thread from %{author}', {
+                  author: props.authorName
+                })}
           </ScreenReaderContent>
           <Text
             weight="bold"
@@ -82,6 +92,10 @@ Expansion.propTypes = {
    * Key consumed by ThreadingToolbar's InlineList
    */
   delimiterKey: PropTypes.string.isRequired,
+  /**
+   * Name of author of the post being replied to
+   */
+  authorName: PropTypes.string,
   /**
    * Disable/Enable for the button
    */

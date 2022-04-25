@@ -28,9 +28,11 @@ import {Tooltip} from '@instructure/ui-tooltip'
 import {View} from '@instructure/ui-view'
 import WithBreakpoints, {breakpointsShape} from 'with-breakpoints'
 
-import I18n from 'i18n!assignments_2_file_upload'
+import {useScope as useI18nScope} from '@canvas/i18n'
 
 import api from '../apis/ContextModuleApi'
+
+const I18n = useI18nScope('assignments_2_file_upload')
 
 function buildFooterStyle() {
   return {
@@ -40,7 +42,7 @@ function buildFooterStyle() {
 }
 
 const NextItem = ({compact, tooltipText, url}) => (
-  <Tooltip tip={tooltipText}>
+  <Tooltip renderTip={tooltipText}>
     <Button data-testid="next-assignment-btn" margin="0 0 0 x-small" color="secondary" href={url}>
       <ScreenReaderContent>{I18n.t('Next Module')}</ScreenReaderContent>
       {!compact && <PresentationContent>{I18n.t('Next')}</PresentationContent>}
@@ -50,7 +52,7 @@ const NextItem = ({compact, tooltipText, url}) => (
 )
 
 const PreviousItem = ({compact, tooltipText, url}) => (
-  <Tooltip tip={tooltipText}>
+  <Tooltip renderTip={tooltipText}>
     <Button data-testid="previous-assignment-btn" margin="0 small 0 0" color="secondary" href={url}>
       <ScreenReaderContent>{I18n.t('Previous Module')}</ScreenReaderContent>
       <IconArrowOpenStartSolid />

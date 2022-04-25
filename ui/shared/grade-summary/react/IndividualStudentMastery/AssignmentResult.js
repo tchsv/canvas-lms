@@ -17,7 +17,7 @@
  */
 
 import React from 'react'
-import I18n from 'i18n!IndividiualStudentMasteryAssignmentResult'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import _ from 'lodash'
 import {View} from '@instructure/ui-view'
 import {Flex} from '@instructure/ui-flex'
@@ -26,6 +26,10 @@ import {Text} from '@instructure/ui-text'
 import {IconAssignmentLine, IconQuizLine, IconHighlighterLine} from '@instructure/ui-icons'
 import * as shapes from './shapes'
 import Ratings from '@canvas/rubrics/react/Ratings'
+
+import {Link} from '@instructure/ui-link'
+
+const I18n = useI18nScope('IndividiualStudentMasteryAssignmentResult')
 
 const scoreFromPercent = (percent, outcome) => {
   if (outcome.points_possible > 0) {
@@ -45,14 +49,14 @@ const scaleScore = (score, possible, outcome) => {
 }
 
 const renderLinkedResult = (name, url, isQuiz) => (
-  <Button
-    variant="link"
+  <Link
     href={url}
+    isWithinText={false}
     theme={{mediumPaddingHorizontal: '0', mediumHeight: 'normal', fontWeight: '700'}}
-    icon={isQuiz ? IconQuizLine : IconAssignmentLine}
+    renderIcon={isQuiz ? IconQuizLine : IconAssignmentLine}
   >
     {name}
-  </Button>
+  </Link>
 )
 
 const renderUnlinkedResult = name => (

@@ -18,7 +18,7 @@
 
 import React from 'react'
 import {bool, func} from 'prop-types'
-import I18n from 'i18n!gradebook'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import {Text} from '@instructure/ui-text'
 import {Link} from '@instructure/ui-link'
 import {Avatar} from '@instructure/ui-avatar'
@@ -30,6 +30,8 @@ import DateHelper from '@canvas/datetime/dateHelper'
 import TextHelper from '@canvas/util/TextHelper.coffee'
 import CommentPropTypes from '../propTypes/CommentPropTypes'
 import SubmissionCommentUpdateForm from './SubmissionCommentUpdateForm'
+
+const I18n = useI18nScope('gradebook')
 
 function submissionCommentDate(date) {
   return DateHelper.formatDatetimeForDisplay(date, 'short')
@@ -117,14 +119,14 @@ export default class SubmissionCommentListItem extends React.Component {
 
             <div>
               <div style={{margin: '0 0 0 0.375rem'}}>
-                <Button
+                <Link
                   href={this.props.authorUrl}
-                  variant="link"
+                  isWithinText={false}
                   theme={{mediumPaddingHorizontal: '0', mediumHeight: 'normal'}}
                   margin="none none xxx-small"
                 >
                   {TextHelper.truncateText(this.props.author, {max: 22})}
-                </Button>
+                </Link>
               </div>
 
               <div style={{margin: '0 0 0 0.375rem'}}>
@@ -141,7 +143,7 @@ export default class SubmissionCommentListItem extends React.Component {
                 size="small"
                 variant="icon"
                 onClick={this.handleEditComment}
-                buttonRef={this.bindEditButton}
+                elementRef={this.bindEditButton}
               >
                 <IconEditLine
                   title={I18n.t('Edit Comment: %{comment}', {comment: this.props.comment})}

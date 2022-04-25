@@ -20,12 +20,14 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import {func, shape, string} from 'prop-types'
 import update from 'immutability-helper'
-import I18n from 'i18n!gradebook'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import {Button} from '@instructure/ui-buttons'
 import Modal from '@canvas/instui-bindings/react/InstuiModal'
 import {Text} from '@instructure/ui-text'
 import {statuses} from '../constants/statuses'
 import StatusColorListItem from './StatusColorListItem'
+
+const I18n = useI18nScope('gradebook')
 
 class StatusesModal extends React.Component {
   static propTypes = {
@@ -45,10 +47,10 @@ class StatusesModal extends React.Component {
 
     this.colorPickerButtons = {}
     this.colorPickerContents = {}
-    this.state = {isOpen: false, colors: props.colors}
+    this.state = {colors: props.colors}
   }
 
-  updateStatusColors = status => (color, successFn, failureFn) => {
+  updateStatusColorsFn = status => (color, successFn, failureFn) => {
     this.setState(
       prevState => update(prevState, {colors: {$merge: {[status]: color}}}),
       () => {
@@ -96,14 +98,6 @@ class StatusesModal extends React.Component {
     this.modalContentRef = content
   }
 
-  open = () => {
-    this.setState({isOpen: true})
-  }
-
-  close = () => {
-    this.setState({isOpen: false})
-  }
-
   renderListItems() {
     return statuses.map(status => (
       <StatusColorListItem
@@ -115,26 +109,23 @@ class StatusesModal extends React.Component {
         colorPickerButtonRef={this.bindColorPickerButton(status)}
         colorPickerContentRef={this.bindColorPickerContent(status)}
         colorPickerAfterClose={this.handleColorPickerAfterClose(status)}
-        afterSetColor={this.updateStatusColors(status)}
+        afterSetColor={this.updateStatusColorsFn(status)}
       />
     ))
   }
 
   render() {
     const {
-      state: {isOpen},
       props: {onClose},
-      close,
       bindDoneButton,
       bindContentRef
     } = this
 
     return (
       <Modal
-        open={isOpen}
+        open
         label={I18n.t('Statuses')}
-        onDismiss={close}
-        onExited={onClose}
+        onDismiss={onClose}
         contentRef={bindContentRef}
         shouldCloseOnDocumentClick={false}
       >
@@ -145,7 +136,7 @@ class StatusesModal extends React.Component {
         </Modal.Body>
 
         <Modal.Footer>
-          <Button ref={bindDoneButton} variant="primary" onClick={close}>
+          <Button ref={bindDoneButton} color="primary" onClick={() => this.props.onClose()}>
             {I18n.t('Done')}
           </Button>
         </Modal.Footer>

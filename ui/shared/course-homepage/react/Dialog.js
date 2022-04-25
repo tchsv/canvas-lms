@@ -25,8 +25,10 @@ import {Button} from '@instructure/ui-buttons'
 import {Link} from '@instructure/ui-link'
 import {Text} from '@instructure/ui-text'
 import {ScreenReaderContent, AccessibleContent} from '@instructure/ui-a11y-content'
-import I18n from 'i18n!course_home_dialog'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import plainStoreShape from '@canvas/util/react/proptypes/plainStoreShape'
+
+const I18n = useI18nScope('course_home_dialog')
 
 class CourseHomeDialog extends React.Component {
   static propTypes = {
@@ -168,13 +170,13 @@ class CourseHomeDialog extends React.Component {
           {wikiFrontPageTitle ? null : (
             <div className="content-box-mini">
               *
-              <Button
-                variant="link"
+              <Link
                 href={wikiUrl}
+                isWithinText={false}
                 theme={{mediumPaddingHorizontal: '0', mediumHeight: '1.5rem'}}
               >
                 {I18n.t('Front Page must be set first')}
-              </Button>
+              </Link>
             </div>
           )}
         </Modal.Body>
@@ -186,7 +188,7 @@ class CourseHomeDialog extends React.Component {
           <Button
             onClick={this.onSubmit}
             disabled={this.props.isPublishing && this.state.selectedDefaultView === 'modules'}
-            variant="primary"
+            color="primary"
           >
             {this.props.isPublishing ? I18n.t('Choose and Publish') : I18n.t('Save')}
           </Button>

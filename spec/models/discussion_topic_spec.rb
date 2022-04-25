@@ -2217,6 +2217,34 @@ describe DiscussionTopic do
       expect { @topic.reply_from(user: @student, text: "reply") }.to raise_error(IncomingMail::Errors::ReplyToLockedTopic)
     end
 
+    it "does not allow replies from students to announcements that are closed for comments" do
+      announcement = @course.announcements.create!(message: "Lock this")
+      expect(announcement.comments_disabled?).to be_falsey
+      @course.lock_all_announcements = true
+      @course.save!
+      expect(announcement.reload.comments_disabled?).to be_truthy
+      expect { announcement.reply_from(user: @student, text: "reply") }.to raise_error(IncomingMail::Errors::ReplyToLockedTopic)
+    end
+
+    it "does not allow replies to locked announcements" do
+      announcement = @course.announcements.create!(message: "Lock this")
+      announcement.locked = true
+      announcement.save!
+      expect { announcement.reply_from(user: @student, text: "reply") }.to raise_error(IncomingMail::Errors::ReplyToLockedTopic)
+    end
+
+    it "does not allow replies from students to discussion topic before unlock date" do
+      @topic = @course.discussion_topics.create!(user: @teacher)
+      @topic.update_attribute(:delayed_post_at, Time.now + 1.day)
+      expect { @topic.reply_from(user: @student, text: "reply") }.to raise_error(IncomingMail::Errors::ReplyToLockedTopic)
+    end
+
+    it "does not allow replies from students to discussion topic after lock date" do
+      @topic = @course.discussion_topics.create!(user: @teacher)
+      @topic.update_attribute(:lock_at, Time.now - 1.day)
+      expect { @topic.reply_from(user: @student, text: "reply") }.to raise_error(IncomingMail::Errors::ReplyToLockedTopic)
+    end
+
     it "reflects course setting for when lock_all_announcements is enabled" do
       announcement = @course.announcements.create!(message: "Lock this")
       expect(announcement.comments_disabled?).to be_falsey
@@ -2798,6 +2826,43 @@ describe DiscussionTopic do
 
       it "returns true" do
         expect(discussion.anonymous?).to eq true
+      end
+    end
+  end
+
+  describe "#update_assignment" do
+    context "with course paces" do
+      before do
+        discussion_topic_model(context: @course)
+        @course.root_account.enable_feature!(:course_paces)
+        @course.enable_course_paces = true
+        @course.save!
+        @course_pace = course_pace_model(course: @course)
+        @module = @course.context_modules.create!(name: "some module")
+        @tag = @module.add_item(type: "discussion_topic", id: @topic.id)
+        @module.save!
+        @topic.reload
+        # Reset progresses to verify progresses are added during tests
+        Progress.destroy_all
+      end
+
+      it "runs update_course_pace_module_items on content tags when an assignment is created" do
+        expect(Progress.last).to be_nil
+        @topic.assignment = @course.assignments.create!(title: "some assignment")
+        @topic.save!
+        expect(Progress.last.context).to eq(@course_pace)
+      end
+
+      it "runs update_course_pace_module_items on content tags when an assignment is removed" do
+        expect(Progress.last).to be_nil
+        @topic.assignment = @course.assignments.create!(title: "some assignment")
+        @topic.save!
+        expect(Progress.last.context).to eq(@course_pace)
+        Progress.last.destroy
+        @topic.old_assignment_id = @topic.assignment_id
+        @topic.assignment_id = nil
+        @topic.save!
+        expect(Progress.last.context).to eq(@course_pace)
       end
     end
   end

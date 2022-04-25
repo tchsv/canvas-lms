@@ -35,9 +35,8 @@ const useCanvasContext = () => {
   const treeBrowserRootGroupId = context?.env?.treeBrowserRootGroupId
   const treeBrowserAccountGroupId = context?.env?.treeBrowserAccountGroupId
   const rootIds = context?.env?.rootIds
-  const individualOutcomeRatingAndCalculationFF =
-    context?.env?.individualOutcomeRatingAndCalculationFF
   const accountLevelMasteryScalesFF = context?.env?.accountLevelMasteryScalesFF
+  const outcomeAlignmentSummaryFF = context?.env?.outcomeAlignmentSummaryFF
 
   return {
     contextType,
@@ -54,8 +53,8 @@ const useCanvasContext = () => {
     treeBrowserRootGroupId,
     treeBrowserAccountGroupId,
     rootIds,
-    individualOutcomeRatingAndCalculationFF,
-    accountLevelMasteryScalesFF
+    accountLevelMasteryScalesFF,
+    outcomeAlignmentSummaryFF
   }
 }
 

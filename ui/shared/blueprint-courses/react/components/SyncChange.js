@@ -16,7 +16,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import I18n from 'i18n!blueprint_settingsSyncChange'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import React, {Component} from 'react'
 import cx from 'classnames'
 
@@ -31,6 +31,8 @@ import {IconLock, IconUnlock} from './BlueprintLocks'
 import propTypes from '../propTypes'
 
 import {itemTypeLabels, changeTypeLabels, exceptionTypeLabels} from '../labels'
+
+const I18n = useI18nScope('blueprint_settingsSyncChange')
 
 class SyncChange extends Component {
   static propTypes = {
@@ -125,13 +127,12 @@ class SyncChange extends Component {
                 <Grid.Col width={2}>{this.renderText(changeTypeLabels[change_type])}</Grid.Col>
                 <Grid.Col width={2}>
                   {hasExceptions ? (
-                    <Pill
-                      id="exceptionPill"
-                      text={I18n.t(
+                    <Pill id="exceptionPill">
+                      {I18n.t(
                         {one: '%{count} exception', other: '%{count} exceptions'},
                         {count: exceptions.length}
                       )}
-                    />
+                    </Pill>
                   ) : (
                     this.renderText(I18n.t('Applied'))
                   )}

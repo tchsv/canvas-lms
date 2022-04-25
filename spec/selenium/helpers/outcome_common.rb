@@ -74,12 +74,16 @@ module OutcomeCommon
     end
   end
 
-  def create_bulk_outcomes_groups(context, num_of_groups, num_of_outcomes)
+  def create_bulk_outcomes_groups(context, num_of_groups, num_of_outcomes, rubric_criterion = nil)
     @root = context.root_outcome_group
     num_of_groups.times do |g|
       @group = context.learning_outcome_groups.create!(title: "group #{g}")
       num_of_outcomes.times do |o|
         @outcome = context.created_learning_outcomes.create!(title: "outcome #{o}")
+        unless rubric_criterion.nil?
+          @outcome.rubric_criterion = rubric_criterion
+          @outcome.save!
+        end
         @group.add_outcome(@outcome)
       end
       @root.adopt_outcome_group(@group)
@@ -309,7 +313,7 @@ module OutcomeCommon
     f(".add_outcome_link").click
     wait_for_tiny(f(".outcomes-content textarea[name=description]"))
     below_range = 0
-    above_range = 6
+    above_range = 11
     replace_content(f(".outcomes-content input[name=title]"), "n Number of Times")
     click_option("#calculation_method", "n Number of Times")
     # enter invalid number below range

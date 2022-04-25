@@ -16,11 +16,13 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import I18n from 'i18n!external_tools'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import $ from 'jquery'
 import React from 'react'
 import PropTypes from 'prop-types'
 import page from 'page'
+
+const I18n = useI18nScope('external_tools')
 
 export default class extends React.Component {
   static displayName = 'AppTile'
@@ -83,7 +85,7 @@ export default class extends React.Component {
         onClick={this.handleClick}
         onKeyDown={this.handleKeyDown}
       >
-        <div id={appId}>
+        <div id={appId} className={this.state.isHidingDetails ? '' : 'showing-details'}>
           {this.installedRibbon()}
 
           <img

@@ -16,7 +16,7 @@
 // with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import Backbone from '@canvas/backbone'
-import I18n from 'i18n!external_toolsHomeworkSubmissionLtiContainer'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import $ from 'jquery'
 import _ from 'underscore'
 import ExternalContentReturnView from '@canvas/external-tools/backbone/views/ExternalContentReturnView.coffee'
@@ -30,6 +30,8 @@ import processSingleContentItem from '@canvas/deep-linking/processors/processSin
 import {findContentExtension} from './contentExtension'
 import {getEnv} from './environment'
 import '@canvas/jquery/jquery.disableWhileLoading'
+
+const I18n = useI18nScope('external_toolsHomeworkSubmissionLtiContainer')
 
 export const isValidFileSubmission = contentItem => {
   if (!getEnv()?.SUBMIT_ASSIGNMENT?.ALLOWED_EXTENSIONS?.length) {
@@ -50,7 +52,7 @@ export default class HomeworkSubmissionLtiContainer {
     if (
       event.origin !== ENV.DEEP_LINKING_POST_MESSAGE_ORIGIN ||
       !event.data ||
-      event.data.messageType !== 'LtiDeepLinkingResponse'
+      event.data.subject !== 'LtiDeepLinkingResponse'
     ) {
       return
     }

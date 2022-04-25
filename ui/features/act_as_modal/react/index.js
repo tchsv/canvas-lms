@@ -20,7 +20,7 @@ import PropTypes from 'prop-types'
 
 import React from 'react'
 import keycode from 'keycode'
-import I18n from 'i18n!act_as'
+import {useScope as useI18nScope} from '@canvas/i18n'
 
 import Modal from '@canvas/instui-bindings/react/InstuiModal'
 import {ScreenReaderContent} from '@instructure/ui-a11y-content'
@@ -33,6 +33,8 @@ import {Button} from '@instructure/ui-buttons'
 
 import ActAsMask from './svg/ActAsMask'
 import ActAsPanda from './svg/ActAsPanda'
+
+const I18n = useI18nScope('act_as')
 
 export default class ActAsModal extends React.Component {
   static propTypes = {
@@ -232,12 +234,12 @@ export default class ActAsModal extends React.Component {
                     ))}
                     <View as="div" textAlign="center">
                       <Button
-                        variant="primary"
+                        color="primary"
                         href={`/users/${user.id}/masquerade`}
                         data-method="post"
                         onClick={this.handleClick}
                         margin="large 0 0 0"
-                        buttonRef={el => (this.proceedButton = el)}
+                        elementRef={el => (this.proceedButton = el)}
                       >
                         {I18n.t('Proceed')}
                       </Button>

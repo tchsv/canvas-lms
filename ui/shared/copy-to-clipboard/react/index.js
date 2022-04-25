@@ -17,19 +17,22 @@
  */
 
 import React, {useState} from 'react'
-import I18n from 'i18n!copy_to_clipboard'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import PropTypes from 'prop-types'
 
 import {TextInput} from '@instructure/ui-text-input'
 import {Button} from '@instructure/ui-buttons'
 import {ScreenReaderContent} from '@instructure/ui-a11y-content'
 
+const I18n = useI18nScope('copy_to_clipboard')
+
 const CopyToClipboard = props => {
+  const copyToClipboardProps = ['buttonText']
   const [inputElement, setInputElement] = useState()
 
   // Object containing props intended for the TextInput component
   const textInputProps = Object.fromEntries(
-    Object.entries(props).filter(([k]) => !CopyToClipboard.propTypes[k])
+    Object.entries(props).filter(([k]) => !copyToClipboardProps.includes(k))
   )
 
   const copyToClipboard = () => {
@@ -43,9 +46,7 @@ const CopyToClipboard = props => {
       renderAfterInput={
         <Button onClick={copyToClipboard} size="small">
           {props.buttonText}
-          <ScreenReaderContent>
-            {I18n.t('Copy the video URL')}
-          </ScreenReaderContent>
+          <ScreenReaderContent>{I18n.t('Copy the video URL')}</ScreenReaderContent>
         </Button>
       }
       inputRef={ref => setInputElement(ref)}

@@ -24,7 +24,7 @@ import {TruncateText} from '@instructure/ui-truncate-text'
 import {Heading} from '@instructure/ui-heading'
 import {Tray} from '@instructure/ui-tray'
 
-import I18n from 'i18n!hide_assignment_grades_tray'
+import {useScope as useI18nScope} from '@canvas/i18n'
 
 import Layout from './Layout'
 import {
@@ -34,6 +34,8 @@ import {
 } from './Api'
 import {isHideable} from '@canvas/grading/SubmissionHelper'
 import {showFlashAlert} from '@canvas/alerts/react/FlashAlert'
+
+const I18n = useI18nScope('hide_assignment_grades_tray')
 
 function initialShowState() {
   return {
@@ -163,7 +165,7 @@ export default class HideAssignmentGradesTray extends PureComponent {
         <View as="div" padding="small">
           <Flex as="div" alignItems="start" margin="0 0 small 0">
             <Flex.Item>
-              <CloseButton onClick={this.dismiss}>{I18n.t('Close')}</CloseButton>
+              <CloseButton onClick={this.dismiss} screenReaderLabel={I18n.t('Close')} />
             </Flex.Item>
 
             <Flex.Item margin="0 0 0 small" shrink>

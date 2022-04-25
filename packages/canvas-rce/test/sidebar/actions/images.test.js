@@ -59,7 +59,7 @@ describe('Image dispatch shapes', () => {
       })
     })
 
-    describe('when the "category" is set to "buttons_and_icons', () => {
+    describe('when the "category" is set to "icon_maker_icons', () => {
       let buttonAndIconsResponse, opts
 
       const subject = () => actions.receiveImages(buttonAndIconsResponse)
@@ -67,19 +67,34 @@ describe('Image dispatch shapes', () => {
       beforeEach(() => {
         buttonAndIconsResponse = {
           response: {
-            files: [{id: 1}, {id: 2}, {id: 3}]
+            files: [
+              {id: 1, download_url: 'https://canvas.instructure.com/files/1/download'},
+              {id: 2, download_url: 'https://canvas.instructure.com/files/2/download'},
+              {id: 3, download_url: 'https://canvas.instructure.com/files/3/download'}
+            ]
           },
           contextType,
           opts: {
-            category: 'buttons_and_icons'
+            category: 'icon_maker_icons'
           }
         }
       })
 
       it('applies the buttons and icons attribute to each file', () => {
         assert.deepEqual(
-          subject().payload.files.map(f => f['data-inst-buttons-and-icons']),
+          subject().payload.files.map(f => f['data-inst-icon-maker-icon']),
           [true, true, true]
+        )
+      })
+
+      it('applies the download url data attribute', () => {
+        assert.deepEqual(
+          subject().payload.files.map(f => f['data-download-url']),
+          [
+            'https://canvas.instructure.com/files/1/download?icon_maker_icon=1',
+            'https://canvas.instructure.com/files/2/download?icon_maker_icon=1',
+            'https://canvas.instructure.com/files/3/download?icon_maker_icon=1'
+          ]
         )
       })
     })

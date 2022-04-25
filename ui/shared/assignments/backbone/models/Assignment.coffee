@@ -24,12 +24,14 @@ import VeriCiteSettings from '../../VeriCiteSettings.coffee'
 import DateGroup from '@canvas/date-group/backbone/models/DateGroup'
 import AssignmentOverrideCollection from '../collections/AssignmentOverrideCollection.coffee'
 import DateGroupCollection from '@canvas/date-group/backbone/collections/DateGroupCollection.coffee'
-import I18n from 'i18n!models_Assignment'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import GradingPeriodsHelper from '@canvas/grading/GradingPeriodsHelper'
 import tz from '@canvas/timezone'
 import numberHelper from '@canvas/i18n/numberHelper'
 import PandaPubPoller from '@canvas/panda-pub-poller'
 import { matchingToolUrls } from './LtiAssignmentHelpers'
+
+I18n = useI18nScope('models_Assignment')
 
 canManage = () ->
   ENV.PERMISSIONS?.manage
@@ -164,6 +166,8 @@ export default class Assignment extends Model
     @set 'omit_from_final_grade', omitFromFinalGradeBoolean
 
   courseID: => @get('course_id')
+
+  inPacedCourse: => @get('in_paced_course')
 
   submissionTypes: (submissionTypes) =>
     return @_submissionTypes() unless arguments.length > 0
@@ -350,6 +354,8 @@ export default class Assignment extends Model
 
   canGroup: -> !@get('has_submitted_submissions')
 
+  isPlagiarismPlatformLocked: -> @get('has_submitted_submissions') ||  _.includes(@frozenAttributes(), 'submission_types')
+
   gradingStandardId: (id) =>
     return @get('grading_standard_id') unless arguments.length > 0
     @set 'grading_standard_id', id
@@ -358,6 +364,18 @@ export default class Assignment extends Model
     tagAttributes = @get('external_tool_tag_attributes') || {}
     return tagAttributes.url unless arguments.length > 0
     tagAttributes.url = url
+    @set 'external_tool_tag_attributes', tagAttributes
+
+  externalToolIframeWidth: (width) =>
+    tagAttributes = @get('external_tool_tag_attributes') || {}
+    return tagAttributes?.iframe?.width unless arguments.length > 0
+    tagAttributes.iframe.width = width
+    @set 'external_tool_tag_attributes', tagAttributes
+
+  externalToolIframeHeight: (height) =>
+    tagAttributes = @get('external_tool_tag_attributes') || {}
+    return tagAttributes?.iframe?.height unless arguments.length > 0
+    tagAttributes.iframe.height = height
     @set 'external_tool_tag_attributes', tagAttributes
 
   externalToolData: =>
@@ -447,7 +465,7 @@ export default class Assignment extends Model
 
   htmlUrl: =>
     if @isQuizLTIAssignment() && canManage() && ENV.FLAGS && ENV.FLAGS.new_quizzes_modules_support
-      return @htmlEditUrl()
+      return "#{@htmlEditUrl()}?quiz_lti"
     else
       return @get 'html_url'
 
@@ -484,14 +502,20 @@ export default class Assignment extends Model
   newQuizzesAssignmentBuildButtonEnabled: =>
     return ENV.NEW_QUIZZES_ASSIGNMENT_BUILD_BUTTON_ENABLED
 
+  newMasteryConnectIconEnabled: =>
+    return ENV.FLAGS && ENV.FLAGS.updated_mastery_connect_icon
+
   showBuildButton: =>
     @isQuizLTIAssignment() && @newQuizzesAssignmentBuildButtonEnabled()
 
   defaultDates: =>
+    singleSection = @singleSection()
     group = new DateGroup
       due_at:    @get("due_at")
       unlock_at: @get("unlock_at")
       lock_at:   @get("lock_at")
+      single_section_unlock_at: singleSection?.unlockAt
+      single_section_lock_at: singleSection?.lockAt
 
   multipleDueDates: =>
     count = @get("all_dates_count")
@@ -519,6 +543,14 @@ export default class Assignment extends Model
     groups = @get("all_dates")
     models = (groups and groups.models) or []
     result = _.map models, (group) -> group.toJSON()
+
+  singleSection: =>
+    allDates = @allDates()
+    if allDates and allDates.length == 1
+      for section in allDates
+        return section
+    else
+      return null
 
   singleSectionDueDate: =>
     if !@multipleDueDates() && !@dueAt()
@@ -591,8 +623,8 @@ export default class Assignment extends Model
       'isDuplicating', 'isExternalTool', 'isGenericExternalTool', 'isGpaScaled',
       'isImporting', 'isLetterGraded', 'isMasteryConnectTool', 'isMigrating',
       'isNonPlacementExternalTool', 'isNotGraded', 'isOnlineSubmission',
-      'isOnlyVisibleToOverrides', 'isQuizLTIAssignment', 'isSimple',
-      'is_quiz_assignment', 'labelId', 'lockAt', 'moderatedGrading',
+      'isOnlyVisibleToOverrides', 'isPlagiarismPlatformLocked', 'isQuizLTIAssignment',
+      'isSimple', 'is_quiz_assignment', 'labelId', 'lockAt', 'moderatedGrading',
       'multipleDueDates', 'name', 'newQuizzesAssignmentBuildButtonEnabled',
       'nonBaseDates', 'notifyOfUpdate', 'objectTypeDisplayName', 'omitFromFinalGrade',
       'originalAssignmentName', 'peerReviewCount', 'peerReviews', 'peerReviewsAssignAt',
@@ -601,7 +633,8 @@ export default class Assignment extends Model
       'showBuildButton', 'showGradersAnonymousToGradersCheckbox', 'singleSectionDueDate',
       'submissionType', 'submissionTypeSelectionTools', 'submissionTypesFrozen',
       'turnitinAvailable', 'turnitinEnabled', 'unlockAt', 'vericiteAvailable',
-      'vericiteEnabled', 'importantDates'
+      'vericiteEnabled', 'importantDates', 'externalToolIframeWidth', 'externalToolIframeHeight',
+      'newMasteryConnectIconEnabled'
     ]
 
     hash =

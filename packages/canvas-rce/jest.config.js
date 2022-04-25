@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - present Instructure, Inc.
+ * Copyright (C) 2022 - present Instructure, Inc.
  *
  * This file is part of Canvas.
  *
@@ -37,7 +37,29 @@ module.exports = {
   moduleNameMapper: {
     // jest can't import the icons
     '@instructure/ui-icons/es/svg': '<rootDir>/src/rce/__tests__/_mockIcons.js',
+    // jest can't import css
+    '\\.(css|less)$': '<rootDir>/src/rce/__mocks__/styleMock.js',
     // mock the tinymce-react Editor component
     '@tinymce/tinymce-react': '<rootDir>/src/rce/__mocks__/tinymceReact.js'
+  },
+
+  transform: {
+    '\\.jsx?$': [
+      'babel-jest',
+      {
+        configFile: false,
+        presets: [['@babel/preset-env'], ['@babel/preset-react', {}]],
+        plugins: [
+          ['@babel/plugin-proposal-decorators', {legacy: true}],
+          [
+            '@instructure/babel-plugin-themeable-styles',
+            {
+              postcssrc: require('@instructure/ui-postcss-config')()(),
+              themeablerc: {}
+            }
+          ]
+        ]
+      }
+    ]
   }
 }

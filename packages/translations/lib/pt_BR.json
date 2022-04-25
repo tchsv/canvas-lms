@@ -92,8 +92,8 @@
     "apply_781a2546": {
         "message": "Aplicar"
     },
-    "apply_changes_to_all_instances_of_this_button_and__3a3bea34": {
-        "message": "Aplicar as alterações a todas as instâncias deste botão e ícone no curso"
+    "apply_changes_to_all_instances_of_this_icon_maker__2642f466": {
+        "message": "Aplicar as alterações a todas as instâncias deste ícone do Criador de Ícone"
     },
     "apps_54d24a47": {
         "message": "Aplicativos"
@@ -103,6 +103,9 @@
     },
     "arrows_464a3e54": {
         "message": "Setas"
+    },
+    "art_icon_8e1daad": {
+        "message": "Ícone de arte"
     },
     "aspect_ratio_will_be_preserved_cb5fdfb8": {
         "message": "Proporção do aspecto será preservado"
@@ -176,26 +179,17 @@
     "below_is_an_example_of_how_students_will_see_their_8f7e7971": {
         "message": "Abaixo está um exemplo de como os alunos verão sua programação"
     },
+    "black_4cb01371": {
+        "message": "Preto"
+    },
+    "blue_daf8fea9": {
+        "message": "Azul"
+    },
     "bottom_third_5f5fec1d": {
         "message": "Terço inferior"
     },
-    "button_color_608a0242": {
-        "message": "Cor do botão"
-    },
-    "button_outline_cf14f071": {
-        "message": "Contorno do botão"
-    },
-    "button_outline_size_cc1d1df7": {
-        "message": "Tamanho do contorno do botão"
-    },
-    "button_shape_dbecb573": {
-        "message": "Formato do botão"
-    },
-    "button_size_20f5fce1": {
-        "message": "Tamanho do botão"
-    },
-    "buttons_and_icons_e66ee12c": {
-        "message": "Botões e ícones"
+    "brick_f2656265": {
+        "message": "Tijolo"
     },
     "c_2001_acme_inc_283f7f80": {
         "message": "(c) 2001 Acme Inc."
@@ -226,6 +220,9 @@
     },
     "clear_2084585f": {
         "message": "Limpar"
+    },
+    "clear_image_3213fe62": {
+        "message": "Limpar imagem"
     },
     "clear_selected_file_82388e50": {
         "message": "Limpar arquivo selecionado"
@@ -269,8 +266,11 @@
     "collapse_to_hide_types_1ab46d2e": {
         "message": "Recolher para ocultar { types }"
     },
-    "color_color_eb64b08": {
-        "message": "Cor { color }"
+    "color_picker_6b359edf": {
+        "message": "Selecionador de Cores"
+    },
+    "color_picker_colorname_selected_ad4cf400": {
+        "message": "Seletor de cores ({ colorName } selecionado)"
     },
     "computer_1d7dfa6f": {
         "message": "Computador"
@@ -335,11 +335,17 @@
     "course_to_do_bcbbab54": {
         "message": "LISTA DE TAREFAS DE { course }"
     },
-    "create_button_and_icon_5c089934": {
-        "message": "Criar botão e ícone"
+    "create_icon_110d6463": {
+        "message": "Criar ícone"
+    },
+    "create_icon_maker_icon_c716bffe": {
+        "message": "Criar ícone do Criador de Ícone"
     },
     "creative_commons_license_725584ae": {
         "message": "Licença do Creative Commons:"
+    },
+    "crop_image_41bf940c": {
+        "message": "Cortar imagem"
     },
     "crop_image_807ebb08": {
         "message": "Cortar imagem"
@@ -349,6 +355,9 @@
     },
     "custom_6979cd81": {
         "message": "Personalizar"
+    },
+    "cyan_c1d5f68a": {
+        "message": "Ciano"
     },
     "date_added_ed5ad465": {
         "message": "Data adicionada"
@@ -373,6 +382,9 @@
     },
     "decrease_indent_de6343ab": {
         "message": "Diminuir recuo"
+    },
+    "deep_purple_bb3e2907": {
+        "message": "Roxo Profundo"
     },
     "default_bulleted_unordered_list_47079da8": {
         "message": "Lista não ordenada padrão com marcadores"
@@ -400,9 +412,6 @@
     },
     "diamond_b8dfe7ae": {
         "message": "Losango"
-    },
-    "dimension_type_55c83e4e": {
-        "message": "Tipo de dimensão"
     },
     "dimensions_45ddb7b7": {
         "message": "Dimensões"
@@ -479,6 +488,9 @@
     "edit_existing_button_icon_3d0277bd": {
         "message": "Editar botão/ícone existente"
     },
+    "edit_icon_2c6b0e91": {
+        "message": "Editar ícone"
+    },
     "edit_link_7f53bebb": {
         "message": "Editar link"
     },
@@ -497,17 +509,17 @@
     "embed_image_1080badc": {
         "message": "Imagem incorporada"
     },
-    "embed_options_tray_901cfd19": {
-        "message": "Incorporar bandeja de opções"
-    },
-    "embed_preview_2d741e1f": {
-        "message": "Incorporar pré-visualização"
-    },
     "embed_video_a97a64af": {
         "message": "Incorporar vídeo"
     },
     "embedded_content_aaeb4d3d": {
         "message": "conteúdo incorporado"
+    },
+    "engineering_icon_f8f3cf43": {
+        "message": "Ícone de engenharia"
+    },
+    "english_icon_25bfe845": {
+        "message": "Ícone de inglês"
     },
     "enter_at_least_3_characters_to_search_4f037ee0": {
         "message": "Insira pelo menos 3 caracteres para pesquisar"
@@ -553,6 +565,12 @@
     },
     "extra_small_9ae33252": {
         "message": "Muito pequeno"
+    },
+    "extracurricular_icon_67c8ca42": {
+        "message": "Ícone extracurricular"
+    },
+    "failed_getting_course_list_49846a93": {
+        "message": "Falha ao obter lista de cursos"
     },
     "failed_peeking_into_your_future_e95b9306": {
         "message": "Falha ao olhar para o seu futuro"
@@ -653,6 +671,12 @@
     "greek_65c5b3f7": {
         "message": "Grego"
     },
+    "green_15af4778": {
+        "message": "Verde"
+    },
+    "grey_a55dceff": {
+        "message": "Cinza"
+    },
     "group_documents_8bfd6ae6": {
         "message": "Agrupar documentos"
     },
@@ -683,6 +707,9 @@
     "heading_4_b2e74be7": {
         "message": "Título 4"
     },
+    "health_icon_8d292eb5": {
+        "message": "Ícone de saúde"
+    },
     "height_69b03e15": {
         "message": "Altura"
     },
@@ -710,6 +737,24 @@
     "i_hold_the_copyright_71ee91b1": {
         "message": "Eu possuo o copyright"
     },
+    "icon_color_b86dd6d6": {
+        "message": "Cor do ícone"
+    },
+    "icon_maker_icons_cc560f7e": {
+        "message": "Ícones do criador de ícones"
+    },
+    "icon_outline_e978dc0c": {
+        "message": "Contorno do ícone"
+    },
+    "icon_outline_size_33f39b86": {
+        "message": "Tamanho do contorno do ícone"
+    },
+    "icon_shape_30b61e7": {
+        "message": "Forma do ícone"
+    },
+    "icon_size_9353edea": {
+        "message": "Tamanho do ícone"
+    },
     "if_you_do_not_select_usage_rights_now_this_file_wi_14e07ab5": {
         "message": "Se você não selecionar os direitos de uso agora, esse arquivo terá a publicação cancelada depois do seu carregamento ser realizado."
     },
@@ -722,11 +767,17 @@
     "image_options_tray_90a46006": {
         "message": "Bandeja de opções de imagem"
     },
+    "image_to_crop_3a34487d": {
+        "message": "Imagem a cortar"
+    },
     "images_7ce26570": {
         "message": "Imagens"
     },
     "increase_indent_6d550a4a": {
         "message": "Aumentar recuo"
+    },
+    "indigo_2035fc55": {
+        "message": "Índigo"
     },
     "insert_593145ef": {
         "message": "Inserir"
@@ -773,6 +824,12 @@
     "language_arts_35b79a8b": {
         "message": "Inglesa"
     },
+    "language_arts_icon_a798b0f8": {
+        "message": "Ícone de artes linguísticas"
+    },
+    "languages_icon_9d20539": {
+        "message": "Ícone de idiomas"
+    },
     "large_9c5e80e7": {
         "message": "Grande"
     },
@@ -781,6 +838,12 @@
     },
     "left_to_right_e9b4fd06": {
         "message": "Esquerda à direita"
+    },
+    "library_icon_ae1e54cf": {
+        "message": "Ícone da biblioteca"
+    },
+    "light_blue_5374f600": {
+        "message": "Azul Claro"
     },
     "link_7262adec": {
         "message": "Link"
@@ -848,11 +911,20 @@
     "looks_like_there_isn_t_anything_here_d9bcef49": {
         "message": "Parece que não há nada aqui"
     },
+    "magenta_4a65993c": {
+        "message": "Magenta"
+    },
     "math_ede93050": {
         "message": "Matemática"
     },
+    "math_icon_ad4e9d03": {
+        "message": "Ícone de matemática"
+    },
     "media_af190855": {
         "message": "Mídia"
+    },
+    "media_file_is_processing_please_try_again_later_58a6d49": {
+        "message": "O arquivo de mídia está sendo processado. Por favor, tente novamente mais tarde."
     },
     "medium_5a8e9ead": {
         "message": "Média"
@@ -878,6 +950,9 @@
     "multi_color_image_63d7372f": {
         "message": "Imagem multicolorida"
     },
+    "music_icon_4db5c972": {
+        "message": "Ícone de música"
+    },
     "must_be_at_least_percentage_22e373b6": {
         "message": "Deve ser ao menos { percentage }%"
     },
@@ -892,6 +967,9 @@
     },
     "name_1aed4a1b": {
         "message": "Nome"
+    },
+    "name_color_ceec76ff": {
+        "message": "{ name } ({ color })"
     },
     "navigate_through_the_menu_or_toolbar_415a4e50": {
         "message": "Navegue no menu ou barra de ferramentas"
@@ -974,6 +1052,9 @@
     "octagon_e48be9f": {
         "message": "Octógono"
     },
+    "olive_6a3e4d6b": {
+        "message": "Verde-oliva"
+    },
     "only_most_recent_grading_period_shown_f1ad6458": {
         "message": "*Apenas o período de avaliação mais recente é exibido."
     },
@@ -992,8 +1073,8 @@
     "optional_add_course_ef0d70fc": {
         "message": "Opcional: Adicionar Curso"
     },
-    "options_3ab0ea65": {
-        "message": "Opções"
+    "orange_81386a62": {
+        "message": "Laranja"
     },
     "ordered_and_unordered_lists_cfadfc38": {
         "message": "Listas ordenadas e não ordenadas"
@@ -1030,6 +1111,15 @@
     },
     "percentage_must_be_a_number_8033c341": {
         "message": "O percentual deve ser um número"
+    },
+    "performing_arts_icon_f3497486": {
+        "message": "Ícone de artes cênicas"
+    },
+    "physical_education_icon_d7dffd3e": {
+        "message": "Ícone de educação física"
+    },
+    "pink_68ad45cb": {
+        "message": "Rosa"
     },
     "pixels_52ece7d1": {
         "message": "Pixels"
@@ -1076,6 +1166,12 @@
     "published_when_302d8e23": {
         "message": "Publicado: { when }"
     },
+    "pumpkin_904428d5": {
+        "message": "Abóbora"
+    },
+    "purple_7678a9fc": {
+        "message": "Roxo"
+    },
     "quiz_e0dcce8f": {
         "message": "Teste"
     },
@@ -1091,11 +1187,17 @@
     "record_upload_media_5fdce166": {
         "message": "Gravar/fazer upload de mídia"
     },
+    "red_8258edf3": {
+        "message": "Vermelho"
+    },
     "redo_363c58b7": {
         "message": "Refazer"
     },
     "relationships_6602af70": {
         "message": "Relacionamentos"
+    },
+    "religion_icon_246e0be1": {
+        "message": "Ícone de religião"
     },
     "reminder_date_4564d12d": {
         "message": "Lembrete: { date }"
@@ -1115,6 +1217,9 @@
     "rich_content_editor_2708ef21": {
         "message": "Editor de conteúdo avançado"
     },
+    "rich_text_area_press_alt_0_for_rich_content_editor_9d23437f": {
+        "message": "Área de conteúdo enriquecido. Pressione ALT+0 para atalhos do Rich Content Editor."
+    },
     "right_to_left_9cfb092a": {
         "message": "Direita à esquerda"
     },
@@ -1124,8 +1229,8 @@
     "save_11a80ec3": {
         "message": "Salvar"
     },
-    "saved_buttons_and_icons_8278eed2": {
-        "message": "Botões e ícones salvos"
+    "saved_icon_maker_icons_df86e2a1": {
+        "message": "Ícones salvos do criador de ícones"
     },
     "schedule_preview_3bcda153": {
         "message": "Pré-visualização da programação"
@@ -1163,9 +1268,6 @@
     "show_audio_options_b489926b": {
         "message": "Mostrar opções de áudio"
     },
-    "show_embed_options_ef8d7ef": {
-        "message": "Exibir opções de incorporação"
-    },
     "show_image_options_1e2ecc6b": {
         "message": "Exibir opções de imagem"
     },
@@ -1180,6 +1282,9 @@
     },
     "single_color_image_4e5d4dbc": {
         "message": "Imagem de cor única"
+    },
+    "single_color_image_color_95fa9a87": {
+        "message": "Cor da imagem de cor única"
     },
     "size_b30e1077": {
         "message": "Tamanho"
@@ -1199,17 +1304,8 @@
     "something_went_wrong_and_i_don_t_know_what_to_show_e0c54ec8": {
         "message": "Algo deu errado e não sei o que mostrar."
     },
-    "something_went_wrong_check_your_connection_and_try_2a7b2d13": {
-        "message": "Algo deu errado, verifique sua conexão e tente novamente."
-    },
     "something_went_wrong_d238c551": {
         "message": "Algo deu errado"
-    },
-    "something_went_wrong_try_again_after_refreshing_th_e094eb8d": {
-        "message": "Algo deu errado, tente novamente após atualizar a página"
-    },
-    "something_went_wrong_uploading_check_your_connecti_aa201f15": {
-        "message": "Algo deu errado ao carregar, verifique sua conexão e tente novamente."
     },
     "sort_by_e75f9e3e": {
         "message": "Ordenar por"
@@ -1234,6 +1330,9 @@
     },
     "starttime_to_endtime_d7cc249d": {
         "message": "{ startTime } a { endTime }"
+    },
+    "steel_blue_14296f08": {
+        "message": "Azul aço"
     },
     "styles_2aa721ef": {
         "message": "Estilos"
@@ -1270,6 +1369,9 @@
     },
     "task_16b0ef38": {
         "message": "Tarefa"
+    },
+    "teal_f729a294": {
+        "message": "Cerceta"
     },
     "text_7f4593da": {
         "message": "Texto"
@@ -1400,9 +1502,6 @@
     "uploading_19e8a4e7": {
         "message": "Carregando"
     },
-    "uploading_closed_captions_subtitles_failed_bc093f3": {
-        "message": "Falha ao enviar closed captions/legendas."
-    },
     "uppercase_alphabetic_ordered_list_3f5aa6b2": {
         "message": "Lista ordenada alfabeticamente e letras maiúsculas"
     },
@@ -1490,6 +1589,9 @@
     "weekly_schedule_navigation_6b042645": {
         "message": "Navegação na programação semanal"
     },
+    "white_87fa64fd": {
+        "message": "Branco"
+    },
     "width_492fec76": {
         "message": "Largura"
     },
@@ -1522,5 +1624,11 @@
     },
     "you_ve_scrolled_back_to_your_very_first_to_do_29374681": {
         "message": "Você voltou para as suas primeiras tarefas!"
+    },
+    "zoom_in_image_bb97d4f": {
+        "message": "Ampliar imagem"
+    },
+    "zoom_out_image_d0a0a2ec": {
+        "message": "Reduzir imagem"
     }
 }

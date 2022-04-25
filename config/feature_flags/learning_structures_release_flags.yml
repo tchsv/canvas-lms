@@ -25,32 +25,28 @@ auto_show_cc:
     Automatically show closed captions in the user's current
     language (if available) when playing canvas media.
   applies_to: User
-k5_parent_support:
+course_paces:
   state: hidden
-  display_name: 'Canvas for Elementary: Parent Support'
-  description: Enables support for observers within Canvas for Elementary.
-  applies_to: SiteAdmin
-pace_plans:
-  state: hidden
-  display_name: 'Pace Plans'
-  description: Pace Plans adds support for rolling enrollments to Canvas;
-    allowing magical distribution of due dates for students with different
-    start dates based on an instructor's defined pace. Learn more and give
-    feedback by joining the Pace Plans User Group.
+  display_name: 'Course Pacing'
+  description:
+    wrapper: <a href="https://community.canvaslms.com/t5/Course-Pacing-Feature-Preview/gh-p/course_pacing">\1</a>
+    course_paces_description: |-
+      Course Pacing adds support for rolling enrollments to Canvas;
+      allowing magical distribution of due dates for students with different
+      start dates based on an instructor's defined pace. Learn more and give
+      feedback by joining the *Course Pacing User Group*.
   applies_to: Account
   beta: true
-sticky_left_nav:
+course_paces_blackout_dates:
   state: hidden
-  display_name: 'Sticky Left Navigation'
-  description: Turns left-side navigation sidebar sticky.
+  display_name: 'Course pacing blackout dates'
+  description: Add blackout dates UI to course pacing. Requires course_paces enabled.
   applies_to: SiteAdmin
-notification_settings_course_selector:
-  state: hidden
-  display_name: 'Notification settings: Course selector'
-  description: >-
-    Allows modifying notification settings for any course from within the
-    account-level notification settings page.
-  applies_to: SiteAdmin
+  environments:
+    development:
+      state: allowed_on
+    ci:
+      state: allowed_on
 create_course_subaccount_picker:
   state: hidden
   applies_to: RootAccount
@@ -60,10 +56,10 @@ create_course_subaccount_picker:
     "Manually Created Courses" sub-account, when enabled, this feature allows
     people who can manually create courses to put those courses into any sub-account
     where they have enrollments.
-  enable_at: "2021-11-20"
+  enable_at: '2021-11-20'
   environments:
     beta:
-      enable_at: "2021-10-18"
+      enable_at: '2021-10-18'
 conferencing_in_planner:
   state: hidden
   applies_to: SiteAdmin
@@ -71,24 +67,10 @@ conferencing_in_planner:
   description: |-
     When enabled, this flag shows a "Join" button on Canvas calendar
     events in the student planner
-  enable_at: "2021-11-20"
+  enable_at: '2021-11-20'
   environments:
     beta:
-      enable_at: "2021-10-18"
-remember_settings_tab:
-  state: hidden
-  applies_to: SiteAdmin
-  display_name: Remember your settings page tab
-  description: |-
-    Keep track of which Settings page tab you are on
-    so the browser's back button takes you to your previous
-    tab, and that refreshing the page will return you to
-    the current active tab.
-  environments:
-    development:
-      state: allowed_on
-    ci:
-      state: allowed_on
+      enable_at: '2021-10-18'
 submission_feedback_indicators:
   state: allowed
   applies_to: RootAccount
@@ -113,6 +95,11 @@ observer_picker:
   display_name: Filter observer dashboard by student
   description: |-
     When enabled, this flag shows a student picker for observers on the dashboard.
+  environments:
+    ci:
+      state: allowed_on
+    development:
+      state: allowed_on
 calendar_series:
   applies_to: SiteAdmin
   state: hidden

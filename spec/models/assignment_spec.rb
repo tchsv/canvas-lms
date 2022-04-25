@@ -21,6 +21,7 @@
 require_relative "../selenium/helpers/groups_common"
 require_relative "../lti2_spec_helper"
 
+# Please add all new instance method tests in spec/models/assignment_instance_methods_spec.rb
 describe Assignment do
   include_context "lti2_spec_helper"
 
@@ -415,6 +416,30 @@ describe Assignment do
 
           expect(assignment.post_policy).not_to be_post_manually
         end
+      end
+    end
+
+    describe "#assigned_to_student" do
+      it "returns assignments assigned to the given student" do
+        assignment = @course.assignments.create!
+        expect(@course.assignments.assigned_to_student(@initial_student.id)).to include assignment
+      end
+
+      it "does not return assignments not assigned to the given student" do
+        new_student = student_in_course(course: @course, active_all: true, user_name: "new student").user
+        assignment = @course.assignments.create!(only_visible_to_overrides: true)
+        create_adhoc_override_for_assignment(assignment, new_student)
+        aggregate_failures do
+          expect(@course.assignments.assigned_to_student(new_student.id)).to include assignment
+          expect(@course.assignments.assigned_to_student(@initial_student.id)).not_to include assignment
+        end
+      end
+
+      it "returns assignments for a which a student does not have visibility but is assigned" do
+        assignment = @course.assignments.create!
+        # deactivated students can not view assignments they are assigned to
+        @course.enrollments.find_by(user: @initial_student).deactivate
+        expect(@course.assignments.assigned_to_student(@initial_student.id)).to include assignment
       end
     end
 
@@ -2570,9 +2595,7 @@ describe Assignment do
         end
 
         it "inserts a record" do
-          # once just for ther #assignment_muted_changed call as part of "handle_posted_at_changed"
-          # second time is for the grade change on the record.
-          expect(Auditors::GradeChange).to receive(:record).twice
+          expect(Auditors::GradeChange).to receive(:record)
           assignment.grade_student(student, grade: 10, grader: teacher)
         end
       end
@@ -2598,8 +2621,8 @@ describe Assignment do
           assignment.ensure_post_policy(post_manually: false)
         end
 
-        it "emits two events when grading: one for grading and one for posting" do
-          expect(Canvas::LiveEvents).to receive(:grade_changed).twice
+        it "emits one event when grading" do
+          expect(Canvas::LiveEvents).to receive(:grade_changed).once
           assignment.grade_student(student, grade: 10, grader: teacher)
         end
       end
@@ -3421,6 +3444,33 @@ describe Assignment do
       expect(decimal_part.length).to be <= 3
     end
 
+    context "with numeric grading standard" do
+      before(:once) do
+        @assignment.update!(grading_type: "letter_grade", points_possible: 10.0)
+        grading_standard = @course.grading_standards.build(title: "Number Before Letter")
+        grading_standard.data = {
+          "1" => 0.9,
+          "2" => 0.8,
+          "3" => 0.7,
+          "4" => 0.6,
+          "5" => 0.5,
+          "6" => 0
+        }
+        grading_standard.assignments << @assignment
+        grading_standard.save!
+      end
+
+      it "does not match a numeric grading standard if points are preferred over grading scheme value" do
+        @assignment.points_possible = 100
+        expect(@assignment.interpret_grade("1", prefer_points_over_scheme: true)).to eq 1.0
+      end
+
+      it "matches a numeric grading standard if grading scheme value is preferred over points" do
+        @assignment.points_possible = 100
+        expect(@assignment.interpret_grade("1")).to eq 100.0
+      end
+    end
+
     context "with alphanumeric grades" do
       before(:once) do
         @assignment.update!(grading_type: "letter_grade", points_possible: 10.0)
@@ -3697,9 +3747,7 @@ describe Assignment do
 
     describe "grade change audit records" do
       it "continues to insert grade change records when assignment is muted" do
-        # once just for ther #assignment_muted_changed call as part of "handle_posted_at_changed"
-        # second time is for the grade change on the record.
-        expect(Auditors::GradeChange).to receive(:record).twice
+        expect(Auditors::GradeChange).to receive(:record).once
         @assignment.grade_student(@student, grade: 10, grader: @teacher)
       end
 
@@ -5593,7 +5641,10 @@ describe Assignment do
       let(:submission_class) { WikiPage }
 
       context "feature enabled" do
-        before(:once) { @course.enable_feature!(:conditional_release) }
+        before(:once) do
+          @course.conditional_release = true
+          @course.save!
+        end
 
         include_examples "submittable"
       end
@@ -6173,7 +6224,8 @@ describe Assignment do
     end
 
     it "is locked when associated wiki page is part of a locked module" do
-      @course.enable_feature!(:conditional_release)
+      @course.conditional_release = true
+      @course.save!
       a1 = assignment_model(course: @course, submission_types: "wiki_page")
       a1.reload
       expect(a1.locked_for?(@user)).to be_falsey
@@ -6665,7 +6717,8 @@ describe Assignment do
 
     it "destroys the associated page if enabled" do
       course_factory
-      @course.enable_feature!(:conditional_release)
+      @course.conditional_release = true
+      @course.save!
       wiki_page_assignment_model course: @course
       @assignment.destroy
       expect(@page.reload).to be_deleted
@@ -8746,9 +8799,7 @@ describe Assignment do
           end
 
           it "inserts a single grade change record" do
-            # once just for ther #assignment_muted_changed call as part of "handle_posted_at_changed"
-            # second time is for the grade change on the record.
-            expect(Auditors::GradeChange).to receive(:record).twice
+            expect(Auditors::GradeChange).to receive(:record).once
             assignment.grade_student(student1, grade: 10, grader: teacher)
           end
 
@@ -8770,9 +8821,7 @@ describe Assignment do
           end
 
           it "inserts a single grade change record" do
-            # once just for ther #assignment_muted_changed call as part of "handle_posted_at_changed"
-            # second time is for the grade change on the record.
-            expect(Auditors::GradeChange).to receive(:record).twice
+            expect(Auditors::GradeChange).to receive(:record).once
             assignment.grade_student(student1, grade: 10, grader: teacher)
           end
         end
@@ -8801,6 +8850,13 @@ describe Assignment do
             expect(Canvas::LiveEvents).to receive(:grade_changed).once
             assignment.hide_submissions
           end
+
+          it "does not emit a live event when skip_muted_changed" do
+            assignment.grade_student(student1, grade: 10, grader: teacher)
+            expect(Canvas::LiveEvents).not_to receive(:grade_changed)
+            assignment.hide_submissions(skip_muted_changed: true)
+            assignment.post_submissions(skip_muted_changed: true)
+          end
         end
 
         context "when assignment posts automatically" do
@@ -8808,9 +8864,16 @@ describe Assignment do
             assignment.ensure_post_policy(post_manually: false)
           end
 
-          it "emits two events when grading: one for grading and one for posting" do
-            expect(Canvas::LiveEvents).to receive(:grade_changed).twice
+          it "emits one event when grading" do
+            expect(Canvas::LiveEvents).to receive(:grade_changed).once
             assignment.grade_student(student1, grade: 10, grader: teacher)
+          end
+
+          it "does not emit a live event when skip_muted_changed" do
+            assignment.grade_student(student1, grade: 10, grader: teacher)
+            expect(Canvas::LiveEvents).not_to receive(:grade_changed)
+            assignment.hide_submissions(skip_muted_changed: true)
+            assignment.post_submissions(skip_muted_changed: true)
           end
         end
       end
@@ -9958,6 +10021,7 @@ describe Assignment do
     let_once(:account) { Account.create!(root_account_id: nil) }
     let_once(:grading_period_group) do
       group = account.grading_period_groups.create!
+      group.enrollment_terms << course.enrollment_term
 
       now = Time.zone.now
       group.grading_periods.create!(
@@ -9984,7 +10048,10 @@ describe Assignment do
     let_once(:previously_closed_grading_period) { grading_period_group.grading_periods.first }
     let_once(:newly_closed_grading_period) { grading_period_group.grading_periods.second }
     let_once(:open_grading_period) { grading_period_group.grading_periods.third }
-    let_once(:course) { Course.create!(account: account) }
+    let_once(:course) do
+      course_with_student(active_all: true, account: account)
+      @course
+    end
 
     let(:assignment) { course.assignments.create!(post_to_sis: true) }
 
@@ -9997,12 +10064,31 @@ describe Assignment do
       end
 
       context "when an assignment is marked as due in a newly-closed grading period" do
-        it "sets post_to_sis to false for an assignment due within the newly-closed grading period" do
+        it "sets post_to_sis to false for an assignment due within the newly-closed grading period, whose course is using the grading period" do
           assignment.update!(due_at: 1.minute.after(newly_closed_grading_period.start_date))
-          expect do
-            Assignment.disable_post_to_sis_if_grading_period_closed
-            run_jobs
-          end.to change { assignment.reload.post_to_sis }.from(true).to(false)
+          aggregate_failures do
+            expect(GradingPeriod.for(course)).to include newly_closed_grading_period
+            expect do
+              Assignment.disable_post_to_sis_if_grading_period_closed
+              run_jobs
+            end.to change { assignment.reload.post_to_sis }.from(true).to(false)
+          end
+        end
+
+        it "does not set post_to_sis to false for an assignment due within the newly-closed grading period, whose course is NOT using the grading period" do
+          second_term = account.enrollment_terms.create!(name: "Term 2")
+          second_course = Course.create!(account: account, enrollment_term: second_term)
+          second_assignment = second_course.assignments.create!(
+            post_to_sis: true,
+            due_at: 1.minute.after(newly_closed_grading_period.start_date)
+          )
+          aggregate_failures do
+            expect(GradingPeriod.for(second_course)).to be_empty
+            expect do
+              Assignment.disable_post_to_sis_if_grading_period_closed
+              run_jobs
+            end.not_to change { second_assignment.reload.post_to_sis }.from(true)
+          end
         end
 
         it "sets updated_at for affected assignments" do
@@ -10029,7 +10115,7 @@ describe Assignment do
           end.not_to change { assignment.reload.post_to_sis }
         end
 
-        it "does not updated assignments due within the relevant timeframe that belong to an unaffected grading period" do
+        it "does not update assignments due within the relevant timeframe that belong to another root account" do
           alternate_root_account = Account.create!(root_account: nil)
           grading_period_group = alternate_root_account.grading_period_groups.create!
           now = Time.zone.now
@@ -10065,6 +10151,7 @@ describe Assignment do
 
         it "sets post_to_sis to false if at least one section has a due date in the closed grading period" do
           course_section = course.course_sections.create!(name: "section")
+          course.enroll_student(User.create!, active_all: true, section: course_section)
           assignment.update!(due_at: 1.week.after(newly_closed_grading_period.end_date))
           assignment.assignment_overrides.create!(
             due_at: 10.minutes.before(newly_closed_grading_period.end_date),

@@ -16,10 +16,10 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 import {func} from 'prop-types'
-import I18n from 'i18n!notification_preferences'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import NotificationPreferencesSetting from './Setting'
 import {NotificationPreferencesShape} from './Shape'
-import React, {useState} from 'react'
+import React, {useEffect, useState} from 'react'
 
 import {Checkbox} from '@instructure/ui-checkbox'
 import {ScreenReaderContent} from '@instructure/ui-a11y-content'
@@ -29,6 +29,8 @@ import theme from '@instructure/canvas-theme'
 import {Tooltip} from '@instructure/ui-tooltip'
 import {TruncateText} from '@instructure/ui-truncate-text'
 import {View} from '@instructure/ui-view'
+
+const I18n = useI18nScope('notification_preferences')
 
 const formattedCategoryNames = {
   courseActivities: () => I18n.t('Course Activities'),
@@ -88,7 +90,7 @@ const notificationCategories = {
 const formatCategoryKey = category => {
   let categoryStrings = category.split(/(?=[A-Z])/)
   categoryStrings = categoryStrings.map(word => word[0].toLowerCase() + word.slice(1))
-  return categoryStrings.join('_').replace(/\s/g, '')
+  return categoryStrings.join('_').replace(/\s/g, '');
 }
 
 const pushNotificationCategoryRestricted = category => {
@@ -260,6 +262,7 @@ const renderSendScoresInEmailsToggle = (
           variant="toggle"
           checked={sendScoresInEmails}
           onChange={() => {
+            // this reflects the change faster than waiting to the prop be updated by updatePreferenceCallback
             setSendScoresInEmails(!sendScoresInEmails)
             updatePreferenceCallback({sendScoresInEmails: !sendScoresInEmails})
           }}
@@ -307,7 +310,14 @@ const dropEmptyCategories = categories => {
 }
 
 const NotificationPreferencesTable = props => {
-  const [sendScoresInEmails, setSendScoresInEmails] = useState(props.preferences.sendScoresInEmails)
+  const {sendScoresInEmails} = props.preferences
+  const [stageSendScoresInEmails, setStageSendScoresInEmails] = useState(
+    props.preferences.sendScoresInEmails
+  )
+
+  useEffect(() => {
+    setStageSendScoresInEmails(sendScoresInEmails)
+  }, [sendScoresInEmails])
 
   if (ENV.discussions_reporting && ENV?.current_user_roles?.includes('teacher')) {
     notificationCategories.discussions.ReportedReply = {}
@@ -323,8 +333,8 @@ const NotificationPreferencesTable = props => {
             notificationCategory,
             props.updatePreference,
             i === 0,
-            sendScoresInEmails,
-            setSendScoresInEmails
+            stageSendScoresInEmails,
+            setStageSendScoresInEmails
           )
         )}
       </>

@@ -17,20 +17,22 @@
  */
 
 import {getIconByType} from '@canvas/mime/react/mimeClassIconHelper'
-import I18n from 'i18n!assignments_2'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import LoadingIndicator from '@canvas/loading-indicator'
 import previewUnavailable from '../../../images/PreviewUnavailable.svg'
 import PropTypes from 'prop-types'
 import React, {Component} from 'react'
 import {SubmissionFile} from '@canvas/assignments/graphql/student/File'
 
-import {Button} from '@instructure/ui-buttons'
+import {Button, IconButton} from '@instructure/ui-buttons'
 import {Flex} from '@instructure/ui-flex'
 import {IconDownloadLine} from '@instructure/ui-icons'
 import {ScreenReaderContent} from '@instructure/ui-a11y-content'
 import {Text} from '@instructure/ui-text'
 import theme from '@instructure/canvas-theme'
 import {Tooltip} from '@instructure/ui-tooltip'
+
+const I18n = useI18nScope('assignments_2')
 
 export default class FilePreview extends Component {
   static propTypes = {
@@ -101,14 +103,14 @@ export default class FilePreview extends Component {
 
   renderIcon = (file, index) => {
     return (
-      <Button
-        variant="icon"
+      <IconButton
         size="large"
+        withBackground={false}
+        withBorder={false}
         onClick={() => this.selectFile(index)}
-        icon={getIconByType(file.mimeClass)}
-      >
-        <ScreenReaderContent>{file.displayName}</ScreenReaderContent>
-      </Button>
+        renderIcon={getIconByType(file.mimeClass)}
+        screenReaderLabel={file.displayName}
+      />
     )
   }
 
@@ -129,7 +131,7 @@ export default class FilePreview extends Component {
       <div data-testid="assignments_2_file_icons" style={iconsContainerStyle}>
         {this.props.files.map((file, index) => (
           <div key={file.id} style={iconsStyle}>
-            <Tooltip tip={file.displayName} placement="bottom" variant="inverse">
+            <Tooltip renderTip={file.displayName} placement="bottom" color="primary">
               {this.shouldDisplayThumbnail(file)
                 ? this.renderThumbnail(file, index)
                 : this.renderIcon(file, index)}
@@ -196,7 +198,7 @@ export default class FilePreview extends Component {
             <div style={{display: 'block'}}>
               <Button
                 margin="medium auto"
-                icon={IconDownloadLine}
+                renderIcon={IconDownloadLine}
                 href={selectedFile.url}
                 disabled={!selectedFile.url}
               >

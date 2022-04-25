@@ -23,11 +23,13 @@ import {Modal} from '@instructure/ui-modal'
 import {RadioInput, RadioInputGroup} from '@instructure/ui-radio-input'
 import {TextInput} from '@instructure/ui-text-input'
 import {View} from '@instructure/ui-view'
-import I18n from 'i18n!gradebook'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import {bool, func, shape, string} from 'prop-types'
 import React, {useState} from 'react'
 
 import numberHelper from '@canvas/i18n/numberHelper'
+
+const I18n = useI18nScope('gradebook')
 
 const APPLY_TO_ALL = 'apply_to_all'
 const APPLY_TO_PAST_DUE = 'apply_to_only_past_due'
@@ -98,7 +100,7 @@ const ApplyScoreToUngradedModal: React.FC<Props> = ({assignmentGroup, onApply, o
           <TextInput
             display="inline-block"
             renderAfterInput={I18n.t('%')}
-            renderLabel={I18n.t('Grade for ungraded submissions')}
+            renderLabel={I18n.t('Grade for ungraded artifacts')}
             onChange={(event, value) => {
               setPercent(value)
             }}

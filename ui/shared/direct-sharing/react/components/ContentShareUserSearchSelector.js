@@ -16,15 +16,17 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import I18n from 'i18n!user_search_selector'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import React, {useState} from 'react'
 import {arrayOf, func, string} from 'prop-types'
 
 import CanvasAsyncSelect from '@canvas/instui-bindings/react/AsyncSelect'
-import useDebouncedSearchTerm from '../hooks/useDebouncedSearchTerm'
+import useDebouncedSearchTerm from '@canvas/search-item-selector/react/hooks/useDebouncedSearchTerm'
 import useContentShareUserSearchApi from '../effects/useContentShareUserSearchApi'
 import UserSearchSelectorItem from './UserSearchSelectorItem'
 import {basicUser} from '@canvas/users/react/proptypes/user'
+
+const I18n = useI18nScope('user_search_selector')
 
 ContentShareUserSearchSelector.propTypes = {
   courseId: string.isRequired,

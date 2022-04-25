@@ -17,7 +17,7 @@
  */
 
 import $ from 'jquery'
-import I18n from 'i18n!calendar'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import _ from 'underscore'
 import tz from '@canvas/timezone'
 import React from 'react'
@@ -26,6 +26,7 @@ import editCalendarEventTemplate from '../jst/editCalendarEvent.handlebars'
 import '@canvas/datetime'
 import '@canvas/forms/jquery/jquery.instructure_forms'
 import '@canvas/jquery/jquery.instructure_misc_helpers'
+import awaitElement from '@canvas/await-element'
 import 'date'
 import {changeTimezone} from '@canvas/datetime/changeTimezone'
 import commonEventFactory from '@canvas/calendar/jquery/CommonEvent/index'
@@ -34,6 +35,8 @@ import fcUtil from '@canvas/calendar/jquery/fcUtil.coffee'
 import CalendarConferenceWidget from '@canvas/calendar-conferences/react/CalendarConferenceWidget'
 import filterConferenceTypes from '@canvas/calendar-conferences/filterConferenceTypes'
 import getConferenceType from '@canvas/calendar-conferences/getConferenceType'
+
+const I18n = useI18nScope('calendar')
 
 export default class EditCalendarEventDetails {
   constructor(selector, event, contextChangeCB, closeCB) {
@@ -93,8 +96,8 @@ export default class EditCalendarEventDetails {
     return filterConferenceTypes(conferenceTypes, context)
   }
 
-  renderConferenceWidget = () => {
-    const conferenceNode = document.getElementById('calendar_event_conference_selection')
+  renderConferenceWidget = async () => {
+    const conferenceNode = await awaitElement('calendar_event_conference_selection')
     const activeConferenceTypes = this.getActiveConferenceTypes()
     const setConference = this.canUpdateConference() ? this.setConference : null
     if (!this.conference && (!this.canUpdateConference() || activeConferenceTypes.length === 0)) {
@@ -164,7 +167,6 @@ export default class EditCalendarEventDetails {
 
     data.important =
       this.currentContextInfo.k5_course &&
-      ENV.FEATURES?.important_dates &&
       this.$form.find('#calendar_event_important_dates').prop('checked')
 
     return data
@@ -239,9 +241,7 @@ export default class EditCalendarEventDetails {
     }
 
     // Only show important date checkbox if selected context is k5 subject
-    this.$form
-      .find('#important_dates')
-      .toggle(this.currentContextInfo.k5_course && ENV.FEATURES?.important_dates)
+    this.$form.find('#important_dates').toggle(this.currentContextInfo.k5_course)
   }
 
   duplicateCheckboxChanged = (jsEvent, _propagate) =>
@@ -312,8 +312,10 @@ export default class EditCalendarEventDetails {
       $end.val(date === null ? '' : timeFormatter(date))
     })
 
-    $start.data('instance').setTime(this.event.allDay ? null : start)
-    $end.data('instance').setTime(this.event.allDay ? null : end)
+    if (this.event.allDay) {
+      $start.val('')
+      $end.val('')
+    }
 
     // couple start and end times so that end time will never precede start
     return coupleTimeFields($start, $end, $date)

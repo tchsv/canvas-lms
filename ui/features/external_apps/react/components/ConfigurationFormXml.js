@@ -17,13 +17,15 @@
  */
 
 import $ from 'jquery'
-import I18n from 'i18n!external_tools'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import React from 'react'
 import PropTypes from 'prop-types'
 import TextInput from './TextInput'
 import TextAreaInput from './TextAreaInput'
 import CheckboxInput from './CheckboxInput'
 import '@canvas/rails-flash-notifications'
+
+const I18n = useI18nScope('external_tools')
 
 export default class ConfigurationFormXml extends React.Component {
   static propTypes = {
@@ -101,8 +103,8 @@ export default class ConfigurationFormXml extends React.Component {
           ref="name"
           id="name"
           defaultValue={this.props.name}
-          label={I18n.t('Name')}
-          required
+          renderLabel={I18n.t('Name')}
+          isRequired
           errors={this.state.errors}
         />
         <div className="grid-row">
@@ -111,7 +113,7 @@ export default class ConfigurationFormXml extends React.Component {
               ref="consumerKey"
               id="consumerKey"
               defaultValue={this.props.consumerKey}
-              label={I18n.t('Consumer Key')}
+              renderLabel={I18n.t('Consumer Key')}
               errors={this.state.errors}
             />
           </div>
@@ -120,7 +122,7 @@ export default class ConfigurationFormXml extends React.Component {
               ref="sharedSecret"
               id="sharedSecret"
               defaultValue={this.props.sharedSecret}
-              label={I18n.t('Shared Secret')}
+              renderLabel={I18n.t('Shared Secret')}
               errors={this.state.errors}
             />
           </div>

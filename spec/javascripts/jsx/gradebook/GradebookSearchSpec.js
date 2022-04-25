@@ -104,7 +104,6 @@ QUnit.module('Gradebook', suiteHooks => {
       gradebook = createGradebook(options)
       sinon.stub(gradebook.dataLoader, 'loadInitialData')
       sinon.stub(gradebook, 'finishRenderingUI')
-      gradebook.initialize()
 
       gradebook.setStudentIdsLoaded(true)
       gradebook.setAssignmentGroupsLoaded(true)
@@ -115,13 +114,6 @@ QUnit.module('Gradebook', suiteHooks => {
     function waitForTick() {
       return new Promise(resolve => setTimeout(resolve, 0))
     }
-
-    test('finishes rendering the UI when all essential data is loaded', async () => {
-      createInitializedGradebook()
-      gradebook._updateEssentialDataLoaded()
-      await waitForTick()
-      strictEqual(gradebook.finishRenderingUI.callCount, 1)
-    })
 
     test('does not finish rendering the UI when student ids are not loaded', async () => {
       createInitializedGradebook()
@@ -168,13 +160,6 @@ QUnit.module('Gradebook', suiteHooks => {
         })
       })
 
-      test('finishes rendering the UI when all essential data is loaded', async () => {
-        gradebook.setGradingPeriodAssignmentsLoaded(true)
-        gradebook._updateEssentialDataLoaded()
-        await waitForTick()
-        strictEqual(gradebook.finishRenderingUI.callCount, 1)
-      })
-
       test('does not finish rendering the UI when grading period assignments are not loaded', async () => {
         gradebook._updateEssentialDataLoaded()
         await waitForTick()
@@ -184,22 +169,19 @@ QUnit.module('Gradebook', suiteHooks => {
   })
 })
 
-QUnit.module(
-  'Gradebook#renderAssignmentSearchFilter (gradebook_assignment_search_and_redesign: true)',
-  {
-    setup() {
-      setFixtureHtml($fixtures)
-      this.gradebook = createGradebook({gradebook_assignment_search_and_redesign: true})
-      this.gradebook.setStudentsLoaded(true)
-      this.gradebook.setSubmissionsLoaded(true)
-      this.gradebook.renderAssignmentSearchFilter([])
-    },
+QUnit.module('Gradebook#renderAssignmentSearchFilter)', {
+  setup() {
+    setFixtureHtml($fixtures)
+    this.gradebook = createGradebook()
+    this.gradebook.setStudentsLoaded(true)
+    this.gradebook.setSubmissionsLoaded(true)
+    this.gradebook.renderAssignmentSearchFilter([])
+  },
 
-    teardown() {
-      $fixtures.innerHTML = ''
-    }
+  teardown() {
+    $fixtures.innerHTML = ''
   }
-)
+})
 
 test('renders Assignment Names label', function () {
   this.gradebook.renderAssignmentSearchFilter([])
@@ -254,9 +236,9 @@ QUnit.module('Gradebook#rowFilter', contextHooks => {
     }
   })
 
-  QUnit.module('when gradebook_assignment_search_and_redesign is enabled', hooks => {
+  QUnit.module('when gradebook student search', hooks => {
     hooks.beforeEach(() => {
-      gradebook = createGradebook({gradebook_assignment_search_and_redesign: true})
+      gradebook = createGradebook()
     })
 
     test('ignores the userFilterTerm', () => {
@@ -281,52 +263,6 @@ QUnit.module('Gradebook#rowFilter', contextHooks => {
 
     test('returns true when not filtering students (originally filtered and then cleared filters)', () => {
       gradebook.filteredStudentIds = []
-      strictEqual(gradebook.rowFilter(student), true)
-    })
-  })
-
-  QUnit.module('when gradebook_assignment_search_and_redesign is disabled', hooks => {
-    hooks.beforeEach(() => {
-      gradebook = createGradebook()
-    })
-
-    test('returns true when search term matches the student name', () => {
-      gradebook.userFilterTerm = 'charlie Xi'
-      strictEqual(gradebook.rowFilter(student), true)
-    })
-
-    test('returns true when search term matches the student login id', () => {
-      gradebook.userFilterTerm = 'example.com'
-      strictEqual(gradebook.rowFilter(student), true)
-    })
-
-    test('returns true when search term matches the student short name', () => {
-      gradebook.userFilterTerm = 'chuck'
-      strictEqual(gradebook.rowFilter(student), true)
-    })
-
-    test('returns true when search term matches the student sortable name', () => {
-      gradebook.userFilterTerm = 'Xi, Charlie'
-      strictEqual(gradebook.rowFilter(student), true)
-    })
-
-    test('returns true when search term matches the student sis id', () => {
-      gradebook.userFilterTerm = '123456789'
-      strictEqual(gradebook.rowFilter(student), true)
-    })
-
-    test('returns false when search term does not match', () => {
-      gradebook.userFilterTerm = 'Betty'
-      strictEqual(gradebook.rowFilter(student), false)
-    })
-
-    test('returns true when not filtering by a search term', () => {
-      gradebook.userFilterTerm = ''
-      strictEqual(gradebook.rowFilter(student), true)
-    })
-
-    test('returns true when search term is not defined', () => {
-      gradebook.userFilterTerm = null
       strictEqual(gradebook.rowFilter(student), true)
     })
   })

@@ -17,10 +17,12 @@
 
 import $ from 'jquery'
 
-import I18n from 'i18n!external_content.success'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import '@canvas/jquery/jquery.ajaxJSON'
 import '@canvas/jquery/jquery.instructure_misc_helpers'
 import '@canvas/rails-flash-notifications'
+
+const I18n = useI18nScope('external_content.success')
 
 const ExternalContentSuccess = {}
 
@@ -30,23 +32,17 @@ const data = ENV.retrieved_data
 const callback = ENV.service
 let parentWindow = window.parent || window.opener
 
-ExternalContentSuccess.getIFrameSrc = function() {
-  let src = parentWindow
-    .$('[data-cid="Modal"]')
-    .find('iframe')
-    .attr('src')
+ExternalContentSuccess.getIFrameSrc = function () {
+  let src = parentWindow.$('[data-cid="Modal"]').find('iframe').attr('src')
 
   if (src === undefined) {
-    src = parentWindow
-      .$('[data-cid="Tray"]')
-      .find('iframe')
-      .attr('src')
+    src = parentWindow.$('[data-cid="Tray"]').find('iframe').attr('src')
   }
 
   return src
 }
 
-ExternalContentSuccess.getLaunchType = function() {
+ExternalContentSuccess.getLaunchType = function () {
   const src = ExternalContentSuccess.getIFrameSrc()
 
   if (src === undefined) {
@@ -57,7 +53,7 @@ ExternalContentSuccess.getLaunchType = function() {
   return params.get('launch_type')
 }
 
-ExternalContentSuccess.dataReady = function(data, service_id) {
+ExternalContentSuccess.dataReady = function (data, service_id) {
   const e = $.Event('externalContentReady')
   e.contentItems = data
   e.service_id = service_id
@@ -87,10 +83,10 @@ ExternalContentSuccess.dataReady = function(data, service_id) {
 
 // Handles lti 1.0 responses for Assignments 2 which expects a
 // vanilla JS event from LTI tools in the following form.
-ExternalContentSuccess.a2DataReady = function(data) {
+ExternalContentSuccess.a2DataReady = function (data) {
   parentWindow.postMessage(
     {
-      messageType: 'A2ExternalContentReady',
+      subject: 'A2ExternalContentReady',
       content_items: data,
       msg: ENV.message,
       log: ENV.log,
@@ -102,7 +98,7 @@ ExternalContentSuccess.a2DataReady = function(data) {
   )
 }
 
-ExternalContentSuccess.start = function() {
+ExternalContentSuccess.start = function () {
   while (parentWindow && parentWindow.parent !== parentWindow && !parentWindow[callback]) {
     parentWindow = parentWindow.parent
   }

@@ -19,7 +19,7 @@
 import actions from '../actions'
 import {connect} from 'react-redux'
 import {COURSE} from '@canvas/permissions/react/propTypes'
-import I18n from 'i18n!permissions_v2_add_tray'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import PropTypes from 'prop-types'
 import React, {Component} from 'react'
 import {roleIsCourseBaseRole} from '@canvas/permissions/util'
@@ -33,6 +33,8 @@ import {Spinner} from '@instructure/ui-spinner'
 import {IconXSolid} from '@instructure/ui-icons'
 import {TextInput} from '@instructure/ui-text-input'
 import {Tray} from '@instructure/ui-tray'
+
+const I18n = useI18nScope('permissions_v2_add_tray')
 
 export default class AddTray extends Component {
   static propTypes = {
@@ -115,7 +117,7 @@ export default class AddTray extends Component {
           variant="icon"
           size="small"
           onClick={this.hideTray}
-          buttonRef={c => (this.closeButton = c)}
+          elementRef={c => (this.closeButton = c)}
         >
           <IconXSolid title={I18n.t('Close')} />
         </Button>
@@ -180,7 +182,7 @@ export default class AddTray extends Component {
             id="permissions-add-tray-submit-button"
             disabled={this.state.roleNameErrors.length !== 0}
             type="submit"
-            variant="primary"
+            color="primary"
             onClick={this.handleSaveButton}
             margin="0 x-small 0 0"
           >

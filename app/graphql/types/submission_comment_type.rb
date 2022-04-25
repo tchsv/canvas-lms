@@ -39,9 +39,13 @@ module Types
   class SubmissionCommentType < ApplicationObjectType
     graphql_name "SubmissionComment"
 
+    global_id_field :id
+
     implements Interfaces::TimestampInterface
     implements Interfaces::LegacyIDInterface
 
+    field :submission_id, ID, null: false
+    field :created_at, Types::DateTimeType, null: false
     field :comment, String, null: true
 
     field :author, Types::UserType, null: true

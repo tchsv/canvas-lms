@@ -17,7 +17,7 @@
  */
 
 import React, {useState, useCallback} from 'react'
-import I18n from 'i18n!MobileNavigation'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import {string, node} from 'prop-types'
 import {Button} from '@instructure/ui-buttons'
 import {Text} from '@instructure/ui-text'
@@ -58,6 +58,10 @@ import {
   IconHourGlassLine,
   IconOffLine
 } from '@instructure/ui-icons'
+
+import {Link} from '@instructure/ui-link'
+
+const I18n = useI18nScope('MobileNavigation')
 
 const icons = {
   home: IconHomeLine,
@@ -129,10 +133,10 @@ export default function MobileContextMenu({spinner, contextType, contextId}) {
         return (
           <Grid.Row key={tab.id}>
             <Grid.Col width="auto">
-              <Button icon={Icon} variant="link" href={tab.html_url}>
+              <Link renderIcon={Icon} href={tab.html_url} isWithinText={false}>
                 <Text weight={isCurrentTab ? 'bold' : 'normal'}>{tab.label}</Text>
                 {isTabOff && <ScreenReaderContent>{'- ' + srText(tab)}</ScreenReaderContent>}
-              </Button>
+              </Link>
             </Grid.Col>
             <Grid.Col>{isTabOff && <IconOffLine />}</Grid.Col>
           </Grid.Row>

@@ -49,11 +49,12 @@ const locale = {
   "announcement_list_da155734": { "message": "รายการประกาศ" },
   "announcements_a4b8ed4a": { "message": "ประกาศ" },
   "apply_781a2546": { "message": "ปรับใช้" },
-  "apply_changes_to_all_instances_of_this_button_and__3a3bea34": {
-    "message": "ปรับใช้การเปลี่ยนแปลงกับส่วนรายการทั้งหมดปุ่มและไอคอนนี้ในบทเรียนนี้"
+  "apply_changes_to_all_instances_of_this_icon_maker__2642f466": {
+    "message": "ปรับใช้การเปลี่ยนแปลงกับส่วนรายการทั้งหมดของไอคอน Icon Maker (Icon Maker Icon) ในบทเรียน (Course) นี้"
   },
   "apps_54d24a47": { "message": "แอพ" },
   "arrows_464a3e54": { "message": "ลูกศร" },
+  "art_icon_8e1daad": { "message": "ไอคอนอาร์ตเวิร์ค" },
   "aspect_ratio_will_be_preserved_cb5fdfb8": {
     "message": "สัดส่วนจะถูกรักษาไว้ตามเดิม"
   },
@@ -73,13 +74,10 @@ const locale = {
   "available_folders_694d0436": { "message": "โฟลเดอร์ที่ใช้ได้" },
   "basic_554cdc0a": { "message": "พื้นฐาน" },
   "below_81d4dceb": { "message": "ด้านล่าง" },
+  "black_4cb01371": { "message": "ดำ" },
+  "blue_daf8fea9": { "message": "น้ำเงิน" },
   "bottom_third_5f5fec1d": { "message": "อันดับที่สามจากด้านล่าง" },
-  "button_color_608a0242": { "message": "สีปุ่ม" },
-  "button_outline_cf14f071": { "message": "กรอบปุ่ม" },
-  "button_outline_size_cc1d1df7": { "message": "ขนาดกรอบปุ่ม" },
-  "button_shape_dbecb573": { "message": "รูปทรงปุ่ม" },
-  "button_size_20f5fce1": { "message": "ขนาดปุ่ม" },
-  "buttons_and_icons_e66ee12c": { "message": "ปุ่มและไอคอน" },
+  "brick_f2656265": { "message": "บริค" },
   "c_2001_acme_inc_283f7f80": { "message": "(c) 2001 Acme Inc." },
   "cancel_caeb1e68": { "message": "ยกเลิก" },
   "choose_caption_file_9c45bc4e": { "message": "เลือกไฟล์คำบรรยาย" },
@@ -89,6 +87,7 @@ const locale = {
     "message": "วงเลือกรายการที่ไม่ได้จัดลำดับ"
   },
   "clear_2084585f": { "message": "ล้าง" },
+  "clear_image_3213fe62": { "message": "ล้างภาพ" },
   "clear_selected_file_82388e50": { "message": "ล้างไฟล์ที่เลือก" },
   "clear_selected_file_filename_2fe8a58e": {
     "message": "ล้างไฟล์ที่เลือก: { filename }"
@@ -116,7 +115,10 @@ const locale = {
   "closed_captions_subtitles_e6aaa016": { "message": "คำบรรยายแบบซ่อนได้" },
   "collaborations_5c56c15f": { "message": "การประสานความร่วมมือ" },
   "collapse_to_hide_types_1ab46d2e": { "message": "ย่อเพื่อซ่อน { types }" },
-  "color_color_eb64b08": { "message": "สี { color }" },
+  "color_picker_6b359edf": { "message": "ระบบเลือกสี " },
+  "color_picker_colorname_selected_ad4cf400": {
+    "message": "ระบบเลือกสี ({ colorName } ที่เลือก)"
+  },
   "computer_1d7dfa6f": { "message": "คอมพิวเตอร์" },
   "content_1440204b": { "message": "ข้อมูล" },
   "content_is_still_being_uploaded_if_you_continue_it_8f06d0cb": {
@@ -138,16 +140,20 @@ const locale = {
   "course_links_b56959b9": { "message": "ลิงค์บทเรียน" },
   "course_media_ec759ad": { "message": "สื่อสำหรับบทเรียน" },
   "course_navigation_dd035109": { "message": "การสืบค้นเนื้อหาบทเรียน" },
-  "create_button_and_icon_5c089934": { "message": "จัดทำปุ่มและไอคอน" },
+  "create_icon_110d6463": { "message": "จัดทำไอคอน" },
+  "create_icon_maker_icon_c716bffe": { "message": "จัดทำไอคอน Icon Maker" },
   "creative_commons_license_725584ae": {
     "message": "สิทธิ์ใช้งาน Creative Commons:"
   },
+  "crop_image_41bf940c": { "message": "ครอปภาพ" },
   "crop_image_807ebb08": { "message": "ครอปภาพ" },
   "current_image_f16c249c": { "message": "ภาพปัจจุบัน" },
   "custom_6979cd81": { "message": "กำหนดเอง" },
+  "cyan_c1d5f68a": { "message": "ฟ้า" },
   "date_added_ed5ad465": { "message": "วันที่ที่เพิ่ม" },
   "decorative_image_3c28aa7d": { "message": "ภาพตกแต่ง" },
   "decrease_indent_de6343ab": { "message": "ลดการเยื้อง" },
+  "deep_purple_bb3e2907": { "message": "ม่วงเข้ม" },
   "default_bulleted_unordered_list_47079da8": {
     "message": "รายการที่ไม่ได้จัดลำดับแบบมีหัวข้อย่อยเริ่มต้น"
   },
@@ -159,7 +165,6 @@ const locale = {
   "describe_the_video_2fe8f46a": { "message": "(ระบุรายละเอียดวิดีโอ)" },
   "details_98a31b68": { "message": "รายละเอียด" },
   "diamond_b8dfe7ae": { "message": "เพชร" },
-  "dimension_type_55c83e4e": { "message": "ประเภทขนาด" },
   "dimensions_45ddb7b7": { "message": "ขนาด" },
   "directionality_26ae9e08": { "message": "ทิศทาง" },
   "directly_edit_latex_b7e9235b": { "message": "แก้ไข LaTeX โดยตรง" },
@@ -186,15 +191,16 @@ const locale = {
   "edit_existing_button_icon_3d0277bd": {
     "message": "แก้ไขปุ่ม/ไอคอนในปัจจุบัน"
   },
+  "edit_icon_2c6b0e91": { "message": "ไอคอนแก้ไข" },
   "edit_link_7f53bebb": { "message": "แก้ไขลิงค์" },
   "editor_statusbar_26ac81fc": { "message": "แถบสถานะโปรแกรมแก้ไข" },
   "embed_828fac4a": { "message": "ผนวก" },
   "embed_code_314f1bd5": { "message": "ผนวกรหัส" },
   "embed_image_1080badc": { "message": "ผนวกภาพ" },
-  "embed_options_tray_901cfd19": { "message": "ผนวกถาดเผื่อเลือก" },
-  "embed_preview_2d741e1f": { "message": "ผนวกการแสดงตัวอย่าง" },
   "embed_video_a97a64af": { "message": "ผนวกวิดีโอ" },
   "embedded_content_aaeb4d3d": { "message": "เนื้อหาที่ผนวก" },
+  "engineering_icon_f8f3cf43": { "message": "ไอคอนวิศวกรรม" },
+  "english_icon_25bfe845": { "message": "ไอคอนอังกฤษ" },
   "enter_at_least_3_characters_to_search_4f037ee0": {
     "message": "กรอกอย่างน้อย 3 ตัวอักษรเพื่อค้นหา"
   },
@@ -208,6 +214,7 @@ const locale = {
   "external_tools_6e77821": { "message": "เครื่องมือจากภายนอก" },
   "extra_large_b6cdf1ff": { "message": "ใหญ่พิเศษ" },
   "extra_small_9ae33252": { "message": "เล็กพิเศษ" },
+  "extracurricular_icon_67c8ca42": { "message": "ไอคอนกิจกรรมนอกหลักสูตร" },
   "file_url_c12b64be": { "message": "URL ไฟล์" },
   "filename_file_icon_602eb5de": { "message": "ไอคอนไฟล์ { filename }" },
   "filename_image_preview_6cef8f26": {
@@ -240,6 +247,8 @@ const locale = {
   },
   "grades_a61eba0a": { "message": "เกรด" },
   "greek_65c5b3f7": { "message": "กรีก" },
+  "green_15af4778": { "message": "เขียว" },
+  "grey_a55dceff": { "message": "เทา" },
   "group_documents_8bfd6ae6": { "message": "เอกสารของกลุ่ม" },
   "group_files_4324f3df": { "message": "ไฟล์ของกลุ่ม" },
   "group_files_82e5dcdb": { "message": "ไฟล์ของกลุ่ม" },
@@ -250,6 +259,7 @@ const locale = {
   "heading_2_5b84eed2": { "message": "หัวเรื่อง 2" },
   "heading_3_2c83de44": { "message": "หัวเรื่อง 3" },
   "heading_4_b2e74be7": { "message": "หัวเรื่อง 4" },
+  "health_icon_8d292eb5": { "message": "ไอคอนสุขภาพ" },
   "height_69b03e15": { "message": "ความสูง" },
   "hexagon_d8468e0d": { "message": "หกเหลี่ยม" },
   "hide_description_bfb5502e": { "message": "ซ่อนรายละเอียด" },
@@ -261,14 +271,22 @@ const locale = {
     "message": "ฉันได้รับสิทธิ์อนุญาตให้ใช้ไฟล์นี้"
   },
   "i_hold_the_copyright_71ee91b1": { "message": "ฉันถือลิขสิทธิ์" },
+  "icon_color_b86dd6d6": { "message": "สีไอคอน" },
+  "icon_maker_icons_cc560f7e": { "message": "ไอคอน Icon Maker" },
+  "icon_outline_e978dc0c": { "message": "เค้าโครงไอคอน" },
+  "icon_outline_size_33f39b86": { "message": "ขนาดเค้าโครงไอคอน" },
+  "icon_shape_30b61e7": { "message": "รูปทรงไอคอน" },
+  "icon_size_9353edea": { "message": "ขนาดไอคอน" },
   "if_you_do_not_select_usage_rights_now_this_file_wi_14e07ab5": {
     "message": "หากคุณไม่เลือกสิทธิ์การใช้งาน ไฟล์นี้จะถูกเลิกเผยแพร่หลังจากอัพโหลดแล้ว"
   },
   "image_8ad06": { "message": "ภาพ" },
   "image_options_5412d02c": { "message": "ตัวเลือกภาพ" },
   "image_options_tray_90a46006": { "message": "ถาดตัวเลือกภาพ" },
+  "image_to_crop_3a34487d": { "message": "ภาพที่จะครอป" },
   "images_7ce26570": { "message": "ภาพ" },
   "increase_indent_6d550a4a": { "message": "เพิ่มการเยื้อง" },
+  "indigo_2035fc55": { "message": "คราม" },
   "insert_593145ef": { "message": "ใบกัด" },
   "insert_equella_links_49a8dacd": { "message": "แทรกลิงค์ Equella" },
   "insert_link_6dc23cae": { "message": "แทรกลิงค์" },
@@ -277,8 +295,12 @@ const locale = {
   "invalid_file_type_881cc9b2": { "message": "ประเภทไฟล์ไม่ถูกต้อง" },
   "invalid_url_cbde79f": { "message": "URL ไม่ถูกต้อง" },
   "keyboard_shortcuts_ed1844bd": { "message": "ชอร์ตคัทแป้นพิมพ์" },
+  "language_arts_icon_a798b0f8": { "message": "ไอคอนศิลปศาสตร์ด้านภาษา" },
+  "languages_icon_9d20539": { "message": "ไอคอนภาษา" },
   "large_9c5e80e7": { "message": "ใหญ่" },
   "left_to_right_e9b4fd06": { "message": "ซ้ายไปขวา" },
+  "library_icon_ae1e54cf": { "message": "ไอคอนห้องสมุด" },
+  "light_blue_5374f600": { "message": "ฟ้า" },
   "link_7262adec": { "message": "ลิงค์" },
   "link_options_a16b758b": { "message": "ตัวเลือกลิงค์" },
   "links_14b70841": { "message": "ลิงค์" },
@@ -292,13 +314,19 @@ const locale = {
   "loading_please_wait_d276220a": { "message": "กำลังโหลด กรุณารอสักครู่" },
   "loading_preview_9f077aa1": { "message": "กำลังโหลดตัวอย่าง" },
   "locked_762f138b": { "message": "ล็อคแล้ว" },
+  "magenta_4a65993c": { "message": "ม่วงอมแดง" },
+  "math_icon_ad4e9d03": { "message": "ไอคอนคณิตศาสตร์" },
   "media_af190855": { "message": "มีเดีย" },
+  "media_file_is_processing_please_try_again_later_58a6d49": {
+    "message": "ไฟล์มีเดียกำลังประมวลผล กรุณาลองใหม่อีกครั้งในภายหลัง"
+  },
   "medium_5a8e9ead": { "message": "ปานกลาง" },
   "middle_27dc1d5": { "message": "ตรงกลาง" },
   "misc_3b692ea7": { "message": "เบ็ดเตล็ด" },
   "miscellaneous_e9818229": { "message": "เบ็ดเตล็ด" },
   "modules_c4325335": { "message": "หน่วยการเรียน" },
   "multi_color_image_63d7372f": { "message": "ภาพหลายสี" },
+  "music_icon_4db5c972": { "message": "ไอคอนดนตรี" },
   "must_be_at_least_percentage_22e373b6": {
     "message": "จะต้องเท่ากับอย่างน้อย { percentage }%"
   },
@@ -307,6 +335,7 @@ const locale = {
   },
   "my_files_2f621040": { "message": "ไฟล์ของฉัน" },
   "name_1aed4a1b": { "message": "ชื่อ" },
+  "name_color_ceec76ff": { "message": "{ name } ({ color })" },
   "navigate_through_the_menu_or_toolbar_415a4e50": {
     "message": "ดูรายการเมนูหรือแถบเครื่องมือ"
   },
@@ -326,6 +355,7 @@ const locale = {
   "none_3b5e34d2": { "message": "ไม่มี" },
   "none_selected_b93d56d2": { "message": "ไม่ได้เลือกรายการใด" },
   "octagon_e48be9f": { "message": "แปดเหลี่ยม" },
+  "olive_6a3e4d6b": { "message": "โอลีฟ" },
   "open_this_keyboard_shortcuts_dialog_9658b83a": {
     "message": "เปิดกล่องโต้ตอบชอร์ตคัทแป้นพิมพ์นี้"
   },
@@ -333,7 +363,7 @@ const locale = {
     "message": "เปิดแอพพลิเคชั่น { title }"
   },
   "operators_a2ef9a93": { "message": "ผู้ดำเนินการ" },
-  "options_3ab0ea65": { "message": "ตัวเลือก" },
+  "orange_81386a62": { "message": "ส้ม" },
   "ordered_and_unordered_lists_cfadfc38": {
     "message": "รายการที่จัดลำดับและไม่ได้จัดลำดับ"
   },
@@ -351,6 +381,9 @@ const locale = {
   "percentage_must_be_a_number_8033c341": {
     "message": "เปอร์เซ็นต์จะต้องเป็นตัวเลข"
   },
+  "performing_arts_icon_f3497486": { "message": "ไอคอนนาฏศิลป์" },
+  "physical_education_icon_d7dffd3e": { "message": "ไอคอนพลศึกษา" },
+  "pink_68ad45cb": { "message": "ชมพู" },
   "pixels_52ece7d1": { "message": "พิกเซล" },
   "posted_when_a578f5ab": { "message": "โพสต์เมื่อ: { when }" },
   "preformatted_d0670862": { "message": "กำหนดรูปแบบไว้ล่วงหน้า" },
@@ -364,23 +397,32 @@ const locale = {
   },
   "published_c944a23d": { "message": "เผยแพร่แล้ว" },
   "published_when_302d8e23": { "message": "เผยแพร่แล้ว: { when }" },
+  "pumpkin_904428d5": { "message": "ฟักทอง" },
+  "purple_7678a9fc": { "message": "ม่วง" },
   "quizzes_7e598f57": { "message": "คำถาม" },
   "raw_html_editor_e3993e41": { "message": "Raw HTML Editor" },
   "record_7c9448b": { "message": "บันทึก" },
   "record_upload_media_5fdce166": { "message": "บันทึก/อัพโหลดสื่อ" },
+  "red_8258edf3": { "message": "แดง" },
   "relationships_6602af70": { "message": "ความสัมพันธ์" },
+  "religion_icon_246e0be1": { "message": "ไอคอนศาสนา" },
   "remove_link_d1f2f4d0": { "message": "ลบลิงค์" },
   "resize_ec83d538": { "message": "ปรับขนาด" },
   "restore_auto_save_deccd84b": {
     "message": "กู้คืนที่บันทึกอัตโนมัติหรือไม่"
   },
   "rich_content_editor_2708ef21": { "message": "Rich Content Editor" },
+  "rich_text_area_press_alt_0_for_rich_content_editor_9d23437f": {
+    "message": "พื้นที่ Rich Text กด ALT+0 สำหรับชอร์ตคัท Rich Content Editor"
+  },
   "right_to_left_9cfb092a": { "message": "ขวาไปซ้าย" },
   "sadly_the_pretty_html_editor_is_not_keyboard_acces_50da7665": {
     "message": "น่าเสียดาย HTML Editor ที่สวยงามไม่สามารถใช้งานผ่านแป้นพิมพ์ ใช้งาน HTML Editor แบบไม่ปรุงแต่งที่นี่"
   },
   "save_11a80ec3": { "message": "บันทึก" },
-  "saved_buttons_and_icons_8278eed2": { "message": "ปุ่มและไอคอนที่บันทึกไว้" },
+  "saved_icon_maker_icons_df86e2a1": {
+    "message": "ไอคอน Icon Maker ที่บันทึกไว้"
+  },
   "search_280d00bd": { "message": "ค้นหา" },
   "search_term_b2d2235": { "message": "คำค้นหา" },
   "select_crop_shape_d441feeb": { "message": "เลือกรูปทรงการครอป" },
@@ -390,11 +432,11 @@ const locale = {
     "message": "Shift-O เพื่อเปิด HTML Editor ที่สวยงาม"
   },
   "show_audio_options_b489926b": { "message": "แสดงตัวเลือกเสียง" },
-  "show_embed_options_ef8d7ef": { "message": "แสดงตัวเลือกในการผนวก" },
   "show_image_options_1e2ecc6b": { "message": "แสดงตัวเลือกสำหรับภาพ" },
   "show_link_options_545338fd": { "message": "แสดงตัวเลือกสำหรับลิงค์" },
   "show_video_options_6ed3721a": { "message": "แสดงตัวเลือกสำหรับวิดีโอ" },
   "single_color_image_4e5d4dbc": { "message": "ภาพสีเดียว" },
+  "single_color_image_color_95fa9a87": { "message": "สีเดี่ยวสำหรับภาพสี" },
   "size_b30e1077": { "message": "ขนาด" },
   "size_of_caption_file_is_greater_than_the_maximum_m_bff5f86e": {
     "message": "ขนาดของไฟล์คำบรรยายจะต้องมากกว่าขนาดสูงสุดที่อนุญาตที่ { max } kb"
@@ -404,22 +446,14 @@ const locale = {
   "something_went_wrong_and_i_don_t_know_what_to_show_e0c54ec8": {
     "message": "มีบางอย่างผิดพลาดและเราไม่รู้ว่าจะแสดงอะไรให้กับคุณ"
   },
-  "something_went_wrong_check_your_connection_and_try_2a7b2d13": {
-    "message": "มีบางอย่างผิดพลาด กรุณาตรวจสอบการเชื่อมต่อและลองใหม่อีกครั้ง"
-  },
   "something_went_wrong_d238c551": { "message": "มีบางอย่างผิดปกติ" },
-  "something_went_wrong_try_again_after_refreshing_th_e094eb8d": {
-    "message": "มีบางอย่างผิดพลาด ลองใหม่อีกครั้งหลังจากรีเฟรชหน้าเพจ"
-  },
-  "something_went_wrong_uploading_check_your_connecti_aa201f15": {
-    "message": "มีบางอย่างผิดพลาดในการอัพโหลด กรุณาตรวจสอบการเชื่อมต่อและลองใหม่อีกครั้ง"
-  },
   "sort_by_e75f9e3e": { "message": "จัดเรียงจาก" },
   "square_511eb3b3": { "message": "จัตุรัส" },
   "square_unordered_list_b15ce93b": {
     "message": "ทำกรอบรายการที่ไม่ได้จัดลำดับ"
   },
   "star_8d156e09": { "message": "Star" },
+  "steel_blue_14296f08": { "message": "สตีลบลู" },
   "styles_2aa721ef": { "message": "รูปแบบ" },
   "submit_a3cc6859": { "message": "ส่ง" },
   "subscript_59744f96": { "message": "ตัวห้อย" },
@@ -433,6 +467,7 @@ const locale = {
   },
   "syllabus_f191f65b": { "message": "หลักสูตร" },
   "tab_arrows_4cf5abfc": { "message": "แท็บ/ลูกศร" },
+  "teal_f729a294": { "message": "ทีล" },
   "text_7f4593da": { "message": "ข้อความ" },
   "text_background_color_16e61c3f": { "message": "สีพื้นหลังข้อความ" },
   "text_color_acf75eb6": { "message": "สีข้อความ" },
@@ -480,9 +515,6 @@ const locale = {
   "upload_media_ce31135a": { "message": "อัพโหลดสื่อ" },
   "upload_record_media_e4207d72": { "message": "อัพโหลด/บันทึกสื่อ" },
   "uploading_19e8a4e7": { "message": "กำลังอัพโหลด" },
-  "uploading_closed_captions_subtitles_failed_bc093f3": {
-    "message": "อัพโหลดคำบรรยายแบบซ่อนได้ล้มเหลว"
-  },
   "uppercase_alphabetic_ordered_list_3f5aa6b2": {
     "message": "รายการจัดลำดับอักษรตัวพิมพ์ใหญ่"
   },
@@ -531,6 +563,7 @@ const locale = {
   "view_keyboard_shortcuts_34d1be0b": { "message": "ดูชอร์ตคัทแป้นพิมพ์" },
   "view_predefined_colors_92f5db39": { "message": "ดูสีที่กำหนดไว้เบื้องต้น" },
   "view_title_description_67940918": { "message": "ดูรายละเอียด { title }" },
+  "white_87fa64fd": { "message": "คนผิวขาว" },
   "width_492fec76": { "message": "ความกว้าง" },
   "width_and_height_must_be_numbers_110ab2e3": {
     "message": "ความกว้างและความสูงต้องเป็นตัวเลข"
@@ -540,7 +573,9 @@ const locale = {
   "yes_dde87d5": { "message": "ใช่" },
   "you_may_not_upload_an_empty_file_11c31eb2": {
     "message": "คุณไม่สามารถอัพโหลดไฟล์เปล่า"
-  }
+  },
+  "zoom_in_image_bb97d4f": { "message": "ซูมภาพเข้า" },
+  "zoom_out_image_d0a0a2ec": { "message": "ซูมภาพออก" }
 }
 
 

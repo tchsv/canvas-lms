@@ -103,6 +103,7 @@ def postFn(status) {
         dockerUtils.tagRemote(env.CASSANDRA_IMAGE_TAG, env.CASSANDRA_MERGE_IMAGE)
         dockerUtils.tagRemote(env.DYNAMODB_IMAGE_TAG, env.DYNAMODB_MERGE_IMAGE)
         dockerUtils.tagRemote(env.POSTGRES_IMAGE_TAG, env.POSTGRES_MERGE_IMAGE)
+        dockerUtils.tagRemote(env.KARMA_RUNNER_IMAGE, env.KARMA_MERGE_IMAGE)
       }
 
       if (isStartedByUser()) {
@@ -309,6 +310,7 @@ pipeline {
     CASSANDRA_MERGE_IMAGE = "$CASSANDRA_PREFIX:$IMAGE_CACHE_MERGE_SCOPE-${env.RSPEC_PROCESSES ?: '4'}"
     DYNAMODB_MERGE_IMAGE = "$DYNAMODB_PREFIX:$IMAGE_CACHE_MERGE_SCOPE-${env.RSPEC_PROCESSES ?: '4'}"
     KARMA_RUNNER_IMAGE = "$KARMA_RUNNER_PREFIX:$IMAGE_CACHE_UNIQUE_SCOPE"
+    KARMA_MERGE_IMAGE = "$KARMA_RUNNER_PREFIX:$IMAGE_CACHE_MERGE_SCOPE"
     LINTERS_RUNNER_IMAGE = "$LINTERS_RUNNER_PREFIX:$IMAGE_CACHE_UNIQUE_SCOPE"
     POSTGRES_MERGE_IMAGE = "$POSTGRES_PREFIX:$IMAGE_CACHE_MERGE_SCOPE-${env.RSPEC_PROCESSES ?: '4'}"
 
@@ -337,6 +339,22 @@ pipeline {
           lock(label: 'canvas_build_global_mutex', quantity: 1) {
             timeout(60) {
               node('master') {
+                // For builds like Rails 6.1 prototype, we want to be able to see the build link, but
+                // not have Gerrit vote on it. This isn't currently supported through the Gerrit Trigger
+                // plugin, because the Build Started message always votes and will clear the original
+                // vote. Work around this by disabling the build start message and setting EMULATE_BUILD_START=1
+                // in the Build Parameters section.
+                // https://issues.jenkins.io/browse/JENKINS-28339
+                if (configuration.getBoolean('emulate-build-start', 'false')) {
+                  gerrit.submitReview("", "Build Started ${RUN_DISPLAY_URL}")
+                }
+
+                // Skip builds for patchsets uploaded by svc.cloudjenkins, these are usually translation updates.
+                if (env.GERRIT_PATCHSET_UPLOADER_EMAIL == 'svc.cloudjenkins@instructure.com' && !configuration.isChangeMerged()) {
+                  currentBuild.result = 'ABORTED'
+                  error('No pre-merge builds for Service Cloud Jenkins user.')
+                }
+
                 if (configuration.skipCi()) {
                   currentBuild.result = 'NOT_BUILT'
                   gerrit.submitLintReview('-2', 'Build not executed due to [skip-ci] flag')
@@ -344,6 +362,8 @@ pipeline {
                   return
                 } else if (extendedStage.isAllowStagesFilterUsed() || extendedStage.isIgnoreStageResultsFilterUsed() || extendedStage.isSkipStagesFilterUsed()) {
                   gerrit.submitLintReview('-2', 'One or more build flags causes a subset of the build to be run')
+                } else if (setupStage.hasGemOverrides()) {
+                  gerrit.submitLintReview('-2', 'One or more build flags causes the build to be run against an unmerged gem version override')
                 } else {
                   gerrit.submitLintReview('0')
                 }
@@ -376,7 +396,7 @@ pipeline {
                 buildParameters += string(name: 'PATCHSET_TAG', value: "${env.PATCHSET_TAG}")
                 buildParameters += string(name: 'POSTGRES', value: "${env.POSTGRES}")
                 buildParameters += string(name: 'RUBY', value: "${env.RUBY}")
-                buildParameters += string(name: 'CANVAS_RAILS6_0', value: '1')
+                buildParameters += string(name: 'CANVAS_RAILS', value: "${env.CANVAS_RAILS}")
 
                 // If modifying any of our Jenkinsfiles set JENKINSFILE_REFSPEC for sub-builds to use Jenkinsfiles in
                 // the gerrit rather than master. Stable branches also need to check out the JENKINSFILE_REFSPEC to prevent
@@ -436,7 +456,7 @@ pipeline {
                   extendedStage('Generate Crystalball Prediction')
                     .hooks(buildSummaryReportHooks.call())
                     .obeysAllowStages(false)
-                    .required(!configuration.isChangeMerged())
+                    .required(!configuration.isChangeMerged() && env.GERRIT_REFSPEC != "refs/heads/master")
                     .timeout(2)
                     .execute {
                       try {
@@ -456,37 +476,33 @@ pipeline {
                         archiveArtifacts allowEmptyArchive: true, artifacts: 'tmp/crystalball_map_version.txt'
                       /* groovylint-disable-next-line CatchException */
                       } catch (Exception e) {
-                        // don't fail build for this
+                        // default to full run of specs
+                        sh 'echo -n "." > tmp/crystalball_spec_list.txt'
+                        sh 'echo -n "broken map, defaulting to run all tests" > tmp/crystalball_map_version.txt'
+
+                        archiveArtifacts allowEmptyArchive: true, artifacts: 'tmp/crystalball_spec_list.txt, tmp/crystalball_map_version.txt'
+
+                        slackSend(
+                          channel: '#crystalball-noisy',
+                          color: 'danger',
+                          message: "${env.JOB_NAME} <${getSummaryUrl()}|#${env.BUILD_NUMBER}>\n\nFailed to generate prediction!"
+                        )
                       }
                     }
+
+                  extendedStage('Locales Only Changes')
+                    .hooks(buildSummaryReportHooks.call())
+                    .obeysAllowStages(false)
+                    .required(!configuration.isChangeMerged() && sh(script: "${WORKSPACE}/build/new-jenkins/locales-changes.sh", returnStatus: true) == 0)
+                    .execute {
+                        gerrit.submitLintReview('-2', 'This commit contains only changes to config/locales/, this could be a bad sign!')
+                      }
 
                   extendedStage('Parallel Run Tests').obeysAllowStages(false).execute { stageConfig, buildConfig ->
                     def stages = [:]
 
                     extendedStage('Consumer Smoke Test').hooks(buildSummaryReportHooks.call()).queue(stages) {
                       sh 'build/new-jenkins/consumer-smoke-test.sh'
-                    }
-
-                    extendedStage('Zeitwerk Check').hooks(buildSummaryReportHooks.call()).queue(stages) {
-                      withEnv([
-                          'COMPOSE_FILE=docker-compose.new-jenkins.yml',
-                          'CANVAS_ZEITWERK=1'
-                      ]) {
-                        // the purpose of this stage is to ensure any new code introduce to canvas or any
-                        // autoloaded/eager-loaded dependencies conforms to our zeitwerk config
-                        // so we can start using zeitwerk as our code loader.
-                        //
-                        // the generally expected file structure can be found here: https://github.com/fxn/zeitwerk#file-structure
-                        sh '''
-                          echo "HEY HUMAN!"
-                          echo "**********"
-                          echo "Are you debugging a build failure here?"
-                          echo "see general zeitwerk rules, it may help: https://github.com/fxn/zeitwerk#file-structure"
-                          echo "**********"
-                          echo "HEY HUMAN!"
-                          docker-compose -p "zeitwerk-check" run --rm canvas bash -c "./bin/rails zeitwerk:check"
-                        '''
-                      }
                     }
 
                     extendedStage(JS_BUILD_IMAGE_STAGE)
@@ -538,7 +554,7 @@ pipeline {
                   extendedStage('Linters')
                     .hooks([onNodeReleasing: lintersStage.tearDownNode()])
                     .nodeRequirements(label: 'canvas-docker', podTemplate: lintersStage.nodeRequirementsTemplate())
-                    .required(!configuration.isChangeMerged())
+                    .required(!configuration.isChangeMerged() && env.GERRIT_CHANGE_ID != '0')
                     .execute {
                       def nestedStages = [:]
 
@@ -571,6 +587,11 @@ pipeline {
                       string(name: 'POSTGRES_IMAGE_TAG', value: "${env.POSTGRES_IMAGE_TAG}"),
                     ])
 
+                  // Trigger Crystalball map build if spec files were added or removed, will not vote on builds.
+                  if (configuration.isChangeMerged() && filesChangedStage.hasNewDeletedSpecFiles(buildConfig)) {
+                    build(wait: false, job: 'Canvas/helpers/crystalball-map')
+                  }
+
                   extendedStage('Flakey Spec Catcher')
                     .hooks(buildSummaryReportHooks.call())
                     .required(!configuration.isChangeMerged() && filesChangedStage.hasSpecFiles(buildConfig) || configuration.forceFailureFSC() == '1')
@@ -594,20 +615,10 @@ pipeline {
                       string(name: 'CASSANDRA_IMAGE_TAG', value: "${env.CASSANDRA_IMAGE_TAG}"),
                       string(name: 'DYNAMODB_IMAGE_TAG', value: "${env.DYNAMODB_IMAGE_TAG}"),
                       string(name: 'POSTGRES_IMAGE_TAG', value: "${env.POSTGRES_IMAGE_TAG}"),
+                      string(name: 'SKIP_CRYSTALBALL', value: "${env.SKIP_CRYSTALBALL || setupStage.hasGemOverrides()}"),
                       string(name: 'UPSTREAM_TAG', value: "${env.BUILD_TAG}"),
+                      string(name: 'UPSTREAM', value: "${env.JOB_NAME}"),
                     ])
-
-                  // Testing Crystalball build, will not vote on builds. Only run pre-merge.
-                  if (!configuration.isChangeMerged()) {
-                    build(wait: false,
-                          propagate: false,
-                          job: '/Canvas/proofs-of-concept/test-queue',
-                          parameters: buildParameters + [string(name: 'CASSANDRA_IMAGE_TAG', value: "${env.CASSANDRA_IMAGE_TAG}"),
-                                                         string(name: 'DYNAMODB_IMAGE_TAG', value: "${env.DYNAMODB_IMAGE_TAG}"),
-                                                         string(name: 'POSTGRES_IMAGE_TAG', value: "${env.POSTGRES_IMAGE_TAG}"),
-                                                         string(name: 'UPSTREAM', value: "${env.JOB_NAME}"),
-                                                         string(name: 'UPSTREAM_TAG', value: "${env.BUILD_TAG}"),])
-                  }
 
                   parallel(nestedStages)
                 }
@@ -616,8 +627,8 @@ pipeline {
               }
             }
           }
-        } //script
-      } //steps
-    } //environment
-  } //stages
-} //pipeline
+        } // script
+      } // steps
+    } // environment
+  } // stages
+} // pipeline

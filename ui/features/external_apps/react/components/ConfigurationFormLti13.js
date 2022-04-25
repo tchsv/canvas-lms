@@ -17,10 +17,12 @@
  */
 
 import React from 'react'
-import I18n from 'i18n!external_tools'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import {TextInput} from '@instructure/ui-text-input'
 import {IconLtiLine} from '@instructure/ui-icons'
 import {View} from '@instructure/ui-view'
+
+const I18n = useI18nScope('external_tools')
 
 class ConfigurationFormLti13 extends React.Component {
   constructor(props) {
@@ -65,8 +67,8 @@ class ConfigurationFormLti13 extends React.Component {
         <TextInput
           name="client_id"
           value={this.state.clientId}
-          label={I18n.t('Client ID')}
-          icon={() => <IconLtiLine />}
+          renderLabel={I18n.t('Client ID')}
+          renderAfterInput={() => <IconLtiLine />}
           ref={this.clientIdInput}
           onChange={this.setClientId}
           messages={[
@@ -77,7 +79,7 @@ class ConfigurationFormLti13 extends React.Component {
               type: 'hint'
             }
           ].concat(this.state.messages)}
-          required
+          isRequired
         />
       </View>
     )

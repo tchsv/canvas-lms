@@ -18,7 +18,7 @@
 
 import React from 'react'
 import {bool, func, string, shape} from 'prop-types'
-import I18n from 'i18n!assignments_2'
+import {useScope as useI18nScope} from '@canvas/i18n'
 
 import {Button, CloseButton} from '@instructure/ui-buttons'
 import {Heading} from '@instructure/ui-heading'
@@ -26,6 +26,8 @@ import {Spinner} from '@instructure/ui-spinner'
 import {Mask} from '@instructure/ui-overlays'
 import {Modal} from '@instructure/ui-modal'
 import {View} from '@instructure/ui-view'
+
+const I18n = useI18nScope('assignments_2')
 
 export default class ConfirmDialog extends React.Component {
   static propTypes = {
@@ -119,10 +121,9 @@ export default class ConfirmDialog extends React.Component {
               placement="end"
               onClick={this.props.onDismiss}
               disabled={this.props.disabled}
-              buttonRef={this.closeButtonRef}
-            >
-              {this.props.closeLabel}
-            </CloseButton>
+              elementRef={this.closeButtonRef}
+              screenReaderLabel={this.props.closeLabel}
+            />
           </Modal.Header>
           <Modal.Body padding="0">
             <div style={{position: 'relative'}}>

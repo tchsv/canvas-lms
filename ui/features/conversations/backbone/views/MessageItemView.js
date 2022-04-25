@@ -15,13 +15,15 @@
 // You should have received a copy of the GNU Affero General Public License along
 // with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import I18n from 'i18n!conversations'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import $ from 'jquery'
 import _ from 'underscore'
 import tz from '@canvas/timezone'
 import {View} from '@canvas/backbone'
 import template from '../../jst/messageItem.handlebars'
 import '@canvas/avatar/jst/_avatar.handlebars'
+
+const I18n = useI18nScope('conversations')
 
 export default class MessageItemView extends View {
   static initClass() {
@@ -42,11 +44,16 @@ export default class MessageItemView extends View {
     this.prototype.events = {
       'blur .actions a': 'onActionBlur',
       'click .al-trigger': 'onMenuOpen',
+      'keydown .al-trigger': 'onMenuOpen',
       'click .delete-btn': 'onDelete',
+      'keydown .delete-btn': 'onDelete',
       'click .forward-btn': 'onForward',
+      'keydown .forward-btn': 'onForward',
       'click .message-participants-toggle': 'onToggle',
       'click .reply-btn': 'onReply',
+      'keydown .reply-btn': 'onReply',
       'click .reply-all-btn': 'onReplyAll',
+      'keydown .reply-all-btn': 'onReplyAll',
       'focus .actions a': 'onActionFocus'
     }
 
@@ -104,6 +111,9 @@ export default class MessageItemView extends View {
   //
   // Returns nothing.
   onToggle(e) {
+    if (e.keyCode !== 13 && e.keyCode !== 32 && e.keyCode !== undefined) {
+      return
+    }
     e.preventDefault()
     return this.updateParticipants((this.summarized = !this.summarized))
   }
@@ -114,6 +124,9 @@ export default class MessageItemView extends View {
   //
   // Returns nothing.
   onReply(e) {
+    if (e.keyCode !== 13 && e.keyCode !== 32 && e.keyCode !== undefined) {
+      return
+    }
     e.preventDefault()
     return this.trigger('reply')
   }
@@ -124,6 +137,9 @@ export default class MessageItemView extends View {
   //
   // Returns nothing.
   onReplyAll(e) {
+    if (e.keyCode !== 13 && e.keyCode !== 32 && e.keyCode !== undefined) {
+      return
+    }
     e.preventDefault()
     return this.trigger('reply-all')
   }
@@ -134,15 +150,16 @@ export default class MessageItemView extends View {
   //
   // Returns nothing.
   onDelete(e) {
+    if (e.keyCode !== 13 && e.keyCode !== 32 && e.keyCode !== undefined) {
+      return
+    }
     let $toFocus
     e.preventDefault()
     if (!confirm(this.messages.confirmDelete)) {
       $(`.message-item-view[data-id=${this.model.id}] .al-trigger`).focus()
       return
     }
-    const prevId = $(this.el)
-      .prev()
-      .data('id')
+    const prevId = $(this.el).prev().data('id')
     const url = `/api/v1/conversations/${this.model.get('conversation_id')}/remove_messages`
     $.ajaxJSON(url, 'POST', {remove: [this.model.id]})
     this.remove()
@@ -160,6 +177,9 @@ export default class MessageItemView extends View {
   //
   // Returns nothing.
   onForward(e) {
+    if (e.keyCode !== 13 && e.keyCode !== 32 && e.keyCode !== undefined) {
+      return
+    }
     e.preventDefault()
     return this.trigger('forward')
   }
@@ -170,6 +190,9 @@ export default class MessageItemView extends View {
   //
   // Returns nothing.
   onMenuOpen(e) {
+    if (e.keyCode !== 13 && e.keyCode !== 32 && e.keyCode !== undefined) {
+      return
+    }
     return e.preventDefault()
   }
 
@@ -178,7 +201,7 @@ export default class MessageItemView extends View {
   // e - Event object.
   //
   // Returns nothing.
-  onActionFocus(e) {
+  onActionFocus() {
     return this.$metadata.addClass('hover')
   }
 
@@ -187,7 +210,7 @@ export default class MessageItemView extends View {
   // e - Event object.
   //
   // Returns nothing.
-  onActionBlur(e) {
+  onActionBlur() {
     return this.$metadata.removeClass('hover')
   }
 }

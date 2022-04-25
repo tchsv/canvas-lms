@@ -16,22 +16,42 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+export const TYPE = 'image/svg+xml-icon-maker-icons'
+
+export const Size = {
+  None: 'none',
+  ExtraSmall: 'x-small',
+  Small: 'small',
+  Medium: 'medium',
+  Large: 'large',
+  ExtraLarge: 'x-large'
+}
+
 export const DEFAULT_SETTINGS = {
-  name: '',
+  // Basic button & icon settings
+  type: TYPE,
   alt: '',
   shape: 'square',
-  size: 'small',
+  size: Size.Small,
   color: null,
-  outlineColor: null,
-  outlineSize: 'none',
+  outlineColor: '#000000',
+  outlineSize: Size.None,
   text: '',
-  textSize: 'small',
-  textColor: null,
+  textSize: Size.Small,
+  textColor: '#000000',
   textBackgroundColor: null,
   textPosition: 'middle',
   encodedImage: '',
   encodedImageType: '',
-  encodedImageName: ''
+  encodedImageName: '',
+  // Embedded image crop settings
+  x: 0,
+  y: 0,
+  translateX: 0,
+  translateY: 0,
+  width: 0,
+  height: 0,
+  transform: ''
 }
 
 export const DEFAULT_OPTIONS = {
@@ -39,31 +59,31 @@ export const DEFAULT_OPTIONS = {
 }
 
 export const BASE_SIZE = {
-  'x-small': 74,
-  small: 122,
-  medium: 158,
-  large: 218
+  [Size.ExtraSmall]: 74,
+  [Size.Small]: 122,
+  [Size.Medium]: 158,
+  [Size.Large]: 218
 }
 
 export const STROKE_WIDTH = {
-  none: 0,
-  small: 2,
-  medium: 4,
-  large: 8
+  [Size.None]: 0,
+  [Size.Small]: 2,
+  [Size.Medium]: 4,
+  [Size.Large]: 8
 }
 
 export const TEXT_SIZE = {
-  small: 14,
-  medium: 16,
-  large: 22,
-  'x-large': 28
+  [Size.Small]: 14,
+  [Size.Medium]: 16,
+  [Size.Large]: 22,
+  [Size.ExtraLarge]: 28
 }
 
 export const MAX_CHAR_COUNT = {
-  small: 21,
-  medium: 18,
-  large: 13,
-  'x-large': 10
+  [Size.Small]: 21,
+  [Size.Medium]: 18,
+  [Size.Large]: 13,
+  [Size.ExtraLarge]: 10
 }
 
 export const MAX_TOTAL_TEXT_CHARS = 32

@@ -266,7 +266,7 @@ describe "student planner" do
     end
 
     it "edits a To Do", priority: "1" do
-      @student1.planner_notes.create!(todo_date: 2.days.from_now, title: "Title Text")
+      @student1.planner_notes.create!(todo_date: Time.zone.now, title: "Title Text")
       go_to_list_view
       # Opens the To Do edit sidebar
       todo_item = todo_info_holder
@@ -275,8 +275,7 @@ describe "student planner" do
       click_item_button("Title Text")
 
       # gives the To Do a new name and saves it
-      element = title_input("Title Text")
-      replace_content(element, "New Text")
+      title_input("Title Text").send_keys([:control, "a"], :backspace, "New Text")
       todo_save_button.click
 
       # verifies that the edited To Do is showing up
@@ -408,7 +407,20 @@ describe "student planner" do
 
     it "allows editing the course of a to-do item", priority: "1" do
       view_todo_item
-      todo_tray_select_course_from_dropdown
+      attempt = 0
+      max_attempts = 3
+      begin
+        attempt += 1
+        todo_tray_select_course_from_dropdown
+      rescue => e
+        if attempt < max_attempts
+          puts "\t Attempt #{attempt} failed! Retrying..."
+          sleep 0.5
+          retry
+        end
+        raise Selenium::WebDriver::Error::ElementNotInteractableError, e.message.to_s
+      end
+
       todo_save_button.click
       @student_to_do.reload
       expect(@student_to_do.course_id).to be nil
@@ -449,7 +461,12 @@ describe "student planner" do
     end
 
     it "closes the opportunities dropdown.", priority: "1" do
-      skip("Flaky: skip for now LS-2135 to fix")
+      # Adding this today assignment only so that an alert doesn't come up saying Nothing is Due Today
+      # It interferes with the dropdown in Jenkins
+      @course.assignments.create!(name: "assignment due today",
+                                  description: "we need this so we dont get the popup",
+                                  submission_types: "online_text_entry",
+                                  due_at: Time.zone.now)
       go_to_list_view
       open_opportunities_dropdown
       close_opportunities_dropdown
@@ -557,6 +574,7 @@ describe "student planner" do
 
     it "allows account admins with content management rights to add todo dates" do
       @course.root_account.disable_feature!(:granular_permissions_manage_courses)
+      @course.root_account.disable_feature!(:granular_permissions_manage_course_content)
       @wiki = @course.wiki_pages.create!(title: "Default Time Wiki Page")
       admin = account_admin_user_with_role_changes(role_changes: { manage_courses: false })
       user_session(admin)
@@ -574,12 +592,13 @@ describe "student planner" do
 
     it "allows account admins with content management rights to add todo dates (granular permissions)" do
       @course.root_account.enable_feature!(:granular_permissions_manage_courses)
+      @course.root_account.enable_feature!(:granular_permissions_manage_course_content)
       @wiki = @course.wiki_pages.create!(title: "Default Time Wiki Page")
       admin = account_admin_user
       user_session(admin)
 
       expect(@course.grants_right?(admin, :manage)).to eq true
-      expect(@course.grants_right?(admin, :manage_content)).to eq true
+      expect(@course.grants_right?(admin, :manage_course_content_edit)).to eq true
 
       get("/courses/#{@course.id}/pages/#{@wiki.id}/edit")
       f("#student_planner_checkbox").click

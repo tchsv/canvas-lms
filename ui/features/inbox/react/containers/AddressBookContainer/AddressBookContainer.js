@@ -17,32 +17,89 @@
  */
 
 import PropTypes from 'prop-types'
-import React, {useMemo, useState} from 'react'
-import {AddressBook} from '../../components/AddressBook/AddressBook'
+import React, {useMemo, useState, useEffect} from 'react'
+import {AddressBook, USER_TYPE, CONTEXT_TYPE} from '../../components/AddressBook/AddressBook'
 import {ADDRESS_BOOK_RECIPIENTS} from '../../../graphql/Queries'
 import {useQuery} from 'react-apollo'
 
 export const AddressBookContainer = props => {
+  const userID = ENV.current_user_id?.toString()
   const [filterHistory, setFilterHistory] = useState([
     {
       context: null
     }
   ])
   const [inputValue, setInputValue] = useState('')
+  const [isLoadingMoreData, setIsLoadingMoreData] = useState(false)
 
-  const {data, loading} = useQuery(ADDRESS_BOOK_RECIPIENTS, {
+  const addressBookRecipientsQuery = useQuery(ADDRESS_BOOK_RECIPIENTS, {
     variables: {
-      ...filterHistory[filterHistory.length - 1],
+      context: filterHistory[filterHistory.length - 1]?.context?.contextID,
       search: inputValue,
-      userID: ENV.current_user_id?.toString()
+      userID
     },
     notifyOnNetworkStatusChange: true
   })
+  const {loading, data} = addressBookRecipientsQuery
+
+  useEffect(() => {
+    if (
+      props.activeCourseFilter?.contextID === null &&
+      props.activeCourseFilter?.contextName === null
+    ) {
+      setInputValue('')
+      setFilterHistory([
+        {
+          context: null
+        }
+      ])
+    }
+  }, [props.activeCourseFilter])
+
+  const fetchMoreMenuData = () => {
+    setIsLoadingMoreData(true)
+    addressBookRecipientsQuery.fetchMore({
+      variables: {
+        context: filterHistory[filterHistory.length - 1]?.context?.contextID,
+        search: inputValue,
+        userID,
+        afterUser: data?.legacyNode?.recipients?.usersConnection?.pageInfo.endCursor,
+        afterContext: data?.legacyNode?.recipients?.contextsConnection?.pageInfo.endCursor
+      },
+      updateQuery: (previousResult, {fetchMoreResult}) => {
+        setIsLoadingMoreData(false)
+        return {
+          legacyNode: {
+            ...previousResult.legacyNode,
+            recipients: {
+              contextsConnection: {
+                nodes: [
+                  ...previousResult.legacyNode?.recipients?.contextsConnection?.nodes,
+                  ...fetchMoreResult.legacyNode?.recipients?.contextsConnection?.nodes
+                ],
+                pageInfo: fetchMoreResult.legacyNode?.recipients?.contextsConnection?.pageInfo,
+                __typename: 'MessageableContextConnection'
+              },
+              usersConnection: {
+                nodes: [
+                  ...previousResult.legacyNode?.recipients?.usersConnection?.nodes,
+                  ...fetchMoreResult.legacyNode?.recipients?.usersConnection?.nodes
+                ],
+                pageInfo: fetchMoreResult.legacyNode?.recipients?.usersConnection?.pageInfo,
+                __typename: 'MessageableUserConnection'
+              },
+              __typename: 'Recipients'
+            }
+          }
+        }
+      }
+    })
+  }
 
   const addFilterHistory = chosenFilter => {
-    const newFilterHistor = filterHistory
-    newFilterHistor.push(chosenFilter)
-    setFilterHistory([...newFilterHistor])
+    const newFilterHistory = filterHistory
+    newFilterHistory.push(chosenFilter)
+    setFilterHistory([...newFilterHistory])
   }
 
   const removeLastFilterHistory = () => {
@@ -51,8 +108,33 @@ export const AddressBookContainer = props => {
     setFilterHistory([...newFilterHistory])
   }
 
+  const getCommonCoursesInformation = commonCourses => {
+    const activeEnrollments = commonCourses?.nodes.filter(
+      courseEnrollment => courseEnrollment.state === 'active'
+    )
+    return activeEnrollments.map(
+      courseEnrollment =>
+        (courseEnrollment = {
+          courseID: courseEnrollment.course._id,
+          courseRole: courseEnrollment.type
+        })
+    )
+  }
+
+  useEffect(() => {
+    if (props.activeCourseFilter && !filterHistory[filterHistory.length - 1]?.context) {
+      addFilterHistory({
+        context: {
+          contextID: props.activeCourseFilter.contextID,
+          contextName: props.activeCourseFilter.contextName
+        }
+      })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.activeCourseFilter])
+
   const menuData = useMemo(() => {
-    if (loading) {
+    if (loading && !data) {
       return []
     }
 
@@ -62,7 +144,8 @@ export const AddressBookContainer = props => {
     contextData = data?.legacyNode?.recipients?.contextsConnection?.nodes.map(c => {
       return {
         id: c.id,
-        name: c.name
+        name: c.name,
+        itemType: CONTEXT_TYPE
       }
     })
 
@@ -70,7 +153,9 @@ export const AddressBookContainer = props => {
       return {
         _id: u._id,
         id: u.id,
-        name: u.name
+        name: u.name,
+        commonCoursesInfo: getCommonCoursesInformation(u.commonCoursesConnection),
+        itemType: USER_TYPE
       }
     })
 
@@ -80,32 +165,67 @@ export const AddressBookContainer = props => {
     if (!userData) {
       userData = []
     }
+    if (userData.length > 0 && !loading) {
+      userData[userData.length - 1].isLast = true
+    }
 
-    return [...contextData, ...userData]
-  }, [data, loading])
+    if (contextData.length > 0 && !loading) {
+      contextData[contextData.length - 1].isLast = true
+    }
 
-  const handleSelect = (item, isCourse, isBackButton) => {
-    if (isCourse) {
+    if (filterHistory[filterHistory.length - 1]?.subMenuSelection && inputValue === '') {
+      const selection = filterHistory[filterHistory.length - 1]?.subMenuSelection
+      const filteredMenuData = selection.includes('Course')
+        ? {contextData, userData: []}
+        : {userData, contextData: []}
+      return filteredMenuData
+    }
+
+    return {contextData, userData}
+  }, [loading, data, filterHistory, inputValue])
+
+  const handleSelect = (item, isContext, isBackButton, isSubmenu) => {
+    if (isContext) {
       addFilterHistory({
-        context: item
+        context: {contextID: item.id, contextName: item.name}
+      })
+    } else if (isSubmenu) {
+      addFilterHistory({
+        context: null,
+        subMenuSelection: item.id
       })
     } else if (isBackButton) {
-      removeLastFilterHistory()
+      if (inputValue) {
+        setInputValue('')
+      } else {
+        removeLastFilterHistory()
+      }
     }
   }
 
   return (
     <AddressBook
       menuData={menuData}
+      hasMoreMenuData={
+        data?.legacyNode?.recipients?.usersConnection?.pageInfo?.hasNextPage ||
+        data?.legacyNode?.recipients?.contextsConnection?.pageInfo?.hasNextPage
+      }
+      fetchMoreMenuData={fetchMoreMenuData}
+      isLoadingMoreMenuData={isLoadingMoreData}
       isLoading={loading}
-      isSubMenu={filterHistory.length > 1}
+      isSubMenu={filterHistory.length > 1 || inputValue !== ''}
       onSelect={handleSelect}
       onTextChange={setInputValue}
+      inputValue={inputValue}
       onUserFilterSelect={props.onUserFilterSelect}
       onSelectedIdsChange={props.onSelectedIdsChange}
+      selectedRecipients={props.selectedRecipients}
       limitTagCount={props.limitTagCount}
       width={props.width}
       open={props.open}
+      hasSelectAllFilterOption={props.hasSelectAllFilterOption}
+      currentFilter={filterHistory[filterHistory.length - 1]}
+      activeCourseFilter={props.activeCourseFilter}
     />
   )
 }
@@ -116,7 +236,11 @@ AddressBookContainer.propTypes = {
    */
   onSelectedIdsChange: PropTypes.func,
   /**
-   * Number that liits selected item count
+   * An array of selected recepient objects
+   */
+  selectedRecipients: PropTypes.array,
+  /**
+   * Number that limits selected item count
    */
   limitTagCount: PropTypes.number,
   /**
@@ -130,11 +254,20 @@ AddressBookContainer.propTypes = {
   /**
    * use State function to set user filter for conversations
    */
-  onUserFilterSelect: PropTypes.func
+  onUserFilterSelect: PropTypes.func,
+  /**
+   * object that contains the current course filter information for the compose modal
+   */
+  activeCourseFilter: PropTypes.object,
+  /**
+   * bool which determines if "select all" in a context menu appears
+   */
+  hasSelectAllFilterOption: PropTypes.bool
 }
 
 AddressBookContainer.defaultProps = {
-  onSelectedIdsChange: () => {}
+  onSelectedIdsChange: () => {},
+  hasSelectAllFilterOption: false
 }
 
 export default AddressBookContainer

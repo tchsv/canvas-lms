@@ -19,7 +19,7 @@
 
 import React, {useState} from 'react'
 import PropTypes from 'prop-types'
-import I18n from 'i18n!OutcomeManagement'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import {TextInput} from '@instructure/ui-text-input'
 import {TextArea} from '@instructure/ui-text-area'
 import {Text} from '@instructure/ui-text'
@@ -41,9 +41,12 @@ import {useMutation} from 'react-apollo'
 import OutcomesRceField from '../shared/OutcomesRceField'
 import ProficiencyCalculation from '../MasteryCalculation/ProficiencyCalculation'
 import useRatings from '@canvas/outcomes/react/hooks/useRatings'
-import {convertRatings, prepareRatings} from '@canvas/outcomes/react/helpers/ratingsHelpers'
+import useOutcomeFormValidate from '@canvas/outcomes/react/hooks/useOutcomeFormValidate'
+import {processRatingsAndMastery} from '@canvas/outcomes/react/helpers/ratingsHelpers'
 import Ratings from './Ratings'
 import {outcomeEditShape} from './shapes'
+
+const I18n = useI18nScope('OutcomeManagement')
 
 const OutcomeEditModal = ({outcome, isOpen, onCloseHandler, onEditLearningOutcomeHandler}) => {
   const [title, titleChangeHandler, titleChanged] = useInput(outcome.title)
@@ -53,14 +56,31 @@ const OutcomeEditModal = ({outcome, isOpen, onCloseHandler, onEditLearningOutcom
   const [description, setDescription, descriptionChanged] = useInput(outcome.description || '')
   const [friendlyDescription, friendlyDescriptionChangeHandler, friendlyDescriptionChanged] =
     useInput(outcome.friendlyDescription?.description || '')
-  const {contextType, contextId, friendlyDescriptionFF, individualOutcomeRatingAndCalculationFF} =
+  const {contextType, contextId, friendlyDescriptionFF, accountLevelMasteryScalesFF} =
     useCanvasContext()
   const {
     ratings,
+    masteryPoints,
     setRatings,
-    hasError: proficiencyRatingsError,
-    hasChanged: proficiencyRatingsChanged
-  } = useRatings({initialRatings: prepareRatings(outcome.ratings, outcome.masteryPoints)})
+    setMasteryPoints,
+    hasChanged: proficiencyRatingsChanged,
+    ratingsError,
+    masteryPointsError,
+    clearRatingsFocus,
+    focusOnRatingsError
+  } = useRatings({
+    initialRatings: outcome.ratings,
+    initialMasteryPoints: outcome.masteryPoints
+  })
+  const {
+    validateForm,
+    focusOnError,
+    setTitleRef,
+    setDisplayNameRef,
+    setFriendlyDescriptionRef,
+    setMasteryPointsRef,
+    setCalcIntRef
+  } = useOutcomeFormValidate({focusOnRatingsError, clearRatingsFocus})
   const [updateLearningOutcomeMutation] = useMutation(UPDATE_LEARNING_OUTCOME)
   const [setOutcomeFriendlyDescription] = useMutation(SET_OUTCOME_FRIENDLY_DESCRIPTION_MUTATION)
   let attributesEditable = {
@@ -100,13 +120,17 @@ const OutcomeEditModal = ({outcome, isOpen, onCloseHandler, onEditLearningOutcom
     })
   }
 
-  const formValid =
-    !invalidTitle &&
-    !invalidDisplayName &&
-    friendlyDescriptionMessages.length === 0 &&
-    (individualOutcomeRatingAndCalculationFF
-      ? !proficiencyCalculationError && !proficiencyRatingsError
-      : true)
+  const onSaveHandler = () =>
+    validateForm({
+      proficiencyCalculationError,
+      masteryPointsError,
+      ratingsError,
+      friendlyDescriptionError: friendlyDescriptionMessages.length > 0,
+      displayNameError: invalidDisplayName,
+      titleError: invalidTitle
+    })
+      ? onUpdateOutcomeHandler()
+      : focusOnError()
 
   const updateProficiencyCalculation = (calculationMethodKey, calcInt) => {
     setProficiencyCalculationMethod(calculationMethodKey)
@@ -121,14 +145,15 @@ const OutcomeEditModal = ({outcome, isOpen, onCloseHandler, onEditLearningOutcom
         if (displayName && displayNameChanged) input.displayName = displayName
         // description can be null/empty. no need to check if it is available only if it has changed
         if (descriptionChanged) input.description = description
-        if (individualOutcomeRatingAndCalculationFF) {
+        if (!accountLevelMasteryScalesFF) {
           if (proficiencyCalculationMethodChanged || proficiencyCalculationIntChanged) {
             input.calculationMethod = proficiencyCalculationMethod
             input.calculationInt = calculationInt
           }
           if (proficiencyRatingsChanged) {
-            const {masteryPoints, ratings: inputRatings} = convertRatings(ratings)
-            input.masteryPoints = masteryPoints
+            const {masteryPoints: inputMasteryPoints, ratings: inputRatings} =
+              processRatingsAndMastery(ratings, masteryPoints.value)
+            input.masteryPoints = inputMasteryPoints
             input.ratings = inputRatings
           }
         }
@@ -199,6 +224,7 @@ const OutcomeEditModal = ({outcome, isOpen, onCloseHandler, onEditLearningOutcom
                   renderLabel={I18n.t('Name')}
                   onChange={titleChangeHandler}
                   data-testid="name-input"
+                  inputRef={setTitleRef}
                 />
               ) : (
                 <View as="div">
@@ -219,6 +245,7 @@ const OutcomeEditModal = ({outcome, isOpen, onCloseHandler, onEditLearningOutcom
                   renderLabel={I18n.t('Friendly Name')}
                   onChange={displayNameChangeHandler}
                   data-testid="display-name-input"
+                  inputRef={setDisplayNameRef}
                 />
               ) : (
                 <View as="div">
@@ -258,27 +285,40 @@ const OutcomeEditModal = ({outcome, isOpen, onCloseHandler, onEditLearningOutcom
                 onChange={friendlyDescriptionChangeHandler}
                 messages={friendlyDescriptionMessages}
                 data-testid="friendly-description-input"
+                textareaRef={setFriendlyDescriptionRef}
               />
             </View>
           )}
-          {individualOutcomeRatingAndCalculationFF && (
+          {!accountLevelMasteryScalesFF && (
             <View as="div" padding="small 0 0">
               <Ratings
                 ratings={ratings}
+                masteryPoints={masteryPoints}
+                onChangeMasteryPoints={setMasteryPoints}
                 onChangeRatings={setRatings}
                 canManage={!!attributesEditable.individualRatings}
+                masteryInputRef={setMasteryPointsRef}
+                clearRatingsFocus={clearRatingsFocus}
               />
               <View as="div" minHeight={attributesEditable.calculationMethod ? '14rem' : '5rem'}>
-                {attributesEditable.calculationMethod && <hr style={{margin: '1rem 0 0'}} />}
+                {attributesEditable.calculationMethod && (
+                  <hr
+                    style={{margin: '1rem 0 0'}}
+                    aria-hidden="true"
+                    data-testid="outcome-edit-modal-horizontal-divider"
+                  />
+                )}
                 <ProficiencyCalculation
                   method={{
                     calculationMethod: proficiencyCalculationMethod,
                     calculationInt
                   }}
+                  masteryPoints={masteryPoints.value}
                   individualOutcome={attributesEditable.calculationMethod ? 'edit' : 'display'}
                   canManage={!!attributesEditable.calculationMethod}
                   update={updateProficiencyCalculation}
                   setError={setProficiencyCalculationError}
+                  calcIntInputRef={setCalcIntRef}
                 />
               </View>
             </View>
@@ -292,8 +332,8 @@ const OutcomeEditModal = ({outcome, isOpen, onCloseHandler, onEditLearningOutcom
             type="button"
             color="primary"
             margin="0 x-small 0 0"
-            interaction={formValid ? 'enabled' : 'disabled'}
-            onClick={onUpdateOutcomeHandler}
+            interaction="enabled"
+            onClick={onSaveHandler}
           >
             {I18n.t('Save')}
           </Button>

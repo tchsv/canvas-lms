@@ -18,7 +18,7 @@
 
 module.exports = {
   transform: {
-    '^.+\\.(js)$': 'babel-jest',
+    '^.+\\.(js)$': ['babel-jest', { configFile: require.resolve('./babel.config.cjs.js') }],
     '^.+\\.(css)$': '<rootDir>/jest-themeable-styles'
   },
   reporters: [
@@ -35,17 +35,17 @@ module.exports = {
   snapshotSerializers: ['enzyme-to-json/serializer'],
   setupFiles: ['jest-canvas-mock', './jest-env.js'],
   setupFilesAfterEnv: ['@testing-library/jest-dom/extend-expect'],
-  testPathIgnorePatterns: ['<rootDir>/node_modues', '<rootDir>/lib'],
+  testPathIgnorePatterns: ['<rootDir>/node_modules', '<rootDir>/lib'],
   testRegex: '/__tests__/.*\\.(test|spec)\\.js$',
   coverageReporters: ['html', 'text', 'json'],
   collectCoverageFrom: ['src/**/*.js'],
   coveragePathIgnorePatterns: ['<rootDir>/src/i18n/flip-message.js'],
   coverageThreshold: {
     global: {
-      branches: 85,
-      functions: 85,
-      lines: 85,
-      statements: 85
+      branches: 80,
+      functions: 80,
+      lines: 80,
+      statements: 80
     }
   },
   testEnvironment: 'jest-environment-jsdom-fourteen'

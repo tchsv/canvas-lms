@@ -1473,8 +1473,9 @@ describe Canvas::LiveEvents do
       # post-transaction callbacks won't happen in specs, so do this manually
       Canvas::LiveEventsCallbacks.after_update(context_module_progression, context_module_progression.changes)
 
-      strand = "course_progress_course_#{context_module_progression.context_module.global_context_id}_user_#{context_module_progression.global_user_id}"
-      job = Delayed::Job.where(strand: strand).take
+      cmp_id = context_module_progression.context_module.global_context_id
+      singleton = "course_progress_course_#{cmp_id}_user_#{context_module_progression.global_user_id}"
+      job = Delayed::Job.where(singleton: singleton).take
       expect(job).not_to be_nil
       expect(job.run_at).to be > Time.now
       expect(job.max_concurrent).to eq 1
@@ -1977,6 +1978,67 @@ describe Canvas::LiveEvents do
                      }).once
 
         Canvas::LiveEvents.outcome_friendly_description_updated(@friendlyDescription)
+      end
+    end
+  end
+
+  describe "master template" do
+    before do
+      @course = course_model
+      @master_template = MasterCourses::MasterTemplate.create!(course: @course)
+    end
+
+    context "created" do
+      it "triggers an master_template_created live event" do
+        expect_event("master_template_created", {
+                       master_template_id: @master_template.id.to_s,
+                       master_course_id: @master_template.course_id.to_s,
+                       root_account_id: @master_template.root_account_id.to_s
+                     }).once
+        Canvas::LiveEvents.master_template_created(@master_template)
+      end
+    end
+  end
+
+  describe "master migration" do
+    before do
+      @course = course_model
+      @master_template = MasterCourses::MasterTemplate.create!(course: @course)
+      @master_migration = MasterCourses::MasterMigration.create!(master_template: @master_template)
+    end
+
+    context "completed" do
+      it "triggers an master_migration_completed live event" do
+        expect_event("master_migration_completed", {
+                       master_template_id: @master_template.id.to_s,
+                       master_migration_id: @master_migration.id.to_s,
+                       root_account_id: @master_migration.root_account_id.to_s
+                     }).once
+        Canvas::LiveEvents.master_migration_completed(@master_migration)
+      end
+    end
+  end
+
+  describe "master template child subscription" do
+    before do
+      @course = course_model
+      @child_course = course_model
+      @master_template = MasterCourses::MasterTemplate.create!(course: @course)
+      @child_subscription =
+        MasterCourses::ChildSubscription.create!(master_template: @master_template, child_course: @child_course)
+    end
+
+    context "created" do
+      it "triggers an blueprint_subscription_created live event" do
+        expect_event("blueprint_subscription_created", {
+                       master_template_account_uuid: @master_template.course.account.uuid,
+                       master_template_id: @master_template.id.to_s,
+                       master_course_uuid: @course.uuid,
+                       child_subscription_id: @child_subscription.id.to_s,
+                       child_course_uuid: @child_course.uuid,
+                       child_course_account_uuid: @child_course.account.uuid
+                     }).once
+        Canvas::LiveEvents.blueprint_subscription_created(@child_subscription)
       end
     end
   end

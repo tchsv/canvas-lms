@@ -49,11 +49,12 @@ const locale = {
   "announcement_list_da155734": { "message": "Список объявлений" },
   "announcements_a4b8ed4a": { "message": "Объявления" },
   "apply_781a2546": { "message": "Применить" },
-  "apply_changes_to_all_instances_of_this_button_and__3a3bea34": {
-    "message": "Применить изменения ко всем экземплярам этой кнопки и пиктограммы в курсе"
+  "apply_changes_to_all_instances_of_this_icon_maker__2642f466": {
+    "message": "Применить изменения ко всем экземплярам этого значка, созданного с помощью средства создания значков в курсе"
   },
   "apps_54d24a47": { "message": "Приложения" },
   "arrows_464a3e54": { "message": "Стрелки" },
+  "art_icon_8e1daad": { "message": "Значок искусства" },
   "aspect_ratio_will_be_preserved_cb5fdfb8": {
     "message": "Соотношение сторон будет сохранено"
   },
@@ -73,13 +74,10 @@ const locale = {
   "available_folders_694d0436": { "message": "Доступные папки" },
   "basic_554cdc0a": { "message": "Основной" },
   "below_81d4dceb": { "message": "Ниже" },
+  "black_4cb01371": { "message": "Черный" },
+  "blue_daf8fea9": { "message": "Синий" },
   "bottom_third_5f5fec1d": { "message": "Нижняя треть" },
-  "button_color_608a0242": { "message": "Кнопка «Цвет»" },
-  "button_outline_cf14f071": { "message": "Кнопка «Контур»" },
-  "button_outline_size_cc1d1df7": { "message": "Кнопка «Размер контура»" },
-  "button_shape_dbecb573": { "message": "Кнопка «Форма»" },
-  "button_size_20f5fce1": { "message": "Кнопка «Размер»" },
-  "buttons_and_icons_e66ee12c": { "message": "Кнопки и пиктограммы" },
+  "brick_f2656265": { "message": "Блок" },
   "c_2001_acme_inc_283f7f80": { "message": "(c) 2001 г. Acme Inc." },
   "cancel_caeb1e68": { "message": "Отменить" },
   "choose_caption_file_9c45bc4e": {
@@ -93,6 +91,7 @@ const locale = {
     "message": "заключить неупорядоченный список в круг"
   },
   "clear_2084585f": { "message": "Очистить" },
+  "clear_image_3213fe62": { "message": "Удалить изображение" },
   "clear_selected_file_82388e50": { "message": "Очистить выбранный файл" },
   "clear_selected_file_filename_2fe8a58e": {
     "message": "Удалить выбранный файл: { filename }"
@@ -126,7 +125,10 @@ const locale = {
   "collapse_to_hide_types_1ab46d2e": {
     "message": "Свернуть, чтобы скрыть { types }"
   },
-  "color_color_eb64b08": { "message": "Цвет { color }" },
+  "color_picker_6b359edf": { "message": "Селектор цвета" },
+  "color_picker_colorname_selected_ad4cf400": {
+    "message": "Селектор цвета (выбрано { colorName })"
+  },
   "computer_1d7dfa6f": { "message": "Компьютер" },
   "content_1440204b": { "message": "Содержимое" },
   "content_is_still_being_uploaded_if_you_continue_it_8f06d0cb": {
@@ -148,18 +150,22 @@ const locale = {
   "course_links_b56959b9": { "message": "Ссылки курса" },
   "course_media_ec759ad": { "message": "Мультимедиа курса" },
   "course_navigation_dd035109": { "message": "Навигация курса" },
-  "create_button_and_icon_5c089934": {
-    "message": "Создать кнопку и пиктограмму"
+  "create_icon_110d6463": { "message": "Создать значок" },
+  "create_icon_maker_icon_c716bffe": {
+    "message": "Создать значок, созданный с помощью Средства создания значков"
   },
   "creative_commons_license_725584ae": {
     "message": "Лицензионное соглашение Creative Commons:"
   },
+  "crop_image_41bf940c": { "message": "Обрезать изображение" },
   "crop_image_807ebb08": { "message": "Обрезать изображение" },
   "current_image_f16c249c": { "message": "Текущее изображение" },
   "custom_6979cd81": { "message": "Пользовательская" },
+  "cyan_c1d5f68a": { "message": "Голубой" },
   "date_added_ed5ad465": { "message": "Дата добавления" },
   "decorative_image_3c28aa7d": { "message": "Декоративное изображение" },
   "decrease_indent_de6343ab": { "message": "Уменьшить отступ" },
+  "deep_purple_bb3e2907": { "message": "Темно-фиолетовый" },
   "default_bulleted_unordered_list_47079da8": {
     "message": "маркированный неупорядоченный список по умолчанию"
   },
@@ -171,7 +177,6 @@ const locale = {
   "describe_the_video_2fe8f46a": { "message": "(опишите видео)" },
   "details_98a31b68": { "message": "Подробные сведения" },
   "diamond_b8dfe7ae": { "message": "Ромб" },
-  "dimension_type_55c83e4e": { "message": "Тип измерения" },
   "dimensions_45ddb7b7": { "message": "Размеры" },
   "directionality_26ae9e08": { "message": "Направленность" },
   "directly_edit_latex_b7e9235b": {
@@ -200,15 +205,16 @@ const locale = {
   "edit_existing_button_icon_3d0277bd": {
     "message": "Редактировать существующую кнопку / значок"
   },
+  "edit_icon_2c6b0e91": { "message": "Редактировать значок" },
   "edit_link_7f53bebb": { "message": "Редактировать ссылку" },
   "editor_statusbar_26ac81fc": { "message": "Панель состояния редактора" },
   "embed_828fac4a": { "message": "Вставить" },
   "embed_code_314f1bd5": { "message": "Внедрить код" },
   "embed_image_1080badc": { "message": "Вставить изображение" },
-  "embed_options_tray_901cfd19": { "message": "Вставить лоток опций" },
-  "embed_preview_2d741e1f": { "message": "Встроить предварительный просмотр" },
   "embed_video_a97a64af": { "message": "Вставить видео" },
   "embedded_content_aaeb4d3d": { "message": "интегрированный контент" },
+  "engineering_icon_f8f3cf43": { "message": "Значок техники" },
+  "english_icon_25bfe845": { "message": "Английский значок" },
   "enter_at_least_3_characters_to_search_4f037ee0": {
     "message": "Введите не менее 3 знаков для поиска"
   },
@@ -224,6 +230,9 @@ const locale = {
   "external_tools_6e77821": { "message": "Внешние инструменты" },
   "extra_large_b6cdf1ff": { "message": "Очень крупный" },
   "extra_small_9ae33252": { "message": "Очень мелкое изображение" },
+  "extracurricular_icon_67c8ca42": {
+    "message": "Значок факультативных дисциплин"
+  },
   "file_url_c12b64be": { "message": "URL файла" },
   "filename_file_icon_602eb5de": { "message": "иконка файла { filename }" },
   "filename_image_preview_6cef8f26": {
@@ -258,6 +267,8 @@ const locale = {
   },
   "grades_a61eba0a": { "message": "Оценки" },
   "greek_65c5b3f7": { "message": "Греческий" },
+  "green_15af4778": { "message": "Зеленый" },
+  "grey_a55dceff": { "message": "Серый" },
   "group_documents_8bfd6ae6": { "message": "Документы группы" },
   "group_files_4324f3df": { "message": "Файлы группы" },
   "group_files_82e5dcdb": { "message": "Файлы группы" },
@@ -268,6 +279,7 @@ const locale = {
   "heading_2_5b84eed2": { "message": "Заголовок 2" },
   "heading_3_2c83de44": { "message": "Заголовок 3" },
   "heading_4_b2e74be7": { "message": "Заголовок 4" },
+  "health_icon_8d292eb5": { "message": "Значок здоровья" },
   "height_69b03e15": { "message": "Высота" },
   "hexagon_d8468e0d": { "message": "Шестиугольник" },
   "hide_description_bfb5502e": { "message": "Скрыть описание" },
@@ -279,14 +291,24 @@ const locale = {
     "message": "Разрешение на использование данного файла получено."
   },
   "i_hold_the_copyright_71ee91b1": { "message": "Я являюсь правообладателем" },
+  "icon_color_b86dd6d6": { "message": "Цвет значка" },
+  "icon_maker_icons_cc560f7e": {
+    "message": "Значки, созданные с помощью средства создания значков"
+  },
+  "icon_outline_e978dc0c": { "message": "Контур значка" },
+  "icon_outline_size_33f39b86": { "message": "Размер контура значка" },
+  "icon_shape_30b61e7": { "message": "Форма значка" },
+  "icon_size_9353edea": { "message": "Размер значка" },
   "if_you_do_not_select_usage_rights_now_this_file_wi_14e07ab5": {
     "message": "Если вы не выберете права пользования сейчас, этот файл не будет опубликован после отправки."
   },
   "image_8ad06": { "message": "Изображение" },
   "image_options_5412d02c": { "message": "Опции изображения" },
   "image_options_tray_90a46006": { "message": "Лоток опций изображения" },
+  "image_to_crop_3a34487d": { "message": "Обрезаемое изображение" },
   "images_7ce26570": { "message": "Изображения" },
   "increase_indent_6d550a4a": { "message": "Увеличить отступ" },
+  "indigo_2035fc55": { "message": "Индиго" },
   "insert_593145ef": { "message": "Вставить" },
   "insert_equella_links_49a8dacd": { "message": "Вставить ссылки на Equella" },
   "insert_link_6dc23cae": { "message": "Вставить ссылку" },
@@ -297,8 +319,12 @@ const locale = {
   "invalid_file_type_881cc9b2": { "message": "Неверный тип файла" },
   "invalid_url_cbde79f": { "message": "Неверный URL" },
   "keyboard_shortcuts_ed1844bd": { "message": "Клавиши быстрого доступа" },
+  "language_arts_icon_a798b0f8": { "message": "Значок языковых дисциплин" },
+  "languages_icon_9d20539": { "message": "Значок языков" },
   "large_9c5e80e7": { "message": "Большой" },
   "left_to_right_e9b4fd06": { "message": "Слева направо" },
+  "library_icon_ae1e54cf": { "message": "Значок библиотеки" },
+  "light_blue_5374f600": { "message": "Светло-синий" },
   "link_7262adec": { "message": "Ссылка" },
   "link_options_a16b758b": { "message": "Параметры ссылки" },
   "links_14b70841": { "message": "Ссылки" },
@@ -316,13 +342,19 @@ const locale = {
   },
   "loading_preview_9f077aa1": { "message": "Загрузка предпросмотра" },
   "locked_762f138b": { "message": "Заблокировано" },
+  "magenta_4a65993c": { "message": "Пурпурный" },
+  "math_icon_ad4e9d03": { "message": "Значок математики" },
   "media_af190855": { "message": "Мультимедиа" },
+  "media_file_is_processing_please_try_again_later_58a6d49": {
+    "message": "Выполняется обработка файла мультимедиа. Попробуйте еще раз позже."
+  },
   "medium_5a8e9ead": { "message": "Средний" },
   "middle_27dc1d5": { "message": "Середина" },
   "misc_3b692ea7": { "message": "Различное" },
   "miscellaneous_e9818229": { "message": "Разное" },
   "modules_c4325335": { "message": "Модули" },
   "multi_color_image_63d7372f": { "message": "Многоцветное изображение" },
+  "music_icon_4db5c972": { "message": "Значок музыки" },
   "must_be_at_least_percentage_22e373b6": {
     "message": "Должен быть как минимум { percentage }%"
   },
@@ -331,6 +363,7 @@ const locale = {
   },
   "my_files_2f621040": { "message": "Мои файлы" },
   "name_1aed4a1b": { "message": "Имя" },
+  "name_color_ceec76ff": { "message": "{ name } ({ color })" },
   "navigate_through_the_menu_or_toolbar_415a4e50": {
     "message": "Навигация в меню или панели инструментов"
   },
@@ -350,6 +383,7 @@ const locale = {
   "none_3b5e34d2": { "message": "Нет" },
   "none_selected_b93d56d2": { "message": "Нет выбранных элементов" },
   "octagon_e48be9f": { "message": "Восьмиугольник" },
+  "olive_6a3e4d6b": { "message": "Оливковый" },
   "open_this_keyboard_shortcuts_dialog_9658b83a": {
     "message": "Открыть этот диалог комбинаций клавиш"
   },
@@ -357,7 +391,7 @@ const locale = {
     "message": "Открыть приложение { title }"
   },
   "operators_a2ef9a93": { "message": "Операторы" },
-  "options_3ab0ea65": { "message": "Опции" },
+  "orange_81386a62": { "message": "Оранжевый" },
   "ordered_and_unordered_lists_cfadfc38": {
     "message": "Упорядоченные и неупорядоченные списки"
   },
@@ -375,6 +409,11 @@ const locale = {
   "percentage_must_be_a_number_8033c341": {
     "message": "Процентное значение должно быть указано в виде числа"
   },
+  "performing_arts_icon_f3497486": {
+    "message": "Значок исполнительских видов искусства"
+  },
+  "physical_education_icon_d7dffd3e": { "message": "Значок физкультуры" },
+  "pink_68ad45cb": { "message": "Розовый" },
   "pixels_52ece7d1": { "message": "Пиксели" },
   "posted_when_a578f5ab": { "message": "Размещено: { when }" },
   "preformatted_d0670862": { "message": "Предварительно форматированный" },
@@ -392,26 +431,33 @@ const locale = {
   },
   "published_c944a23d": { "message": "опубликовано" },
   "published_when_302d8e23": { "message": "Опубликовано: { when }" },
+  "pumpkin_904428d5": { "message": "Цвет тыквы" },
+  "purple_7678a9fc": { "message": "Пурпурный" },
   "quizzes_7e598f57": { "message": "Тесты" },
   "raw_html_editor_e3993e41": { "message": "Редактор Raw HTML" },
   "record_7c9448b": { "message": "Запись" },
   "record_upload_media_5fdce166": {
     "message": "Записать / загрузить мультимедиа"
   },
+  "red_8258edf3": { "message": "Красный" },
   "relationships_6602af70": { "message": "Отношения" },
+  "religion_icon_246e0be1": { "message": "Значок религии" },
   "remove_link_d1f2f4d0": { "message": "Удалить ссылку" },
   "resize_ec83d538": { "message": "Изменить размер" },
   "restore_auto_save_deccd84b": { "message": "Восстановить автосохранение?" },
   "rich_content_editor_2708ef21": {
     "message": "Редактор форматированного текста"
   },
+  "rich_text_area_press_alt_0_for_rich_content_editor_9d23437f": {
+    "message": "Область форматированного текста. Нажмите ALT+0 для отображения клавиш быстрого доступа редактора форматированного содержимого."
+  },
   "right_to_left_9cfb092a": { "message": "Справа налево" },
   "sadly_the_pretty_html_editor_is_not_keyboard_acces_50da7665": {
     "message": "К сожалению, возможность доступа к редактору Pretty HTML с клавиатуры отсутствует. Обратитесь к редактору Raw HTML здесь."
   },
   "save_11a80ec3": { "message": "Сохранить" },
-  "saved_buttons_and_icons_8278eed2": {
-    "message": "Сохраненные кнопки и пиктограммы"
+  "saved_icon_maker_icons_df86e2a1": {
+    "message": "Сохраненные значки, созданные с помощью Средства создания значков"
   },
   "search_280d00bd": { "message": "Поиск" },
   "search_term_b2d2235": { "message": "критерий поиска" },
@@ -422,11 +468,11 @@ const locale = {
     "message": "Нажать Shift-O, чтобы открыть редактор Pretty HTML."
   },
   "show_audio_options_b489926b": { "message": "Показать параметры звука" },
-  "show_embed_options_ef8d7ef": { "message": "Показать параметры вставки" },
   "show_image_options_1e2ecc6b": { "message": "Показать варианты изображения" },
   "show_link_options_545338fd": { "message": "Показать параметры ссылки" },
   "show_video_options_6ed3721a": { "message": "Показать параметры видео" },
   "single_color_image_4e5d4dbc": { "message": "Одноцветное изображение" },
+  "single_color_image_color_95fa9a87": { "message": "Одноцветное изображение" },
   "size_b30e1077": { "message": "Размер" },
   "size_of_caption_file_is_greater_than_the_maximum_m_bff5f86e": {
     "message": "Размер файла субтитров больше допустимого максимального размера в { max } Кб."
@@ -436,22 +482,14 @@ const locale = {
   "something_went_wrong_and_i_don_t_know_what_to_show_e0c54ec8": {
     "message": "Что-то пошло не так, и я не знаю, что вам показать."
   },
-  "something_went_wrong_check_your_connection_and_try_2a7b2d13": {
-    "message": "Что-то пошло не так, проверьте подключение и попробуйте еще раз."
-  },
   "something_went_wrong_d238c551": { "message": "Что-то пошло не так" },
-  "something_went_wrong_try_again_after_refreshing_th_e094eb8d": {
-    "message": "Что-то пошло не так, обновите страницу и попробуйте еще раз"
-  },
-  "something_went_wrong_uploading_check_your_connecti_aa201f15": {
-    "message": "Что пошло не так при загрузке, проверьте подключение и попробуйте еще раз."
-  },
   "sort_by_e75f9e3e": { "message": "Сортировать по" },
   "square_511eb3b3": { "message": "Квадрат" },
   "square_unordered_list_b15ce93b": {
     "message": "заключить неупорядоченный список в квадрат"
   },
   "star_8d156e09": { "message": "Звезда" },
+  "steel_blue_14296f08": { "message": "Синий со стальным отливом" },
   "styles_2aa721ef": { "message": "Стили" },
   "submit_a3cc6859": { "message": "Отправить" },
   "subscript_59744f96": { "message": "Надпись снизу" },
@@ -467,6 +505,7 @@ const locale = {
   },
   "syllabus_f191f65b": { "message": "Содержание курса" },
   "tab_arrows_4cf5abfc": { "message": "TAB/Стрелки" },
+  "teal_f729a294": { "message": "Бирюзовый" },
   "text_7f4593da": { "message": "Текст" },
   "text_background_color_16e61c3f": { "message": "Цвет фона текста" },
   "text_color_acf75eb6": { "message": "Цвет текста" },
@@ -516,9 +555,6 @@ const locale = {
   "upload_media_ce31135a": { "message": "Загрузить медиа" },
   "upload_record_media_e4207d72": { "message": "Загрузить/записать медиа" },
   "uploading_19e8a4e7": { "message": "Загрузка" },
-  "uploading_closed_captions_subtitles_failed_bc093f3": {
-    "message": "Загрузить закрытые надписи/субтитры не удалось."
-  },
   "uppercase_alphabetic_ordered_list_3f5aa6b2": {
     "message": "упорядоченный алфавитный список в верхнем регистре"
   },
@@ -573,6 +609,7 @@ const locale = {
   "view_title_description_67940918": {
     "message": "Просмотреть описание { title }"
   },
+  "white_87fa64fd": { "message": "Белый" },
   "width_492fec76": { "message": "Ширина" },
   "width_and_height_must_be_numbers_110ab2e3": {
     "message": "Ширина и высоты должны выражаться числами"
@@ -582,7 +619,9 @@ const locale = {
   "yes_dde87d5": { "message": "Да" },
   "you_may_not_upload_an_empty_file_11c31eb2": {
     "message": "Вы не можете отправить пустой файл."
-  }
+  },
+  "zoom_in_image_bb97d4f": { "message": "Увеличение изображения" },
+  "zoom_out_image_d0a0a2ec": { "message": "Уменьшить изображение" }
 }
 
 

@@ -88,22 +88,23 @@ edit_submission_status_from_speedgrader:
   description: If set, allows submission status to be changed from inside of
     Speedgrader
 enhanced_gradebook_filters:
-  state: hidden
-  applies_to: SiteAdmin
-  display_name: Enhanced Gradebook Filters
-  description: Improved filtering of students and assignments in Gradebook.
   beta: true
+  state: allowed
+  applies_to: Course
+  root_opt_in: true
+  display_name: Enhanced Gradebook Filters
+  description:
+    wrapper: <a href="https://community.canvaslms.com/t5/Gradebook-Filters/gh-p/Gradebook-Filters">\1</a>
+    enhanced_gradebook_filters_description:
+      This feature provides enhanced filtering options in the Canvas gradebook. When
+      this flag is enabled, early access to ongoing improvements will be displayed
+      automatically with every release. For full details, please see the *Gradebook
+      Filters User Group* in the Canvas Community.
 remove_gradebook_student_search_delay:
   state: hidden
   applies_to: SiteAdmin
   display_name: Remove Delay for Gradebook Student Search
   description: If set, removes the delay that normally occurs when searching for students.
-gradebook_assignment_search_and_redesign:
-  state: hidden
-  applies_to: SiteAdmin
-  display_name: Gradebook Assignment Search And Redesign
-  description: Search assignments in Gradebook and new design for assignment
-    and student search
 message_observers_of_students_who:
   state: hidden
   applies_to: SiteAdmin
@@ -114,7 +115,7 @@ apply_score_to_ungraded:
   state: hidden
   applies_to: Account
   display_name: Apply Score to Ungraded
-  description: Allows instructors to apply scores to ungraded submissions en masse from assignment 
+  description: Allows instructors to apply scores to ungraded submissions en masse from assignment
     group and Total column menus in the Gradebook.
   environments:
     development:
@@ -125,3 +126,33 @@ speedgrader_dialog_for_unposted_comments:
   display_name: Draft Comment Warning Modal in SpeedGrader
   description: Enables modal to warn user when a draft comment is left unposted
     in SpeedGrader.
+submission_comment_emojis:
+  state: hidden
+  display_name: Emojis in Submission Comments
+  description: Adds an emoji picker that allows students and teachers to add emojis to
+    their submission comments.
+  applies_to: Course
+  root_opt_in: true
+  environments:
+    ci:
+      state: allowed_on # enable for automated testings builds and local testing
+    development:
+      state: allowed_on # enable for local development
+updated_mastery_connect_icon:
+  state: hidden
+  applies_to: SiteAdmin
+  display_name: Updated Mastery Connect Icon
+  description: If set, displays updated mastery connect icon
+  environments:
+    ci:
+      state: on # enable for automated testings builds and local testing
+    development:
+      state: on # enable for local development
+    test:
+      state: on # enable for the deployed 'test' environment
+visibility_feedback_student_grades_page:
+  state: hidden
+  applies_to: SiteAdmin
+  display_name: Improve Feedback on Students Grade Page
+  description: Students will be able to more easily recognize when
+    feedback has been provided by an instructor/grader ...

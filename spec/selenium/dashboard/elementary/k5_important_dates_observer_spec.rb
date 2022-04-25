@@ -32,8 +32,6 @@ describe "observer k5 dashboard important dates" do
   include K5ImportantDatesSectionPageObject
 
   before :once do
-    Account.site_admin.enable_feature!(:important_dates)
-    Account.site_admin.enable_feature!(:k5_parent_support)
     student_setup
     observer_setup
   end
@@ -44,7 +42,7 @@ describe "observer k5 dashboard important dates" do
 
   context "important dates panel" do
     it "shows the important date for observed student with override", custom_timeout: 20 do
-      assignment_title = "Electricity Homework"
+      assignment_title = "Elec HW"
       due_at = 2.days.ago(Time.zone.now)
       assignment = create_dated_assignment(@subject_course, assignment_title, due_at)
       assignment.update!(important_dates: true)

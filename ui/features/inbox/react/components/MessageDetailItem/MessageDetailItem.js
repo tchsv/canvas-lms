@@ -17,32 +17,24 @@
  */
 
 import {Avatar} from '@instructure/ui-avatar'
+import DateHelper from '@canvas/datetime/dateHelper'
 import {Flex} from '@instructure/ui-flex'
 import {MessageDetailActions} from '../MessageDetailActions/MessageDetailActions'
 import {MessageDetailMediaAttachment} from '../MessageDetailMediaAttachment/MessageDetailMediaAttachment'
 import {MessageDetailParticipants} from '../MessageDetailParticipants/MessageDetailParticipants'
 import PropTypes from 'prop-types'
-import React from 'react'
+import React, {useContext} from 'react'
 import {Responsive} from '@instructure/ui-responsive'
 import {responsiveQuerySizes} from '../../../util/utils'
 import {IconPaperclipLine} from '@instructure/ui-icons'
 import {Link} from '@instructure/ui-link'
 import {List} from '@instructure/ui-list'
 import {Text} from '@instructure/ui-text'
-import {View} from '@instructure/ui-view'
-import I18n from 'i18n!conversations_2'
+import {ConversationContext} from '../../../util/constants'
 
 export const MessageDetailItem = ({...props}) => {
-  const dateOptions = {
-    month: 'short',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: 'numeric'
-  }
-
-  const createdAt = Intl.DateTimeFormat(I18n.currentLocale(), dateOptions).format(
-    new Date(props.conversationMessage.createdAt)
-  )
+  const createdAt = DateHelper.formatDatetimeForDisplay(props.conversationMessage.createdAt)
+  const {isSubmissionCommentsType} = useContext(ConversationContext)
 
   return (
     <Responsive
@@ -73,7 +65,7 @@ export const MessageDetailItem = ({...props}) => {
       }}
       render={responsiveProps => (
         <>
-          <Flex data-testid={responsiveProps.dataTestId}>
+          <Flex data-testid={responsiveProps.dataTestId} alignItems="start">
             <Flex.Item>
               <Avatar
                 size={responsiveProps.avatar}
@@ -83,28 +75,35 @@ export const MessageDetailItem = ({...props}) => {
               />
             </Flex.Item>
             <Flex.Item shouldShrink shouldGrow>
-              <MessageDetailParticipants
-                participantsSize={responsiveProps.usernames}
-                conversationMessage={props.conversationMessage}
-              />
-              <View as="div" margin="xx-small none xxx-small">
-                <Text color="secondary" weight="light" size={responsiveProps.courseNameDate}>
-                  {props.contextName}
-                </Text>
-              </View>
+              <Flex direction="column">
+                <Flex.Item>
+                  <MessageDetailParticipants
+                    participantsSize={responsiveProps.usernames}
+                    conversationMessage={props.conversationMessage}
+                  />
+                </Flex.Item>
+                <Flex.Item>
+                  <Text weight="normal" size={responsiveProps.courseNameDate}>
+                    {props.contextName}
+                  </Text>
+                </Flex.Item>
+                <Flex.Item>
+                  <Text weight="normal" size={responsiveProps.courseNameDate}>
+                    {createdAt}
+                  </Text>
+                </Flex.Item>
+              </Flex>
             </Flex.Item>
-            <Flex.Item textAlign="end">
-              <View as="div" margin="none none x-small">
-                <Text weight="light" size={responsiveProps.courseNameDate}>
-                  {createdAt}
-                </Text>
-              </View>
-              <MessageDetailActions
-                onReply={props.onReply}
-                onReplyAll={props.onReplyAll}
-                onDelete={props.onDelete}
-              />
-            </Flex.Item>
+            {!isSubmissionCommentsType && (
+              <Flex.Item textAlign="end">
+                <MessageDetailActions
+                  onReply={props.onReply}
+                  onReplyAll={props.onReplyAll}
+                  onDelete={props.onDelete}
+                  onForward={props.onForward}
+                />
+              </Flex.Item>
+            )}
           </Flex>
           <Text size={responsiveProps.messageBody}>{props.conversationMessage.body}</Text>
           {props.conversationMessage.attachmentsConnection?.nodes?.length > 0 && (
@@ -135,7 +134,8 @@ MessageDetailItem.propTypes = {
   contextName: PropTypes.string,
   onReply: PropTypes.func,
   onReplyAll: PropTypes.func,
-  onDelete: PropTypes.func
+  onDelete: PropTypes.func,
+  onForward: PropTypes.func
 }
 
 MessageDetailItem.defaultProps = {

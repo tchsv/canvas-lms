@@ -19,9 +19,11 @@
 import $ from 'jquery'
 import React from 'react'
 import PropTypes from 'prop-types'
-import I18n from 'i18n!external_toolsModalLauncher'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import iframeAllowances from '@canvas/external-apps/iframeAllowances'
 import CanvasModal from '@canvas/instui-bindings/react/Modal'
+
+const I18n = useI18nScope('external_toolsModalLauncher')
 
 export default class ExternalToolModalLauncher extends React.Component {
   static propTypes = {
@@ -33,6 +35,7 @@ export default class ExternalToolModalLauncher extends React.Component {
     contextType: PropTypes.string.isRequired,
     contextId: PropTypes.number.isRequired,
     launchType: PropTypes.string.isRequired,
+    contextModuleId: PropTypes.string,
     onExternalContentReady: PropTypes.func
   }
 
@@ -83,7 +86,9 @@ export default class ExternalToolModalLauncher extends React.Component {
         '/external_tools/',
         this.props.tool.definition_id,
         '?display=borderless&launch_type=',
-        this.props.launchType
+        this.props.launchType,
+        this.props.contextModuleId && '&context_module_id=',
+        this.props.contextModuleId
       ].join('')
     }
   }

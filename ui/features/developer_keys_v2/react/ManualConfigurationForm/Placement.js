@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import I18n from 'i18n!react_developer_keys'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import PropTypes from 'prop-types'
 import React from 'react'
 
@@ -26,6 +26,8 @@ import {RadioInputGroup, RadioInput} from '@instructure/ui-radio-input'
 import {TextInput} from '@instructure/ui-text-input'
 import {ScreenReaderContent} from '@instructure/ui-a11y-content'
 import {ToggleDetails} from '@instructure/ui-toggle-details'
+
+const I18n = useI18nScope('react_developer_keys')
 
 export default class Placement extends React.Component {
   constructor(props) {
@@ -54,7 +56,8 @@ export default class Placement extends React.Component {
     'link_selection',
     'collaboration',
     'course_assignments_menu',
-    'module_index_menu_modal'
+    'module_index_menu_modal',
+    'module_menu_modal'
   ]
 
   isAlwaysDeeplinking(placementName) {
@@ -63,7 +66,7 @@ export default class Placement extends React.Component {
 
   messageTypeSelectable(placementName) {
     if (
-      placementName === 'course_assignments_menu' &&
+      ['course_assignments_menu', 'module_menu_modal'].includes(placementName) &&
       !ENV.FEATURES.lti_multiple_assignment_deep_linking
     ) {
       return false
@@ -93,9 +96,19 @@ export default class Placement extends React.Component {
     return true
   }
 
+  setOrDeletePlacementField = (key, value) => {
+    this.setState(state => {
+      const newPlacement = {...state.placement, [key]: value}
+      if (value === '' || value === undefined) {
+        delete newPlacement[key]
+      }
+      return {placement: newPlacement}
+    })
+  }
+
   handleTargetLinkUriChange = e => {
     const value = e.target.value
-    this.setState(state => ({placement: {...state.placement, target_link_uri: value}}))
+    this.setOrDeletePlacementField('target_link_uri', value)
   }
 
   handleMessageTypeChange = (_, value) =>
@@ -103,7 +116,7 @@ export default class Placement extends React.Component {
 
   handleIconUrlChange = e => {
     const value = e.target.value
-    this.setState(state => ({placement: {...state.placement, icon_url: value}}))
+    this.setOrDeletePlacementField('icon_url', value)
   }
 
   handleTextChange = e => {
@@ -114,17 +127,13 @@ export default class Placement extends React.Component {
   handleSelectionHeightChange = e => {
     const value = e.target.value
     const numVal = parseInt(value, 10)
-    this.setState(state => ({
-      placement: {...state.placement, selection_height: !Number.isNaN(numVal) ? numVal : ''}
-    }))
+    this.setOrDeletePlacementField('selection_height', !Number.isNaN(numVal) ? numVal : '')
   }
 
   handleSelectionWidthChange = e => {
     const value = e.target.value
     const numVal = parseInt(value, 10)
-    this.setState(state => ({
-      placement: {...state.placement, selection_width: !Number.isNaN(numVal) ? numVal : ''}
-    }))
+    this.setOrDeletePlacementField('selection_width', !Number.isNaN(numVal) ? numVal : '')
   }
 
   render() {
@@ -152,7 +161,7 @@ export default class Placement extends React.Component {
                 <TextInput
                   name={`${placementName}_target_link_uri`}
                   value={placement.target_link_uri}
-                  label={I18n.t('Target Link URI')}
+                  renderLabel={I18n.t('Target Link URI')}
                   onChange={this.handleTargetLinkUriChange}
                 />
                 <RadioInputGroup
@@ -174,13 +183,13 @@ export default class Placement extends React.Component {
                 <TextInput
                   name={`${placementName}_icon_url`}
                   value={placement.icon_url}
-                  label={I18n.t('Icon Url')}
+                  renderLabel={I18n.t('Icon Url')}
                   onChange={this.handleIconUrlChange}
                 />
                 <TextInput
                   name={`${placementName}_text`}
                   value={placement.text}
-                  label={I18n.t('Text')}
+                  renderLabel={I18n.t('Text')}
                   onChange={this.handleTextChange}
                 />
               </FormFieldGroup>
@@ -191,13 +200,13 @@ export default class Placement extends React.Component {
                 <TextInput
                   name={`${placementName}_selection_height`}
                   value={placement.selection_height && placement.selection_height.toString()}
-                  label={I18n.t('Selection Height')}
+                  renderLabel={I18n.t('Selection Height')}
                   onChange={this.handleSelectionHeightChange}
                 />
                 <TextInput
                   name={`${placementName}_selection_width`}
                   value={placement.selection_width && placement.selection_width.toString()}
-                  label={I18n.t('Selection Width')}
+                  renderLabel={I18n.t('Selection Width')}
                   onChange={this.handleSelectionWidthChange}
                 />
               </FormFieldGroup>

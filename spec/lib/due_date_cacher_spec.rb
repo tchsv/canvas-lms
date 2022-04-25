@@ -53,7 +53,8 @@ describe DueDateCacher do
     it "queues a delayed job in an assignment-specific singleton in production" do
       expect(DueDateCacher).to receive(:new).and_return(@instance)
       expect(@instance).to receive(:delay_if_production)
-        .with(strand: "cached_due_date:calculator:Course:Assignments:#{@assignment.context.global_id}",
+        .with(singleton: "cached_due_date:calculator:Assignment:#{@assignment.global_id}:UpdateGrades:0",
+              strand: "cached_due_date:calculator:Course:#{@assignment.context.global_id}",
               max_attempts: 10).and_return(@instance)
       expect(@instance).to receive(:recompute)
       DueDateCacher.recompute(@assignment)
@@ -62,12 +63,20 @@ describe DueDateCacher do
     it "calls recompute with the value of update_grades if it is set to true" do
       expect(DueDateCacher).to receive(:new).with(@course, [@assignment.id], hash_including(update_grades: true))
                                             .and_return(@instance)
+      expect(@instance).to receive(:delay_if_production)
+        .with(singleton: "cached_due_date:calculator:Assignment:#{@assignment.global_id}:UpdateGrades:1",
+              strand: "cached_due_date:calculator:Course:#{@assignment.context.global_id}",
+              max_attempts: 10).and_return(@instance)
       DueDateCacher.recompute(@assignment, update_grades: true)
     end
 
     it "calls recompute with the value of update_grades if it is set to false" do
       expect(DueDateCacher).to receive(:new).with(@course, [@assignment.id], hash_including(update_grades: false))
                                             .and_return(@instance)
+      expect(@instance).to receive(:delay_if_production)
+        .with(singleton: "cached_due_date:calculator:Assignment:#{@assignment.global_id}:UpdateGrades:0",
+              strand: "cached_due_date:calculator:Course:#{@assignment.context.global_id}",
+              max_attempts: 10).and_return(@instance)
       DueDateCacher.recompute(@assignment, update_grades: false)
     end
 
@@ -136,7 +145,10 @@ describe DueDateCacher do
     it "queues a delayed job in a singleton in production if assignments.nil" do
       expect(DueDateCacher).to receive(:new).and_return(@instance)
       expect(@instance).to receive(:delay_if_production)
-        .with(singleton: "cached_due_date:calculator:Course:#{@course.global_id}", max_attempts: 10)
+        .with(
+          singleton: "cached_due_date:calculator:Course:#{@course.global_id}:UpdateGrades:0", max_attempts: 10,
+          strand: "cached_due_date:calculator:Course:#{@course.global_id}"
+        )
         .and_return(@instance)
       expect(@instance).to receive(:recompute)
       DueDateCacher.recompute_course(@course)
@@ -144,7 +156,7 @@ describe DueDateCacher do
 
     it "queues a delayed job without a singleton if assignments is passed" do
       expect(DueDateCacher).to receive(:new).and_return(@instance)
-      expect(@instance).to receive(:delay_if_production).with(max_attempts: 10)
+      expect(@instance).to receive(:delay_if_production).with(max_attempts: 10, strand: "cached_due_date:calculator:Course:#{@course.global_id}")
                                                         .and_return(@instance)
       expect(@instance).to receive(:recompute)
       DueDateCacher.recompute_course(@course, assignments: @assignments)
@@ -168,7 +180,10 @@ describe DueDateCacher do
         .with(@course, match_array(@assignments.map(&:id).sort), hash_including(update_grades: false))
         .and_return(@instance)
       expect(@instance).to receive(:delay_if_production)
-        .with(singleton: "cached_due_date:calculator:Course:#{@course.global_id}", max_attempts: 10)
+        .with(
+          singleton: "cached_due_date:calculator:Course:#{@course.global_id}:UpdateGrades:0", max_attempts: 10,
+          strand: "cached_due_date:calculator:Course:#{@course.global_id}"
+        )
         .and_return(@instance)
       expect(@instance).to receive(:recompute)
       DueDateCacher.recompute_course(@course.id)
@@ -256,7 +271,8 @@ describe DueDateCacher do
       expect(DueDateCacher).to receive(:new).and_return(@instance)
       expect(@instance).to receive(:delay_if_production)
         .with(
-          singleton: "cached_due_date:calculator:Users:#{@course.global_id}:#{Digest::SHA256.hexdigest(student_1.id.to_s)}",
+          singleton: "cached_due_date:calculator:Course:#{@course.global_id}:Users:#{Digest::SHA256.hexdigest(student_1.id.to_s)}:UpdateGrades:0",
+          strand: "cached_due_date:calculator:Course:#{@course.global_id}",
           max_attempts: 10
         )
         .and_return(@instance)
@@ -268,10 +284,10 @@ describe DueDateCacher do
       @instance = double
       expect(DueDateCacher).to receive(:new).and_return(@instance)
       expect(@instance).to receive(:delay_if_production)
-        .with(singleton: "what:up:dog", max_attempts: 10)
+        .with(singleton: "what:up:dog", max_attempts: 10, strand: "cached_due_date:calculator:Course:#{@course.global_id}")
         .and_return(@instance)
       expect(@instance).to receive(:recompute)
-      DueDateCacher.recompute_users_for_course(student_1.id, @course, nil, singleton: "what:up:dog")
+      DueDateCacher.recompute_users_for_course(student_1.id, @course, nil, singleton: "what:up:dog", strand: "cached_due_date:calculator:Course:#{@course.global_id}")
     end
 
     it "initializes a DueDateCacher with the value of executing_user if set" do
@@ -376,6 +392,34 @@ describe DueDateCacher do
 
     let(:submission) { submission_model(assignment: @assignment, user: first_student) }
     let(:first_student) { @student }
+
+    context "sharding" do
+      specs_require_sharding
+
+      before do
+        @shard1.activate do
+          account = Account.create!
+          course_with_student(account: account, active_all: true)
+          assignment_model(course: @course)
+        end
+      end
+
+      it "does not soft-delete assigned submissions when the assignment ID is passed as a global ID" do
+        @shard2.activate do
+          expect { DueDateCacher.new(@course, [@assignment.id]).recompute }.not_to change {
+            @assignment.all_submissions.find_by(user: @student).workflow_state
+          }.from("unsubmitted")
+        end
+      end
+
+      it "does not soft-delete assigned submissions when the assignment ID is passed as a local ID" do
+        @shard1.activate do
+          expect { DueDateCacher.new(@course, [@assignment.id]).recompute }.not_to change {
+            @assignment.all_submissions.find_by(user: @student).workflow_state
+          }.from("unsubmitted")
+        end
+      end
+    end
 
     describe "updated_at" do
       it "updates the updated_at when the workflow_state of a submission changes" do
@@ -584,17 +628,6 @@ describe DueDateCacher do
           cacher.recompute
           expect(submission.reload.cached_due_date).to be_nil
         end
-
-        it "does not update submissions for students with concluded enrollments" do
-          student2 = user_factory
-          @course.enroll_student(student2, enrollment_state: "active")
-          submission2 = submission_model(assignment: @assignment, user: student2)
-          submission2.update(cached_due_date: nil)
-          student2.enrollments.find_by(course: @course).conclude
-
-          DueDateCacher.new(@course, [@assignment]).recompute
-          expect(submission2.reload.cached_due_date).to be nil
-        end
       end
 
       context "one applicable override" do
@@ -639,17 +672,6 @@ describe DueDateCacher do
           cacher.recompute
           expect(submission.reload.cached_due_date).to eq @assignment.due_at.change(usec: 0)
         end
-
-        it "does not update submissions for students with concluded enrollments" do
-          student2 = user_factory
-          @course.enroll_student(student2, enrollment_state: "active")
-          submission2 = submission_model(assignment: @assignment, user: student2)
-          submission2.update(cached_due_date: nil)
-          student2.enrollments.find_by(course: @course).conclude
-
-          DueDateCacher.new(@course, [@assignment]).recompute
-          expect(submission2.reload.cached_due_date).to be nil
-        end
       end
 
       context "adhoc override" do
@@ -677,12 +699,6 @@ describe DueDateCacher do
         it "does not apply to students not in the adhoc set" do
           cacher.recompute
           expect(@submission1.reload.cached_due_date).to eq @assignment.due_at.change(usec: 0)
-        end
-
-        it "does not update submissions for students with concluded enrollments" do
-          @student2.enrollments.find_by(course: @course).conclude
-          DueDateCacher.new(@course, [@assignment]).recompute
-          expect(@submission2.reload.cached_due_date).to be nil
         end
       end
 
@@ -765,12 +781,6 @@ describe DueDateCacher do
           cacher.recompute
           @group.add_user(@student1, "deleted")
           expect(@submission1.reload.cached_due_date).to eq @assignment.due_at.change(usec: 0)
-        end
-
-        it "does not update submissions for students with concluded enrollments" do
-          @student2.enrollments.find_by(course: @course).conclude
-          DueDateCacher.new(@course, [@assignment]).recompute
-          expect(@submission2.reload.cached_due_date).to be nil
         end
       end
 

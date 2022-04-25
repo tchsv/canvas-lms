@@ -1452,6 +1452,20 @@ describe CoursesController, type: :request do
           expect(@course.end_at).to be_nil
         end
 
+        it "does not accept unrecognized args for restrict_enrollments_to_course_dates param" do
+          allow_any_instance_of(Api).to receive(:value_to_boolean).and_return(nil)
+          json = api_call(
+            :put,
+            @path,
+            @params,
+            { "course" => { "restrict_enrollments_to_course_dates" => true } },
+            {},
+            { expected_status: 400 }
+          )
+          expect(json["errors"]["restrict_enrollments_to_course_dates"].first["message"])
+            .to eq "The argument provided is expected to be of type boolean."
+        end
+
         it "allows updating only the offer parameter" do
           @course.workflow_state = "claimed"
           @course.save!
@@ -4100,7 +4114,8 @@ describe CoursesController, type: :request do
                                "homeroom_course" => false,
                                "image_url" => nil,
                                "image_id" => nil,
-                               "image" => nil
+                               "image" => nil,
+                               "default_due_time" => "23:59:59"
                              })
         end
 
@@ -4137,7 +4152,8 @@ describe CoursesController, type: :request do
                             show_announcements_on_home_page: false,
                             syllabus_course_summary: false,
                             home_page_announcement_limit: nil,
-                            homeroom_course: true
+                            homeroom_course: true,
+                            default_due_time: "9:00:00"
                           })
           expect(json).to eq({
                                "allow_final_grade_override" => true,
@@ -4169,7 +4185,8 @@ describe CoursesController, type: :request do
                                "homeroom_course" => true,
                                "image_url" => nil,
                                "image_id" => nil,
-                               "image" => nil
+                               "image" => nil,
+                               "default_due_time" => "09:00:00"
                              })
           @course.reload
           expect(@course.allow_final_grade_override?).to eq true
@@ -4190,6 +4207,7 @@ describe CoursesController, type: :request do
           expect(@course.syllabus_course_summary?).to eq false
           expect(@course.home_page_announcement_limit).to be nil
           expect(@course.homeroom_course?).to eq true
+          expect(@course.default_due_time).to eq "09:00:00"
         end
       end
 
@@ -4235,7 +4253,8 @@ describe CoursesController, type: :request do
                                "homeroom_course" => false,
                                "image_url" => nil,
                                "image_id" => nil,
-                               "image" => nil
+                               "image" => nil,
+                               "default_due_time" => "23:59:59"
                              })
         end
 

@@ -92,8 +92,8 @@
     "apply_781a2546": {
         "message": "Appliquer"
     },
-    "apply_changes_to_all_instances_of_this_button_and__3a3bea34": {
-        "message": "Appliquer des modifications à toutes les instances de ce bouton et icône dans le cours"
+    "apply_changes_to_all_instances_of_this_icon_maker__2642f466": {
+        "message": "Appliquer les modifications à toutes les instances de cette icône « Créateur d’icône » dans le cours"
     },
     "apps_54d24a47": {
         "message": "Applications"
@@ -103,6 +103,9 @@
     },
     "arrows_464a3e54": {
         "message": "Flèches"
+    },
+    "art_icon_8e1daad": {
+        "message": "Icône d’art"
     },
     "aspect_ratio_will_be_preserved_cb5fdfb8": {
         "message": "Les proportions seront préservées"
@@ -176,26 +179,17 @@
     "below_is_an_example_of_how_students_will_see_their_8f7e7971": {
         "message": "Voici un exemple de la façon dont les étudiants verront leur horaire"
     },
+    "black_4cb01371": {
+        "message": "Noir"
+    },
+    "blue_daf8fea9": {
+        "message": "Bleu"
+    },
     "bottom_third_5f5fec1d": {
         "message": "Troisième inférieure"
     },
-    "button_color_608a0242": {
-        "message": "Couleur du bouton"
-    },
-    "button_outline_cf14f071": {
-        "message": "Contour du bouton"
-    },
-    "button_outline_size_cc1d1df7": {
-        "message": "Taille du contour du bouton"
-    },
-    "button_shape_dbecb573": {
-        "message": "Forme du bouton"
-    },
-    "button_size_20f5fce1": {
-        "message": "Taille du bouton"
-    },
-    "buttons_and_icons_e66ee12c": {
-        "message": "Boutons et icônes"
+    "brick_f2656265": {
+        "message": "Brique"
     },
     "c_2001_acme_inc_283f7f80": {
         "message": "(c) 2001 Acme Inc."
@@ -226,6 +220,9 @@
     },
     "clear_2084585f": {
         "message": "Effacer"
+    },
+    "clear_image_3213fe62": {
+        "message": "Effacer l’image"
     },
     "clear_selected_file_82388e50": {
         "message": "Effacer le fichier sélectionné"
@@ -269,8 +266,11 @@
     "collapse_to_hide_types_1ab46d2e": {
         "message": "Réduire pour masquer { types }"
     },
-    "color_color_eb64b08": {
-        "message": "Couleur { color }"
+    "color_picker_6b359edf": {
+        "message": "Sélecteur de couleur"
+    },
+    "color_picker_colorname_selected_ad4cf400": {
+        "message": "Sélecteur de couleur ({ colorName } sélectionné)"
     },
     "computer_1d7dfa6f": {
         "message": "Ordinateur"
@@ -335,11 +335,17 @@
     "course_to_do_bcbbab54": {
         "message": "{ course } À FAIRE"
     },
-    "create_button_and_icon_5c089934": {
-        "message": "Bouton et icône de création"
+    "create_icon_110d6463": {
+        "message": "Créer une icône"
+    },
+    "create_icon_maker_icon_c716bffe": {
+        "message": "Créer icône de Créateur d’icône"
     },
     "creative_commons_license_725584ae": {
         "message": "Licence Creative Commons :"
+    },
+    "crop_image_41bf940c": {
+        "message": "Recadrer l’image"
     },
     "crop_image_807ebb08": {
         "message": "Recadrer l’image"
@@ -349,6 +355,9 @@
     },
     "custom_6979cd81": {
         "message": "Personnalisé"
+    },
+    "cyan_c1d5f68a": {
+        "message": "Cyan"
     },
     "date_added_ed5ad465": {
         "message": "Date ajoutée"
@@ -373,6 +382,9 @@
     },
     "decrease_indent_de6343ab": {
         "message": "Diminuer le retrait"
+    },
+    "deep_purple_bb3e2907": {
+        "message": "Violet foncé"
     },
     "default_bulleted_unordered_list_47079da8": {
         "message": "liste non triée à puces par défaut"
@@ -400,9 +412,6 @@
     },
     "diamond_b8dfe7ae": {
         "message": "Diamant"
-    },
-    "dimension_type_55c83e4e": {
-        "message": "Type de dimension"
     },
     "dimensions_45ddb7b7": {
         "message": "Dimensions"
@@ -479,6 +488,9 @@
     "edit_existing_button_icon_3d0277bd": {
         "message": "Modifier le bouton/icône existant"
     },
+    "edit_icon_2c6b0e91": {
+        "message": "Modifier l’icône"
+    },
     "edit_link_7f53bebb": {
         "message": "Modifier le lien"
     },
@@ -497,17 +509,17 @@
     "embed_image_1080badc": {
         "message": "Incorporer l’image"
     },
-    "embed_options_tray_901cfd19": {
-        "message": "Intégrer le plateau des options"
-    },
-    "embed_preview_2d741e1f": {
-        "message": "Intégrer un aperçu"
-    },
     "embed_video_a97a64af": {
         "message": "Intégrer la vidéo"
     },
     "embedded_content_aaeb4d3d": {
         "message": "contenu incorporé"
+    },
+    "engineering_icon_f8f3cf43": {
+        "message": "Icône Ingénierie"
+    },
+    "english_icon_25bfe845": {
+        "message": "Icône Anglais"
     },
     "enter_at_least_3_characters_to_search_4f037ee0": {
         "message": "Saisir au moins 3 caractères à rechercher"
@@ -553,6 +565,12 @@
     },
     "extra_small_9ae33252": {
         "message": "Très petit"
+    },
+    "extracurricular_icon_67c8ca42": {
+        "message": "Icône Parascolaire"
+    },
+    "failed_getting_course_list_49846a93": {
+        "message": "Échec de l''obtention de la liste des cours"
     },
     "failed_peeking_into_your_future_e95b9306": {
         "message": "Échec de l’examen de votre avenir"
@@ -653,6 +671,12 @@
     "greek_65c5b3f7": {
         "message": "Grec"
     },
+    "green_15af4778": {
+        "message": "Vert"
+    },
+    "grey_a55dceff": {
+        "message": "Gris"
+    },
     "group_documents_8bfd6ae6": {
         "message": "Documents de groupe"
     },
@@ -683,6 +707,9 @@
     "heading_4_b2e74be7": {
         "message": "En-tête 4"
     },
+    "health_icon_8d292eb5": {
+        "message": "Icône Santé"
+    },
     "height_69b03e15": {
         "message": "Taille"
     },
@@ -710,6 +737,24 @@
     "i_hold_the_copyright_71ee91b1": {
         "message": "Je détiens les droits d’auteur"
     },
+    "icon_color_b86dd6d6": {
+        "message": "Couleur de l’icône"
+    },
+    "icon_maker_icons_cc560f7e": {
+        "message": "Icônes de Créateur d’icône"
+    },
+    "icon_outline_e978dc0c": {
+        "message": "Contour de l’icône"
+    },
+    "icon_outline_size_33f39b86": {
+        "message": "Taille du contour de l’icône"
+    },
+    "icon_shape_30b61e7": {
+        "message": "Forme de l’icône"
+    },
+    "icon_size_9353edea": {
+        "message": "Taille de l’icône"
+    },
     "if_you_do_not_select_usage_rights_now_this_file_wi_14e07ab5": {
         "message": "Si vous ne sélectionnez pas de droits d''utilisation maintenant, ce fichier ne sera pas publié après son téléversement."
     },
@@ -722,11 +767,17 @@
     "image_options_tray_90a46006": {
         "message": "Plateau des options pour l’image"
     },
+    "image_to_crop_3a34487d": {
+        "message": "Image à recadrer"
+    },
     "images_7ce26570": {
         "message": "Images"
     },
     "increase_indent_6d550a4a": {
         "message": "Augmenter le retrait"
+    },
+    "indigo_2035fc55": {
+        "message": "Indigo"
     },
     "insert_593145ef": {
         "message": "Insérer"
@@ -773,6 +824,12 @@
     "language_arts_35b79a8b": {
         "message": "Arts de la langue"
     },
+    "language_arts_icon_a798b0f8": {
+        "message": "Icône Arts de la langue"
+    },
+    "languages_icon_9d20539": {
+        "message": "Icône Langues"
+    },
     "large_9c5e80e7": {
         "message": "Large"
     },
@@ -781,6 +838,12 @@
     },
     "left_to_right_e9b4fd06": {
         "message": "Gauche-à-droite"
+    },
+    "library_icon_ae1e54cf": {
+        "message": "Icône Bibliothèque"
+    },
+    "light_blue_5374f600": {
+        "message": "Bleu clair"
     },
     "link_7262adec": {
         "message": "Lien"
@@ -848,11 +911,20 @@
     "looks_like_there_isn_t_anything_here_d9bcef49": {
         "message": "Il semble qu’il n''y ait rien ici"
     },
+    "magenta_4a65993c": {
+        "message": "Magenta"
+    },
     "math_ede93050": {
         "message": "Mathématiques"
     },
+    "math_icon_ad4e9d03": {
+        "message": "Icône Mathématique"
+    },
     "media_af190855": {
         "message": "Support média"
+    },
+    "media_file_is_processing_please_try_again_later_58a6d49": {
+        "message": "Le fichier multimédia est en cours de traitement. Veuillez essayer de nouveau plus tard."
     },
     "medium_5a8e9ead": {
         "message": "Moyen"
@@ -878,6 +950,9 @@
     "multi_color_image_63d7372f": {
         "message": "Image multicolore"
     },
+    "music_icon_4db5c972": {
+        "message": "Icône Musique"
+    },
     "must_be_at_least_percentage_22e373b6": {
         "message": "Doit être au moins { percentage }%"
     },
@@ -892,6 +967,9 @@
     },
     "name_1aed4a1b": {
         "message": "Nom"
+    },
+    "name_color_ceec76ff": {
+        "message": "{ name } ({ color })"
     },
     "navigate_through_the_menu_or_toolbar_415a4e50": {
         "message": "Naviguer dans le menu ou la barre d''outils"
@@ -974,6 +1052,9 @@
     "octagon_e48be9f": {
         "message": "Octogone"
     },
+    "olive_6a3e4d6b": {
+        "message": "Olive"
+    },
     "only_most_recent_grading_period_shown_f1ad6458": {
         "message": "*Seulement les plus récentes périodes de notation sont affichées."
     },
@@ -992,8 +1073,8 @@
     "optional_add_course_ef0d70fc": {
         "message": "Facultatif : Ajouter un cours"
     },
-    "options_3ab0ea65": {
-        "message": "Options"
+    "orange_81386a62": {
+        "message": "Orange"
     },
     "ordered_and_unordered_lists_cfadfc38": {
         "message": "Listes triées et non triées"
@@ -1030,6 +1111,15 @@
     },
     "percentage_must_be_a_number_8033c341": {
         "message": "Le pourcentage doit être un chiffre"
+    },
+    "performing_arts_icon_f3497486": {
+        "message": "Icône Arts de la scène"
+    },
+    "physical_education_icon_d7dffd3e": {
+        "message": "Icône Éducation physique"
+    },
+    "pink_68ad45cb": {
+        "message": "Rose"
     },
     "pixels_52ece7d1": {
         "message": "Pixels"
@@ -1076,6 +1166,12 @@
     "published_when_302d8e23": {
         "message": "Publié : { when }"
     },
+    "pumpkin_904428d5": {
+        "message": "Citrouille"
+    },
+    "purple_7678a9fc": {
+        "message": "Violet"
+    },
     "quiz_e0dcce8f": {
         "message": "Questionnaire"
     },
@@ -1091,11 +1187,17 @@
     "record_upload_media_5fdce166": {
         "message": "Enregistrer/téléverser support média"
     },
+    "red_8258edf3": {
+        "message": "Rouge"
+    },
     "redo_363c58b7": {
         "message": "Rétablir"
     },
     "relationships_6602af70": {
         "message": "Relations"
+    },
+    "religion_icon_246e0be1": {
+        "message": "Icône Religion"
     },
     "reminder_date_4564d12d": {
         "message": "Rappel : { date }"
@@ -1115,6 +1217,9 @@
     "rich_content_editor_2708ef21": {
         "message": "Éditeur de texte enrichi"
     },
+    "rich_text_area_press_alt_0_for_rich_content_editor_9d23437f": {
+        "message": "Zone de texte enrichi. Appuyez sur ALT+0 pour les raccourcis de l’éditeur de texte enrichi."
+    },
     "right_to_left_9cfb092a": {
         "message": "Droite-à-gauche"
     },
@@ -1124,8 +1229,8 @@
     "save_11a80ec3": {
         "message": "Enregistrer"
     },
-    "saved_buttons_and_icons_8278eed2": {
-        "message": "Boutons et icônes enregistrés"
+    "saved_icon_maker_icons_df86e2a1": {
+        "message": "Icônes enregistrées de Créateur d’icône"
     },
     "schedule_preview_3bcda153": {
         "message": "Aperçu de l’horaire"
@@ -1163,9 +1268,6 @@
     "show_audio_options_b489926b": {
         "message": "Afficher les options audio"
     },
-    "show_embed_options_ef8d7ef": {
-        "message": "Afficher les options intégrées"
-    },
     "show_image_options_1e2ecc6b": {
         "message": "Afficher les options d’image"
     },
@@ -1180,6 +1282,9 @@
     },
     "single_color_image_4e5d4dbc": {
         "message": "Image monochrome"
+    },
+    "single_color_image_color_95fa9a87": {
+        "message": "Couleur de l’image monochrome"
     },
     "size_b30e1077": {
         "message": "Taille"
@@ -1199,17 +1304,8 @@
     "something_went_wrong_and_i_don_t_know_what_to_show_e0c54ec8": {
         "message": "Une erreur est survenue et je ne sais pas quoi vous montrer."
     },
-    "something_went_wrong_check_your_connection_and_try_2a7b2d13": {
-        "message": "Un problème est survenu, vérifiez votre connexion et réessayez."
-    },
     "something_went_wrong_d238c551": {
         "message": "Une erreur est survenue"
-    },
-    "something_went_wrong_try_again_after_refreshing_th_e094eb8d": {
-        "message": "Une erreur est survenue, réessayez après avoir rafraîchi la page"
-    },
-    "something_went_wrong_uploading_check_your_connecti_aa201f15": {
-        "message": "Un problème est survenu lors du téléversement, vérifiez votre connexion et réessayez."
     },
     "sort_by_e75f9e3e": {
         "message": "Trier par"
@@ -1234,6 +1330,9 @@
     },
     "starttime_to_endtime_d7cc249d": {
         "message": "{ startTime } à { endTime }"
+    },
+    "steel_blue_14296f08": {
+        "message": "Bleu acier"
     },
     "styles_2aa721ef": {
         "message": "Styles"
@@ -1270,6 +1369,9 @@
     },
     "task_16b0ef38": {
         "message": "Tâche"
+    },
+    "teal_f729a294": {
+        "message": "Bleu sarcelle"
     },
     "text_7f4593da": {
         "message": "Texte"
@@ -1400,9 +1502,6 @@
     "uploading_19e8a4e7": {
         "message": "Téléversement"
     },
-    "uploading_closed_captions_subtitles_failed_bc093f3": {
-        "message": "Le téléversement des sous-titres/légendes a échoué."
-    },
     "uppercase_alphabetic_ordered_list_3f5aa6b2": {
         "message": "liste alphabétique en majuscules"
     },
@@ -1490,6 +1589,9 @@
     "weekly_schedule_navigation_6b042645": {
         "message": "Navigation hebdomadaire du calendrier"
     },
+    "white_87fa64fd": {
+        "message": "Blanc"
+    },
     "width_492fec76": {
         "message": "Largeur"
     },
@@ -1522,5 +1624,11 @@
     },
     "you_ve_scrolled_back_to_your_very_first_to_do_29374681": {
         "message": "Vous êtes revenu à votre toute première tâche À faire!"
+    },
+    "zoom_in_image_bb97d4f": {
+        "message": "Zoom sur l’image"
+    },
+    "zoom_out_image_d0a0a2ec": {
+        "message": "Zoom arrière sur l’image"
     }
 }

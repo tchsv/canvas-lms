@@ -16,14 +16,15 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Button, IconButton} from '@instructure/ui-buttons'
-import I18n from 'i18n!conversations_2'
+import {IconButton} from '@instructure/ui-buttons'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import {IconMoreLine, IconReplyLine} from '@instructure/ui-icons'
 import {Menu} from '@instructure/ui-menu'
 import PropTypes from 'prop-types'
 import React from 'react'
-import {ScreenReaderContent} from '@instructure/ui-a11y-content'
 import {Tooltip} from '@instructure/ui-tooltip'
+
+const I18n = useI18nScope('conversations_2')
 
 export const MessageDetailActions = ({...props}) => {
   return (
@@ -35,6 +36,8 @@ export const MessageDetailActions = ({...props}) => {
           screenReaderLabel={I18n.t('Reply')}
           onClick={props.onReply}
           data-testid="message-reply"
+          withBackground={false}
+          withBorder={false}
         >
           <IconReplyLine />
         </IconButton>
@@ -43,22 +46,26 @@ export const MessageDetailActions = ({...props}) => {
         placement="bottom"
         trigger={
           <Tooltip renderTip={I18n.t('More options')} on={['hover', 'focus']}>
-            <Button
+            <IconButton
               margin="0 x-small 0 0"
               size="small"
-              renderIcon={IconMoreLine}
               data-testid="message-more-options"
+              withBackground={false}
+              withBorder={false}
+              screenReaderLabel={I18n.t('More options')}
             >
-              <ScreenReaderContent>{I18n.t('More options')}</ScreenReaderContent>
-            </Button>
+              <IconMoreLine />
+            </IconButton>
           </Tooltip>
         }
       >
         <Menu.Item value="reply-all" onSelect={props.onReplyAll}>
           {I18n.t('Reply All')}
         </Menu.Item>
-        <Menu.Item value="forward">{I18n.t('Forward')}</Menu.Item>
-        <Menu.Item value="delete" onSelect={props.onDelete}>
+        <Menu.Item value="forward" onSelect={props.onForward}>
+          {I18n.t('Forward')}
+        </Menu.Item>
+        <Menu.Item value="delete" onSelect={props.onDelete} data-testid="message-delete">
           {I18n.t('Delete')}
         </Menu.Item>
       </Menu>
@@ -69,5 +76,6 @@ export const MessageDetailActions = ({...props}) => {
 MessageDetailActions.propTypes = {
   onReply: PropTypes.func,
   onReplyAll: PropTypes.func,
-  onDelete: PropTypes.func
+  onDelete: PropTypes.func,
+  onForward: PropTypes.func
 }

@@ -110,8 +110,7 @@ class GradebooksController < ApplicationController
       json = {
         assignment_id: submission.assignment_id
       }
-
-      if submission.user_can_read_grade?(@current_user)
+      if submission.user_can_read_grade?(@presenter.student)
         json.merge!({
                       excused: submission.excused?,
                       score: submission.score,
@@ -124,7 +123,7 @@ class GradebooksController < ApplicationController
 
     grading_period = @grading_periods&.find { |period| period[:id] == gp_id }
 
-    ags_json = light_weight_ags_json(@presenter.groups, { student: @presenter.student })
+    ags_json = light_weight_ags_json(@presenter.groups)
     root_account = @context.root_account
 
     js_hash = {
@@ -150,7 +149,8 @@ class GradebooksController < ApplicationController
       student_outcome_gradebook_enabled: @context.feature_enabled?(:student_outcome_gradebook),
       student_id: @presenter.student_id,
       students: @presenter.students.as_json(include_root: false),
-      outcome_proficiency: outcome_proficiency
+      outcome_proficiency: outcome_proficiency,
+      outcome_service_results_to_canvas: outcome_service_results_to_canvas_enabled?
     }
 
     # This really means "if the final grade override feature flag is enabled AND
@@ -180,31 +180,31 @@ class GradebooksController < ApplicationController
     end
   end
 
-  def light_weight_ags_json(assignment_groups, opts = {})
-    assignment_groups.map do |ag|
-      visible_assignments = ag.visible_assignments(opts[:student] || @current_user).to_a
+  def light_weight_ags_json(assignment_groups)
+    assignments_by_group = @presenter.assignments.each_with_object({}) do |assignment, assignments|
+      # Pseudo-assignment objects with a "special_class" set are created for
+      # assignment group totals, grading period totals, and course totals. We
+      # only care about real assignments here, so we'll ignore those
+      # pseudo-assignment objects.
+      next if assignment.special_class
 
-      if grading_periods? && @current_grading_period_id && !view_all_grading_periods?
-        current_period = GradingPeriod.for(@context).find_by(id: @current_grading_period_id)
-        visible_assignments = current_period.assignments_for_student(@context, visible_assignments, opts[:student])
-      end
+      assignments[assignment.assignment_group_id] ||= []
+      assignments[assignment.assignment_group_id] << {
+        id: assignment.id,
+        submission_types: assignment.submission_types_array,
+        points_possible: assignment.points_possible,
+        due_at: assignment.due_at,
+        omit_from_final_grade: assignment.omit_from_final_grade?,
+        muted: assignment.muted?
+      }
+    end
 
-      visible_assignments.map! do |a|
-        {
-          id: a.id,
-          submission_types: a.submission_types_array,
-          points_possible: a.points_possible,
-          due_at: a.due_at,
-          omit_from_final_grade: a.omit_from_final_grade?,
-          muted: a.muted?
-        }
-      end
-
+    assignment_groups.map do |group|
       {
-        id: ag.id,
-        rules: ag.rules_hash({ stringify_json_ids: true }),
-        group_weight: ag.group_weight,
-        assignments: visible_assignments,
+        id: group.id,
+        rules: group.rules_hash({ stringify_json_ids: true }),
+        group_weight: group.group_weight,
+        assignments: assignments_by_group.fetch(group.id, [])
       }
     end
   end
@@ -422,12 +422,11 @@ class GradebooksController < ApplicationController
       custom_column_datum_url: api_v1_course_custom_gradebook_column_datum_url(@context, ":id", ":user_id"),
       default_grading_standard: grading_standard.data,
       download_assignment_submissions_url: named_context_url(@context, :context_assignment_submissions_url, "{{ assignment_id }}", zip: 1),
-      enhanced_gradebook_filters: Account.site_admin.feature_enabled?(:enhanced_gradebook_filters),
+      enhanced_gradebook_filters: @context.feature_enabled?(:enhanced_gradebook_filters),
       enrollments_url: custom_course_enrollments_api_url(per_page: per_page),
       enrollments_with_concluded_url: custom_course_enrollments_api_url(include_concluded: true, per_page: per_page),
       export_gradebook_csv_url: course_gradebook_csv_url,
       final_grade_override_enabled: @context.feature_enabled?(:final_grades_override),
-      load_assignments_by_grading_period_enabled: Account.site_admin.feature_enabled?(:gradebook_load_assignments_by_grading_period),
       gradebook_column_order_settings: @current_user.get_preference(:gradebook_column_order, @context.global_id),
       gradebook_column_order_settings_url: save_gradebook_column_order_course_gradebook_url,
       gradebook_column_size_settings: gradebook_column_size_preferences,
@@ -436,16 +435,17 @@ class GradebooksController < ApplicationController
       gradebook_score_to_ungraded_progress: last_score_to_ungraded,
       gradebook_import_url: new_course_gradebook_upload_path(@context),
       gradebook_is_editable: gradebook_is_editable,
-      gradebook_assignment_search_and_redesign: Account.site_admin.feature_enabled?(:gradebook_assignment_search_and_redesign),
       grade_calc_ignore_unposted_anonymous_enabled: root_account.feature_enabled?(:grade_calc_ignore_unposted_anonymous),
       graded_late_submissions_exist: graded_late_submissions_exist,
       grading_period_set: grading_period_group_json,
       grading_schemes: GradingStandard.for(@context).as_json(include_root: false),
       grading_standard: @context.grading_standard_enabled? && grading_standard.data,
       group_weighting_scheme: @context.group_weighting_scheme,
-      late_policy: @context.late_policy.as_json(include_root: false),
-      login_handle_name: root_account.settings[:login_handle_name],
       has_modules: @context.has_modules?,
+      late_policy: @context.late_policy.as_json(include_root: false),
+      load_assignments_by_grading_period_enabled: Account.site_admin.feature_enabled?(:gradebook_load_assignments_by_grading_period),
+      login_handle_name: root_account.settings[:login_handle_name],
+      message_attachment_upload_folder_id: @current_user.conversation_attachments_folder.id.to_s,
       new_gradebook_development_enabled: new_gradebook_development_enabled?,
       outcome_gradebook_enabled: outcome_gradebook_enabled?,
       performance_controls: gradebook_performance_controls,
@@ -479,6 +479,8 @@ class GradebooksController < ApplicationController
     }
 
     js_env({
+             EMOJIS_ENABLED: @context.feature_enabled?(:submission_comment_emojis),
+             EMOJI_DENY_LIST: @context.root_account.settings[:emoji_deny_list],
              GRADEBOOK_OPTIONS: gradebook_options
            })
   end
@@ -590,7 +592,10 @@ class GradebooksController < ApplicationController
       version: params.fetch(:version, nil)
     }
 
-    js_env({ GRADEBOOK_OPTIONS: gradebook_options })
+    js_env({
+             GRADEBOOK_OPTIONS: gradebook_options,
+             outcome_service_results_to_canvas: outcome_service_results_to_canvas_enabled?
+           })
   end
 
   def set_learning_mastery_env
@@ -612,7 +617,8 @@ class GradebooksController < ApplicationController
                settings: gradebook_settings(@context.global_id),
                settings_update_url: api_v1_course_gradebook_settings_update_url(@context),
                IMPROVED_LMGB: root_account.feature_enabled?(:improved_lmgb)
-             }
+             },
+             outcome_service_results_to_canvas: outcome_service_results_to_canvas_enabled?
            })
   end
 
@@ -873,6 +879,8 @@ class GradebooksController < ApplicationController
         @outer_frame = true
         log_asset_access(["speed_grader", @context], "grades", "other")
         env = {
+          EMOJIS_ENABLED: @context.feature_enabled?(:submission_comment_emojis),
+          EMOJI_DENY_LIST: @context.root_account.settings[:emoji_deny_list],
           MANAGE_GRADES: @context.grants_right?(@current_user, session, :manage_grades),
           READ_AS_ADMIN: @context.grants_right?(@current_user, session, :read_as_admin),
           CONTEXT_ACTION_SOURCE: :speed_grader,
@@ -1122,25 +1130,11 @@ class GradebooksController < ApplicationController
   # @argument only_past_due [Boolean]
   #   If true, only operate on submissions whose due date has passed.
   #
-  # @argument assignment_group_id [Integer]
-  #   If supplied, only operate on submissions belonging to assignments within
-  #   the specified assignment group.
+  # @argument assignment_ids [Required, Array]
+  #   An array of assignment ids to apply score to ungraded submissions.
   #
-  # @argument grading_period_id [Integer]
-  #   If supplied, only operate on submissions belonging to the specified
-  #   grading period.
-  #
-  # @argument course_section_id [Integer]
-  #   If supplied, only operate on submissions belonging to students within the
-  #   specified course section.
-  #
-  # @argument student_group_id [Integer]
-  #   If supplied, only operate on submissions belonging to students within the
-  #   specified student group.
-  #
-  # @argument module_id [Integer]
-  #   If supplied, only operate on submissions belonging to assignments within
-  #   the specified module.
+  # @argument student_ids [Required, Array]
+  #   An array of student ids to apply score to ungraded submissions.
   #
   # @example_request
   #
@@ -1148,7 +1142,8 @@ class GradebooksController < ApplicationController
   #   "percent": "50.0",
   #   "mark_as_missing": true,
   #   "only_past_due": true,
-  #   "assignment_group_id": "10"
+  #   "assignment_ids": ["1", "2", "3"],
+  #   "student_ids": ["11", "22"]
   # }
   #
   # @returns Progress
@@ -1175,19 +1170,14 @@ class GradebooksController < ApplicationController
       percent: percent_value,
       excused: excused,
       mark_as_missing: Canvas::Plugin.value_to_boolean(params[:mark_as_missing]),
-      only_apply_to_past_due: Canvas::Plugin.value_to_boolean(params[:only_apply_to_past_due])
+      only_apply_to_past_due: Canvas::Plugin.value_to_boolean(params[:only_past_due])
     )
-    options.assignment_group = @context.assignment_groups.active.find(params[:assignment_group_id]) if params[:assignment_group_id].present?
-    options.context_module = @context.context_modules.not_deleted.find(params[:module_id]) if params[:module_id].present?
-    options.course_section = @context.course_sections.active.find(params[:course_section_id]) if params[:course_section_id].present?
-    options.student_group = @context.active_groups.find(params[:group_id]) if params[:group_id].present?
 
-    if params[:grading_period_id].present?
-      grading_period = GradingPeriod.for(@context).find(params[:grading_period_id])
-      return render json: { error: :cannot_apply_to_closed_grading_period }, status: :bad_request if grading_period.closed?
+    return render json: { error: :no_student_ids_provided }, status: :bad_request if params[:student_ids].blank?
+    return render json: { error: :no_assignment_ids_provided }, status: :bad_request if params[:assignment_ids].blank?
 
-      options.grading_period = grading_period
-    end
+    options.assignment_ids = params[:assignment_ids]
+    options.student_ids = params[:student_ids]
 
     progress = ::Gradebook::ApplyScoreToUngradedSubmissions.queue_apply_score(
       course: @context,
@@ -1541,5 +1531,9 @@ class GradebooksController < ApplicationController
 
   def allow_apply_score_to_ungraded?
     @context.account.feature_enabled?(:apply_score_to_ungraded)
+  end
+
+  def outcome_service_results_to_canvas_enabled?
+    @context.feature_enabled?(:outcome_service_results_to_canvas)
   end
 end

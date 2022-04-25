@@ -23,11 +23,13 @@ import {Flex} from '@instructure/ui-flex'
 import {Text} from '@instructure/ui-text'
 import {Pill} from '@instructure/ui-pill'
 
-import I18n from 'i18n!speed_grader'
+import {useScope as useI18nScope} from '@canvas/i18n'
 
 import FriendlyDatetime from '@canvas/datetime/react/components/FriendlyDatetime'
 import {overallAnonymityStates} from '../AuditTrailHelpers'
 import * as propTypes from './AuditTrail/propTypes'
+
+const I18n = useI18nScope('speed_grader')
 
 function getOverallAnonymityLabel(overallAnonymity) {
   switch (overallAnonymity) {
@@ -111,9 +113,10 @@ export default function AssessmentSummary(props) {
           as="div"
           id="audit-tray-overall-anonymity-label"
           margin="x-small"
-          text={overallAnonymityLabel}
-          variant={overallAnonymityLabelColor}
-        />
+          color={overallAnonymityLabelColor}
+        >
+          {overallAnonymityLabel}
+        </Pill>
 
         <Text
           as="div"

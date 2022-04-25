@@ -51,10 +51,12 @@ const locale = {
   "announcement_list_da155734": { "message": "Danh Sách Thông Báo" },
   "announcements_a4b8ed4a": { "message": "Thông Báo Chung" },
   "apply_781a2546": { "message": "Áp Dụng" },
-  "apply_changes_to_all_instances_of_this_button_and__3a3bea34": {
-    "message": "Áp dụng thay đổi cho tất cả phiên bản của Nút này và Biểu Tượng trong Khóa Học"
+  "apply_changes_to_all_instances_of_this_icon_maker__2642f466": {
+    "message": "Áp dụng thay đổi cho tất cả phiên bản của Biểu Tượng Trình Tạo Biểu Tượng này trong Khóa Học"
   },
   "apps_54d24a47": { "message": "Ứng Dụng" },
+  "arrows_464a3e54": { "message": "Các phím mũi tên" },
+  "art_icon_8e1daad": { "message": "Biểu Tượng Nghệ Thuật" },
   "aspect_ratio_will_be_preserved_cb5fdfb8": {
     "message": "Tỷ lệ khung hình sẽ được giữ nguyên"
   },
@@ -63,6 +65,8 @@ const locale = {
   "audio_and_video_recording_not_supported_please_use_5ce3f0d7": {
     "message": "Chức năng ghi âm và quay video không được hỗ trợ; vui lòng sử dụng trình duyệt khác."
   },
+  "audio_options_feb58e2c": { "message": "Các Tùy Chọn Âm Thanh" },
+  "audio_options_tray_33a90711": { "message": "Khay Tùy Chọn Âm Thanh" },
   "audio_player_for_title_20cc70d": {
     "message": "Trình phát âm thanh cho { title }"
   },
@@ -70,14 +74,12 @@ const locale = {
     "message": "Nội dung tự động lưu tồn tại. Bạn có muốn tải nội dung tự động lưu để thay thế không?"
   },
   "available_folders_694d0436": { "message": "Thư Mục Khả Dụng" },
+  "basic_554cdc0a": { "message": "Cơ Bản" },
   "below_81d4dceb": { "message": "Bên Dưới" },
+  "black_4cb01371": { "message": "Đen" },
+  "blue_daf8fea9": { "message": "Xanh Dương" },
   "bottom_third_5f5fec1d": { "message": "Một Phần Ba Dưới" },
-  "button_color_608a0242": { "message": "Màu Nút" },
-  "button_outline_cf14f071": { "message": "Viền Nút" },
-  "button_outline_size_cc1d1df7": { "message": "Cỡ Viền Nút" },
-  "button_shape_dbecb573": { "message": "Hình Dạng Nút" },
-  "button_size_20f5fce1": { "message": "Cỡ Nút" },
-  "buttons_and_icons_e66ee12c": { "message": "Nút Và Biểu Tượng" },
+  "brick_f2656265": { "message": "Gạch" },
   "c_2001_acme_inc_283f7f80": { "message": "(c) 2001 Acme Inc." },
   "cancel_caeb1e68": { "message": "Hủy" },
   "choose_caption_file_9c45bc4e": { "message": "Chọn tập tin phụ đề" },
@@ -87,6 +89,7 @@ const locale = {
     "message": "danh sách không theo thứ tự tròn"
   },
   "clear_2084585f": { "message": "Xóa bỏ" },
+  "clear_image_3213fe62": { "message": "Xóa hình ảnh" },
   "clear_selected_file_82388e50": { "message": "Xóa bỏ tập tin đã chọn" },
   "clear_selected_file_filename_2fe8a58e": {
     "message": "Bỏ chọn tập tin đã chọn: { filename }"
@@ -116,7 +119,10 @@ const locale = {
   "closed_captions_subtitles_e6aaa016": { "message": "Phụ Đề" },
   "collaborations_5c56c15f": { "message": "Cộng Tác" },
   "collapse_to_hide_types_1ab46d2e": { "message": "Thu gọn để ẩn { types }" },
-  "color_color_eb64b08": { "message": "Màu { color }" },
+  "color_picker_6b359edf": { "message": "Trình Chọn Màu" },
+  "color_picker_colorname_selected_ad4cf400": {
+    "message": "Trình Chọn Màu (đã chọn { colorName })"
+  },
   "computer_1d7dfa6f": { "message": "Máy Tính" },
   "content_1440204b": { "message": "Nội Dung" },
   "content_is_still_being_uploaded_if_you_continue_it_8f06d0cb": {
@@ -138,27 +144,36 @@ const locale = {
   "course_links_b56959b9": { "message": "Liên Kết Khóa Học" },
   "course_media_ec759ad": { "message": "Nội Dung Phương Tiện Khóa Học" },
   "course_navigation_dd035109": { "message": "Điều Hướng Khóa Học" },
-  "create_button_and_icon_5c089934": { "message": "Tạo Nút Và Biểu Tượng" },
+  "create_icon_110d6463": { "message": "Tạo Biểu Tượng" },
+  "create_icon_maker_icon_c716bffe": {
+    "message": "Tạo Biểu Tượng Trình Tạo Biểu Tượng"
+  },
   "creative_commons_license_725584ae": {
     "message": "Giấy Phép Creative Commons:"
   },
+  "crop_image_41bf940c": { "message": "Cắt gọt hình ảnh" },
   "crop_image_807ebb08": { "message": "Cắt Gọt Hình Ảnh" },
   "current_image_f16c249c": { "message": "Hình Ảnh Hiện Tại" },
   "custom_6979cd81": { "message": "Tùy Chỉnh" },
+  "cyan_c1d5f68a": { "message": "Xanh Lá Mạ" },
   "date_added_ed5ad465": { "message": "Ngày Thêm" },
   "decorative_image_3c28aa7d": { "message": "Hình Ảnh Trang Trí" },
   "decrease_indent_de6343ab": { "message": "Giảm thụt lề" },
+  "deep_purple_bb3e2907": { "message": "Tía Đen" },
   "default_bulleted_unordered_list_47079da8": {
     "message": "danh sách không theo thứ tự đánh dấu đầu dòng mặc định"
   },
   "default_numerical_ordered_list_48dd3548": {
     "message": "danh sách theo thứ tự số mặc định"
   },
+  "delimiters_4db4840d": { "message": "Dấu Phân Cách" },
   "describe_the_image_e65d2e32": { "message": "(Mô tả hình ảnh" },
   "describe_the_video_2fe8f46a": { "message": "(Mô tả video)" },
   "details_98a31b68": { "message": "Chi Tiết" },
+  "diamond_b8dfe7ae": { "message": "Hình Thoi" },
   "dimensions_45ddb7b7": { "message": "Kích Thước" },
   "directionality_26ae9e08": { "message": "Định Hướng" },
+  "directly_edit_latex_b7e9235b": { "message": "Chỉnh Sửa LaTeX Trực Tiếp" },
   "discussions_a5f96392": { "message": "Thảo Luận" },
   "discussions_index_6c36ced": { "message": "Chỉ Mục Thảo Luận" },
   "display_options_315aba85": { "message": "Tùy Chọn Hiển Thị" },
@@ -182,6 +197,7 @@ const locale = {
   "edit_existing_button_icon_3d0277bd": {
     "message": "Chỉnh Sửa Nút / Biểu Tượng Thoát "
   },
+  "edit_icon_2c6b0e91": { "message": "Biểu Tượng Chỉnh Sửa" },
   "edit_link_7f53bebb": { "message": "Chỉnh Sửa Liên Kết" },
   "editor_statusbar_26ac81fc": {
     "message": "Thanh Trạng Thái Trình Chỉnh Sửa"
@@ -189,14 +205,15 @@ const locale = {
   "embed_828fac4a": { "message": "Nhúng" },
   "embed_code_314f1bd5": { "message": "Mã Nhúng" },
   "embed_image_1080badc": { "message": "Nhúng Hình Ảnh" },
-  "embed_options_tray_901cfd19": { "message": "Nhúng Khay Tùy Chọn" },
-  "embed_preview_2d741e1f": { "message": "Nhúng Nội Dung Xem Trước" },
   "embed_video_a97a64af": { "message": "Nhúng Video" },
   "embedded_content_aaeb4d3d": { "message": "nội dung nhúng" },
+  "engineering_icon_f8f3cf43": { "message": "Biểu Tượng Kỹ Thuật" },
+  "english_icon_25bfe845": { "message": "Biểu Tượng Tiếng Anh" },
   "enter_at_least_3_characters_to_search_4f037ee0": {
     "message": "Nhập ít nhất 3 ký tự để tìm kiếm"
   },
   "equation_1c5ac93c": { "message": "Phương Trình" },
+  "equation_editor_39fbc3f1": { "message": "Trình Chỉnh Sửa Phương Trình" },
   "expand_preview_by_default_2abbf9f8": {
     "message": "Mở rộng nội dung xem trước theo Mặc Định"
   },
@@ -205,6 +222,7 @@ const locale = {
   "external_tools_6e77821": { "message": "Công Cụ Ngoài" },
   "extra_large_b6cdf1ff": { "message": "Cực Lớn" },
   "extra_small_9ae33252": { "message": "Cực Nhỏ" },
+  "extracurricular_icon_67c8ca42": { "message": "Biểu Tượng Ngoại Khóa" },
   "file_url_c12b64be": { "message": "URL Tập Tin" },
   "filename_file_icon_602eb5de": {
     "message": "Biểu tượng tập tin { filename }"
@@ -240,6 +258,9 @@ const locale = {
     "message": "Đi đến thanh công cụ của trình chỉnh sửa"
   },
   "grades_a61eba0a": { "message": "Điểm" },
+  "greek_65c5b3f7": { "message": "Hy Lạp" },
+  "green_15af4778": { "message": "Xanh Lục" },
+  "grey_a55dceff": { "message": "Xám" },
   "group_documents_8bfd6ae6": { "message": "Tài Liệu Nhóm" },
   "group_files_4324f3df": { "message": "Các Tập Tin Nhóm" },
   "group_files_82e5dcdb": { "message": "Tập tin nhóm" },
@@ -250,6 +271,7 @@ const locale = {
   "heading_2_5b84eed2": { "message": "Đầu Đề 2" },
   "heading_3_2c83de44": { "message": "Đầu Đề 3" },
   "heading_4_b2e74be7": { "message": "Đầu Đề 4" },
+  "health_icon_8d292eb5": { "message": "Biểu Tượng Sức Khỏe" },
   "height_69b03e15": { "message": "Chiều Cao" },
   "hexagon_d8468e0d": { "message": "Lục Giác" },
   "hide_description_bfb5502e": { "message": "Ẩn mô tả" },
@@ -261,14 +283,22 @@ const locale = {
     "message": "Tôi đã xin được phép sử dụng tập tin này."
   },
   "i_hold_the_copyright_71ee91b1": { "message": "Tôi là bên giữ bản quyền" },
+  "icon_color_b86dd6d6": { "message": "Màu Biểu Tượng" },
+  "icon_maker_icons_cc560f7e": { "message": "Biểu Tượng Trình Tạo Biểu Tượng" },
+  "icon_outline_e978dc0c": { "message": "Viền Biểu Tượng" },
+  "icon_outline_size_33f39b86": { "message": "Cỡ Viền Biểu Tượng" },
+  "icon_shape_30b61e7": { "message": "Hình Dạng Biểu Tượng" },
+  "icon_size_9353edea": { "message": "Cỡ Biểu Tượng" },
   "if_you_do_not_select_usage_rights_now_this_file_wi_14e07ab5": {
     "message": "Nếu bạn không chọn quyền sử dụng lúc này thì tập tin sẽ không được công bố sau khi tải lên."
   },
   "image_8ad06": { "message": "Hình Ảnh" },
   "image_options_5412d02c": { "message": "Tùy Chọn Hình Ảnh" },
   "image_options_tray_90a46006": { "message": "Khay Tùy Chọn Hình Ảnh" },
+  "image_to_crop_3a34487d": { "message": "Hình ảnh để cắt gọt" },
   "images_7ce26570": { "message": "Hình Ảnh" },
   "increase_indent_6d550a4a": { "message": "Tăng thụt lề" },
+  "indigo_2035fc55": { "message": "Chàm" },
   "insert_593145ef": { "message": "Chèn" },
   "insert_equella_links_49a8dacd": { "message": "Chèn Liên Kết Equella" },
   "insert_link_6dc23cae": { "message": "Chèn Liên Kết" },
@@ -277,8 +307,14 @@ const locale = {
   "invalid_file_type_881cc9b2": { "message": "Loại tập tin không hợp lệ" },
   "invalid_url_cbde79f": { "message": "URL không hợp lệ" },
   "keyboard_shortcuts_ed1844bd": { "message": "Phím Tắt" },
+  "language_arts_icon_a798b0f8": {
+    "message": "Biểu Tượng Nghệ Thuật Ngôn Ngữ"
+  },
+  "languages_icon_9d20539": { "message": "Biểu Tượng Ngôn Ngữ" },
   "large_9c5e80e7": { "message": "Lớn" },
   "left_to_right_e9b4fd06": { "message": "Trái Sang Phải" },
+  "library_icon_ae1e54cf": { "message": "Biểu Tượng Thư Viện" },
+  "light_blue_5374f600": { "message": "Xanh Dương Nhạt" },
   "link_7262adec": { "message": "Liên Kết" },
   "link_options_a16b758b": { "message": "Tùy Chọn Liên Kết" },
   "links_14b70841": { "message": "Liên Kết" },
@@ -290,18 +326,30 @@ const locale = {
   "loading_failed_e6a9d8ef": { "message": "Tải thất bại." },
   "loading_folders_d8b5869e": { "message": "Đang tải thư mục" },
   "loading_please_wait_d276220a": { "message": "Đang tải, vui lòng chờ" },
+  "loading_preview_9f077aa1": { "message": "Đang tải bản xem trước" },
   "locked_762f138b": { "message": "Bị Khóa" },
+  "magenta_4a65993c": { "message": "Hồng Sẫm" },
+  "math_icon_ad4e9d03": { "message": "Biểu Tượng Toán" },
   "media_af190855": { "message": "Phương Tiện" },
+  "media_file_is_processing_please_try_again_later_58a6d49": {
+    "message": "Tập tin phương tiện đang xử lý. Vui lòng thử lại sau."
+  },
   "medium_5a8e9ead": { "message": "Trung bình" },
   "middle_27dc1d5": { "message": "Giữa" },
+  "misc_3b692ea7": { "message": "Hỗn hợp" },
   "miscellaneous_e9818229": { "message": "Tổng Hợp" },
   "modules_c4325335": { "message": "Học Phần" },
   "multi_color_image_63d7372f": { "message": "Ảnh Nhiều Màu" },
+  "music_icon_4db5c972": { "message": "Biểu Tượng Âm Nhạc" },
+  "must_be_at_least_percentage_22e373b6": {
+    "message": "Ít nhất phải bằng { percentage }%"
+  },
   "must_be_at_least_width_x_height_px_41dc825e": {
     "message": "Phải ít nhất { width } x { height }px"
   },
   "my_files_2f621040": { "message": "Tập tin của tôi" },
   "name_1aed4a1b": { "message": "Tên" },
+  "name_color_ceec76ff": { "message": "{ name } ({ color })" },
   "navigate_through_the_menu_or_toolbar_415a4e50": {
     "message": "Điều hướng qua menu hoặc thanh công cụ"
   },
@@ -321,11 +369,13 @@ const locale = {
   "none_3b5e34d2": { "message": "Không Có" },
   "none_selected_b93d56d2": { "message": "Chưa Chọn Gì" },
   "octagon_e48be9f": { "message": "Bát Giác" },
+  "olive_6a3e4d6b": { "message": "Ô liu" },
   "open_this_keyboard_shortcuts_dialog_9658b83a": {
     "message": "Mở hộp thoại phím tắt này"
   },
   "open_title_application_fd624fc5": { "message": "Mở ứng dụng { title }" },
-  "options_3ab0ea65": { "message": "Tùy Chọn" },
+  "operators_a2ef9a93": { "message": "Toán Tử" },
+  "orange_81386a62": { "message": "Cam" },
   "ordered_and_unordered_lists_cfadfc38": {
     "message": "Danh Sách Theo Thứ Tự Và Không Theo Thứ Tự"
   },
@@ -337,7 +387,18 @@ const locale = {
   },
   "pages_e5414c2c": { "message": "Trang" },
   "paragraph_5e5ad8eb": { "message": "Đoạn" },
+  "pentagon_17d82ea3": { "message": "Hình Ngũ Giác" },
   "people_b4ebb13c": { "message": "Mọi Người" },
+  "percentage_34ab7c2c": { "message": "Phần Trăm" },
+  "percentage_must_be_a_number_8033c341": { "message": "Phần trăm phải là số" },
+  "performing_arts_icon_f3497486": {
+    "message": "Biểu Tượng Nghệ Thuật Biểu Diễn"
+  },
+  "physical_education_icon_d7dffd3e": {
+    "message": "Biểu Tượng Giáo Dục Thể Chất"
+  },
+  "pink_68ad45cb": { "message": "Hồng" },
+  "pixels_52ece7d1": { "message": "Pixel" },
   "posted_when_a578f5ab": { "message": "Đã đăng: { when }" },
   "preformatted_d0670862": { "message": "Đã định dạng trước" },
   "pretty_html_editor_28748756": { "message": "Trình Chỉnh Sửa HTML Đẹp" },
@@ -350,24 +411,34 @@ const locale = {
   },
   "published_c944a23d": { "message": "đã công bố" },
   "published_when_302d8e23": { "message": "Đã Phát Hành: { when }" },
+  "pumpkin_904428d5": { "message": "Bí Ngô" },
+  "purple_7678a9fc": { "message": "Tía" },
   "quizzes_7e598f57": { "message": "Các Câu Hỏi Kiểm Tra" },
   "raw_html_editor_e3993e41": { "message": "Trình Chỉnh Sửa HTML Thô" },
   "record_7c9448b": { "message": "Ghi" },
   "record_upload_media_5fdce166": {
     "message": "Ghi/Tải Lên Nội Dung Phương Tiện"
   },
+  "red_8258edf3": { "message": "Đỏ" },
+  "relationships_6602af70": { "message": "Mối Quan Hệ" },
+  "religion_icon_246e0be1": { "message": "Biểu Tượng Tôn Giáo" },
   "remove_link_d1f2f4d0": { "message": "Gỡ Liên Kết" },
   "resize_ec83d538": { "message": "Đổi Cỡ" },
   "restore_auto_save_deccd84b": { "message": "Khôi phục tự động lưu?" },
   "rich_content_editor_2708ef21": {
     "message": "Trình Chỉnh Sửa Nội Dung Phong Phú"
   },
+  "rich_text_area_press_alt_0_for_rich_content_editor_9d23437f": {
+    "message": "Khu Vực Văn Bản Phong Phú. Nhấn ALT+0 để dùng các phím tắt của Trình Chỉnh Sửa Nội Dung Phong Phú."
+  },
   "right_to_left_9cfb092a": { "message": "Phải Sang Trái" },
   "sadly_the_pretty_html_editor_is_not_keyboard_acces_50da7665": {
     "message": "Rất tiếc, không thể sử dụng bàn phím trong trình chỉnh sửa HTML đẹp. Truy cập trình chỉnh sửa HTML thô ở đây."
   },
   "save_11a80ec3": { "message": "Lưu" },
-  "saved_buttons_and_icons_8278eed2": { "message": "Nút Và Biểu Tượng Đã Lưu" },
+  "saved_icon_maker_icons_df86e2a1": {
+    "message": "Biểu Tượng Trình Tạo Biểu Tượng Đã Lưu"
+  },
   "search_280d00bd": { "message": "Tìm Kiếm" },
   "search_term_b2d2235": { "message": "Từ Khóa Tìm Kiếm" },
   "select_crop_shape_d441feeb": { "message": "Chọn hình dạng cắt gọt" },
@@ -376,11 +447,12 @@ const locale = {
   "shift_o_to_open_the_pretty_html_editor_55ff5a31": {
     "message": "Nhấn Shift-O để mở trình chỉnh sửa html đẹp."
   },
-  "show_embed_options_ef8d7ef": { "message": "Hiển thị tùy chọn nhúng" },
+  "show_audio_options_b489926b": { "message": "Hiển thị tùy chọn âm thanh" },
   "show_image_options_1e2ecc6b": { "message": "Hiển thị tùy chọn hình ảnh" },
   "show_link_options_545338fd": { "message": "Hiển thị tùy chọn liên kết" },
   "show_video_options_6ed3721a": { "message": "Hiển thị tùy chọn video" },
   "single_color_image_4e5d4dbc": { "message": "Ảnh Đơn Màu" },
+  "single_color_image_color_95fa9a87": { "message": "Màu Hình Ảnh Đơn Màu" },
   "size_b30e1077": { "message": "Cỡ" },
   "size_of_caption_file_is_greater_than_the_maximum_m_bff5f86e": {
     "message": "Kích cỡ tập tin phụ đề lớn hơn mức kích thước tập tin tối đa là { max } kb."
@@ -390,22 +462,14 @@ const locale = {
   "something_went_wrong_and_i_don_t_know_what_to_show_e0c54ec8": {
     "message": "Đã xảy ra vấn đề và tôi không biết phải hiển thị gì cho bạn."
   },
-  "something_went_wrong_check_your_connection_and_try_2a7b2d13": {
-    "message": "Đã xảy ra vấn đề, hãy kiểm tra kết nối của bạn rồi thử lại."
-  },
   "something_went_wrong_d238c551": { "message": "Đã xảy ra vấn đề" },
-  "something_went_wrong_try_again_after_refreshing_th_e094eb8d": {
-    "message": "Đã xảy ra vấn đề, hãy làm mới trang rồi thử lại"
-  },
-  "something_went_wrong_uploading_check_your_connecti_aa201f15": {
-    "message": "Đã xảy ra vấn đề khi tải lên, hãy kiểm tra kết nối của bạn rồi thử lại."
-  },
   "sort_by_e75f9e3e": { "message": "Sắp Xếp Theo" },
   "square_511eb3b3": { "message": "Vuông" },
   "square_unordered_list_b15ce93b": {
     "message": "danh sách không theo thứ tự vuông"
   },
   "star_8d156e09": { "message": "Sao" },
+  "steel_blue_14296f08": { "message": "Xanh Thép" },
   "styles_2aa721ef": { "message": "Kiểu" },
   "submit_a3cc6859": { "message": "Nộp" },
   "subscript_59744f96": { "message": "Thu Nhỏ Nằm Trên" },
@@ -421,6 +485,7 @@ const locale = {
   },
   "syllabus_f191f65b": { "message": "Chương Trình Học" },
   "tab_arrows_4cf5abfc": { "message": "TAB/Mũi Tên" },
+  "teal_f729a294": { "message": "Xanh Mòng Két" },
   "text_7f4593da": { "message": "Văn Bản" },
   "text_background_color_16e61c3f": { "message": "Màu Nền Văn Bản" },
   "text_color_acf75eb6": { "message": "Màu Văn Bản" },
@@ -470,9 +535,6 @@ const locale = {
     "message": "Tải Lên/Ghi Nội Dung Phương Tiện"
   },
   "uploading_19e8a4e7": { "message": "Đang Tải Lên" },
-  "uploading_closed_captions_subtitles_failed_bc093f3": {
-    "message": "Tải lên phụ đề thất bại."
-  },
   "uppercase_alphabetic_ordered_list_3f5aa6b2": {
     "message": "danh sách theo thứ tự bảng chữ cái viết hoa"
   },
@@ -521,6 +583,7 @@ const locale = {
   "view_keyboard_shortcuts_34d1be0b": { "message": "Xem phím tắt" },
   "view_predefined_colors_92f5db39": { "message": "Xem màu xác định trước" },
   "view_title_description_67940918": { "message": "Xem mô tả { title }" },
+  "white_87fa64fd": { "message": "Trắng" },
   "width_492fec76": { "message": "Chiều Rộng" },
   "width_and_height_must_be_numbers_110ab2e3": {
     "message": "Chiều rộng và chiều cao phải là số"
@@ -530,7 +593,9 @@ const locale = {
   "yes_dde87d5": { "message": "Có" },
   "you_may_not_upload_an_empty_file_11c31eb2": {
     "message": "Bạn không được tải lên tập tin trống."
-  }
+  },
+  "zoom_in_image_bb97d4f": { "message": "Phóng to hình ảnh" },
+  "zoom_out_image_d0a0a2ec": { "message": "Thu nhỏ hình ảnh" }
 }
 
 

@@ -288,6 +288,85 @@ describe WikiPage do
       user_factory(active_all: true)
       expect(page.can_edit_page?(@user)).to be_truthy
     end
+
+    context "when the page's course is concluded" do
+      subject { page.can_edit_page? teacher }
+
+      let(:editing_roles) { "" }
+      let(:teacher) { course.teachers.first }
+
+      let(:course) do
+        course_with_teacher(active_all: true)
+        @course.update!(workflow_state: "completed")
+        @course
+      end
+
+      let(:page) do
+        course.wiki_pages.create(
+          title: "A Page",
+          editing_roles: editing_roles,
+          workflow_state: "published"
+        )
+      end
+
+      context "with 'teachers' as the editing role" do
+        let(:editing_roles) { "teachers" }
+
+        it "returns false for a teacher" do
+          expect(subject).to eq false
+        end
+      end
+
+      context "with 'teachers,students' as the editing role" do
+        let(:editing_roles) { "teachers,students" }
+
+        it "returns false for a teacher" do
+          expect(subject).to eq false
+        end
+      end
+
+      context "with 'teachers,students,public' as the editing role" do
+        let(:editing_roles) { "teachers,students,public" }
+
+        it "returns false for a teacher" do
+          expect(subject).to eq false
+        end
+      end
+    end
+
+    context "when the context is a Group" do
+      subject { page.can_edit_page?(current_user) }
+
+      let(:current_user) { nil }
+      let(:teacher) { course.teachers.first }
+      let(:group) { group_model(context: course) }
+
+      let(:course) do
+        course_with_teacher(active_all: true)
+        @course
+      end
+
+      let(:page) do
+        group.wiki_pages.create(
+          title: "A Page",
+          workflow_state: "published"
+        )
+      end
+
+      context "when the current user is a teacher in the group's course" do
+        let(:current_user) { teacher }
+
+        it { is_expected.to eq true }
+      end
+
+      context "when the current user is a concluded teacher" do
+        before { course.teacher_enrollments.find_by(user: teacher).conclude }
+
+        let(:current_user) { teacher }
+
+        it { is_expected.to eq false }
+      end
+    end
   end
 
   context "initialize_wiki_page" do
@@ -535,7 +614,8 @@ describe WikiPage do
     before(:once) { course_factory }
 
     it "destroys its assignment if enabled" do
-      @course.enable_feature!(:conditional_release)
+      @course.conditional_release = true
+      @course.save!
       wiki_page_assignment_model course: @course
       @page.destroy
       expect(@page.reload).to be_deleted
@@ -570,7 +650,8 @@ describe WikiPage do
     end
 
     it "restores a linked assignment if enabled" do
-      @course.enable_feature!(:conditional_release)
+      @course.conditional_release = true
+      @course.save!
       wiki_page_assignment_model course: @course
       @page.workflow_state = "deleted"
       @page.save!

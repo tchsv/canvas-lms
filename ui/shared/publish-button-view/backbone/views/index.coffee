@@ -15,11 +15,13 @@
 # You should have received a copy of the GNU Affero General Public License along
 # with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import I18n from 'i18n!publish_btn_module'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import $ from 'jquery'
 import Backbone from '@canvas/backbone'
 import htmlEscape from 'html-escape'
 import '@canvas/forms/jquery/jquery.instructure_forms'
+
+I18n = useI18nScope('publish_btn_module')
 
 export default class PublishButton extends Backbone.View
   disabledClass: 'disabled'
@@ -221,6 +223,7 @@ export default class PublishButton extends Backbone.View
     # unpublishable (i.e., able to be unpublished)
     else if !@model.get('unpublishable')? or @model.get('unpublishable')
       @enable()
+      @$el.data 'tooltip', 'left'
       @$el.attr 'title', options.text
 
       # label for screen readers
@@ -235,4 +238,5 @@ export default class PublishButton extends Backbone.View
     @disable()
     @$el.attr 'aria-disabled', true
     @$el.attr 'title', message
+    @$el.data 'tooltip', 'left'
     @addAriaLabel(message)

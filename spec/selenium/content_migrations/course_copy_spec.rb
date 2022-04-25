@@ -30,6 +30,12 @@ describe "course copy" do
     expect(header.text).to eq @course.course_code
   end
 
+  def wait_for_migration_to_complete
+    keep_trying_for_attempt_times(attempts: 10, sleep_interval: 1) do
+      disable_implicit_wait { f("div.progressStatus").text == "Completed" }
+    end
+  end
+
   it "copies the course" do
     course_with_admin_logged_in
     @course.syllabus_body = "<p>haha</p>"
@@ -37,11 +43,12 @@ describe "course copy" do
     @course.default_view = "modules"
     @course.wiki_pages.create!(title: "hi", body: "Whatever")
     @course.save!
-
     get "/courses/#{@course.id}/copy"
     expect_new_page_load { f('button[type="submit"]').click }
+    expect(f("div.progressStatus").text.include?("Queued")).to eq(true)
     run_jobs
-    expect(f("div.progressStatus span")).to include_text "Completed"
+    wait_for_ajaximations
+    wait_for_migration_to_complete
 
     @new_course = Course.last
     expect(@new_course.syllabus_body).to eq @course.syllabus_body
@@ -49,9 +56,6 @@ describe "course copy" do
     expect(@new_course.default_view).to eq @course.default_view
     expect(@new_course.wiki_pages.count).to eq 1
   end
-
-  # TODO: reimplement per CNVS-29604, but make sure we're testing at the right level
-  it "should copy the course with different settings"
 
   it "sets the course name and code correctly" do
     course_with_admin_logged_in
@@ -123,12 +127,11 @@ describe "course copy" do
     get "/courses/#{@course.id}/settings"
     link = f(".copy_course_link")
     expect(link).to be_displayed
-
     expect_new_page_load { link.click }
-
     expect_new_page_load { f('button[type="submit"]').click }
     run_jobs
-    expect(f("div.progressStatus span")).to include_text "Completed"
+    wait_for_ajaximations
+    wait_for_migration_to_complete
 
     @new_course = subaccount.courses.where("id <>?", @course.id).last
     expect(@new_course.syllabus_body).to eq @course.syllabus_body

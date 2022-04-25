@@ -16,7 +16,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import I18n from 'i18n!discussion_posts'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import PropTypes from 'prop-types'
 import React, {useState} from 'react'
 
@@ -30,13 +30,15 @@ import {responsiveQuerySizes} from '../../utils/index'
 import {TrayDisplayer} from '../TrayDisplayer/TrayDisplayer'
 import {Flex} from '@instructure/ui-flex'
 
+const I18n = useI18nScope('discussion_posts')
+
 export function DiscussionAvailabilityContainer({...props}) {
   const [availabilityTrayOpen, setAvailabilityTrayOpen] = useState(false)
   const prefixText =
     props.anonymousState === 'full_anonymity'
-      ? I18n.t('Anonymous Discussion | ')
+      ? I18n.t('Anonymous Discussion')
       : props.anonymousState === 'partial_anonymity'
-      ? I18n.t('Partially Anonymous Discussion | ')
+      ? I18n.t('Partially Anonymous Discussion')
       : null
   let availabilities = []
   if (!props.groupSet) {
@@ -77,9 +79,11 @@ export function DiscussionAvailabilityContainer({...props}) {
                   availabilityWindowName={availabilities[0].name}
                   availableDate={props.delayedPostAt}
                   untilDate={props.lockAt}
+                  anonymousState={props.anonymousState}
                 />
               ) : (
                 <>
+                  {prefixText && <Text size={responsiveProps.textSize}>{' | '}</Text>}
                   <CondensedButton
                     onClick={() => {
                       setAvailabilityTrayOpen(true)

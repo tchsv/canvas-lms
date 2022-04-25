@@ -25,12 +25,14 @@ import {Heading} from '@instructure/ui-heading'
 import {Spinner} from '@instructure/ui-spinner'
 import {Tray} from '@instructure/ui-tray'
 
-import I18n from 'i18n!speed_grader'
+import {useScope as useI18nScope} from '@canvas/i18n'
 
 import AssessmentSummary from './components/AssessmentSummary'
 import AuditTrail from './components/AuditTrail/index'
 import Api from './Api'
 import buildAuditTrail from './buildAuditTrail'
+
+const I18n = useI18nScope('speed_grader')
 
 export default class AssessmentAuditTray extends Component {
   static propTypes = {
@@ -101,7 +103,7 @@ export default class AssessmentAuditTray extends Component {
         <View as="div" padding="small">
           <Flex as="div" margin="0 0 medium 0">
             <Flex.Item>
-              <CloseButton onClick={this.dismiss}>{I18n.t('Close')}</CloseButton>
+              <CloseButton onClick={this.dismiss} screenReaderLabel={I18n.t('Close')} />
             </Flex.Item>
 
             <Flex.Item margin="0 0 0 small">

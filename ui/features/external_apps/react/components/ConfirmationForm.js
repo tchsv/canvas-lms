@@ -17,11 +17,13 @@
  */
 
 import React from 'react'
-import I18n from 'i18n!external_tools'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import {Button} from '@instructure/ui-buttons'
 import {Text} from '@instructure/ui-text'
 import {View} from '@instructure/ui-view'
 import PropTypes from 'prop-types'
+
+const I18n = useI18nScope('external_tools')
 
 const ConfirmationForm = props => {
   const {cancelLabel, confirmLabel, onCancel, onConfirm, message} = props
@@ -37,7 +39,7 @@ const ConfirmationForm = props => {
         <Button onClick={onCancel} margin="0 x-small 0 0">
           {cancelLabel}
         </Button>
-        <Button onClick={onConfirm} variant="primary">
+        <Button onClick={onConfirm} color="primary">
           {confirmLabel}
         </Button>
       </View>

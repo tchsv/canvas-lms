@@ -87,6 +87,20 @@ it('changes the output when message_type changes', () => {
   ])
 })
 
+it('removes target_link_uri from the placement if it is empty', () => {
+  const wrapper = mount(<Placement {...props()} />)
+  wrapper.instance().handleTargetLinkUriChange({target: {value: ''}})
+  const placement = wrapper.instance().generateToolConfigurationPart()
+  expect(Object.keys(placement)).not.toContain('target_link_uri')
+})
+
+it('removes selection_width from the placement if it is empty', () => {
+  const wrapper = mount(<Placement {...props()} />)
+  wrapper.instance().handleSelectionWidthChange({target: {value: ''}})
+  const placement = wrapper.instance().generateToolConfigurationPart()
+  expect(Object.keys(placement)).not.toContain('selection_width')
+})
+
 it('cleans up invalid inputs', () => {
   const wrapper = mount(<Placement {...props({placementOverrides: {message_type: undefined}})} />)
   expect(wrapper.instance().valid()).toEqual(true)
@@ -117,11 +131,12 @@ const couldBeEither = [
   'link_selection',
   'course_assignments_menu',
   'collaboration',
-  'module_index_menu_modal'
+  'module_index_menu_modal',
+  'module_menu_modal'
 ]
 
 couldBeEither.forEach(placementName => {
-  if (placementName === 'course_assignments_menu') {
+  if (['course_assignments_menu', 'module_menu_modal'].includes(placementName)) {
     beforeAll(() => {
       global.ENV.FEATURES ||= {}
       global.ENV.FEATURES.lti_multiple_assignment_deep_linking = true
@@ -143,7 +158,7 @@ couldBeEither.forEach(placementName => {
     })
   }
 
-  it('displays alert when placement supports deep linking and resource link and deep linking chosen', () => {
+  it(`${placementName}: displays alert when placement supports deep linking and resource link and deep linking chosen`, () => {
     const wrapper = mount(
       <Placement {...props({placementName}, {message_type: 'LtiDeepLinkingRequest'})} />
     )
@@ -151,7 +166,7 @@ couldBeEither.forEach(placementName => {
     expect(wrapper.exists('Alert')).toBeTruthy()
   })
 
-  it('does not display alert when placement supports deep linking and resource link and deep linking chosen', () => {
+  it(`${placementName}: does not display alert when placement supports deep linking and resource link and deep linking chosen`, () => {
     const wrapper = mount(<Placement {...props({placementName})} />)
     wrapper.find('ToggleDetails').simulate('click')
     expect(wrapper.exists('Alert')).toBeFalsy()

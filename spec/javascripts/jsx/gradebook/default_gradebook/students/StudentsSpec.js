@@ -19,7 +19,7 @@
 import {
   createGradebook,
   setFixtureHtml
-} from 'ui/features/gradebook/react/default_gradebook/__tests__/GradebookSpecHelper.js'
+} from 'ui/features/gradebook/react/default_gradebook/__tests__/GradebookSpecHelper'
 
 QUnit.module('Gradebook > Students', suiteHooks => {
   let $container
@@ -341,7 +341,7 @@ QUnit.module('Gradebook > Students', suiteHooks => {
     })
 
     test('builds rows when filtering with search', () => {
-      gradebook.userFilterTerm = 'searching'
+      gradebook.filteredStudentIds = [1101]
       sinon.spy(gradebook, 'buildRows')
       gradebook.gotChunkOfStudents(studentData)
       strictEqual(gradebook.buildRows.callCount, 1)

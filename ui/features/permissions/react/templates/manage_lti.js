@@ -16,14 +16,16 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import I18n from 'i18n!permissions_templates_28'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import {generateActionTemplates} from '../generateActionTemplates'
+
+const I18n = useI18nScope('permissions_templates_28')
 
 export const template = generateActionTemplates(
   [
     {
       title: I18n.t('LTI - add'),
-      description: I18n.t('Allows user to manually add and delete an app in Account Settings.')
+      description: I18n.t('Allows user to manually add an app in Account Settings.')
     },
     {
       description: I18n.t(
@@ -31,14 +33,14 @@ export const template = generateActionTemplates(
       )
     },
     {
-      description: I18n.t('Allows user to manually add and delete an app in Course Settings.')
+      description: I18n.t('Allows user to manually add an app in Course Settings.')
     },
     {
       title: I18n.t('LTI - delete'),
       description: I18n.t('Allows user to manually delete an app in Account Settings.')
     },
     {
-      description: I18n.t('Allows user to manually add and delete an app in Course Settings.')
+      description: I18n.t('Allows user to manually delete an app in Course Settings.')
     },
     {
       title: I18n.t('LTI - edit'),
@@ -56,11 +58,11 @@ export const template = generateActionTemplates(
   [
     {
       title: I18n.t('LTI - add'),
-      description: I18n.t('Allows user to manually add and delete an app in Course Settings.')
+      description: I18n.t('Allows user to manually add an app in Course Settings.')
     },
     {
       title: I18n.t('LTI - delete'),
-      description: I18n.t('Allows user to manually add and delete an app in Course Settings.')
+      description: I18n.t('Allows user to manually delete an app in Course Settings.')
     },
     {
       title: I18n.t('LTI - edit'),

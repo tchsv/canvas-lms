@@ -58,6 +58,8 @@ export function getInitialGridDisplaySettings(settings, colors): GridDisplaySett
     enterGradesAs: settings.enter_grades_as || {},
     filterColumnsBy,
     filterRowsBy,
+    hideAssignmentGroupTotals: settings.hide_assignment_group_totals === 'true',
+    hideTotal: settings.hide_total === 'true',
     selectedPrimaryInfo,
     selectedSecondaryInfo,
     selectedViewOptionsFilters: settings.selected_view_options_filters || [],
@@ -79,9 +81,9 @@ export function getInitialGridDisplaySettings(settings, colors): GridDisplaySett
       commentsUpdating: false,
       editedCommentId: null
     },
-    viewUngradedAsZero: settings.view_ungraded_as_zero === 'true',
-    showUnpublishedAssignments: false,
-    showSeparateFirstLastNames: false
+    showUnpublishedAssignments: settings.show_unpublished_assignments === 'true',
+    showSeparateFirstLastNames: settings.show_separate_first_last_names === 'true',
+    viewUngradedAsZero: settings.view_ungraded_as_zero === 'true'
   }
 }
 

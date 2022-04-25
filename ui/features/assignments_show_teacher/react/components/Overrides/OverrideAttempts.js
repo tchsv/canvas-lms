@@ -17,7 +17,7 @@
  */
 import React from 'react'
 import {bool, oneOf, number} from 'prop-types'
-import I18n from 'i18n!assignments_2'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import {requiredIfDetail} from '../../assignmentData'
 import {View} from '@instructure/ui-view'
 import {Flex} from '@instructure/ui-flex'
@@ -27,6 +27,8 @@ import {Select} from '@instructure/ui-select'
 import {Text} from '@instructure/ui-text'
 
 import NumberHelper from '@canvas/i18n/numberHelper'
+
+const I18n = useI18nScope('assignments_2')
 
 /*
  *  CAUTION: The InstUI Select component is greatly changed in v7.
@@ -107,9 +109,9 @@ export default class OverrideAttempts extends React.Component {
         <Flex.Item margin="small 0 0" data-testid="OverrideAttempts-Attempts">
           <NumberInput
             readOnly={this.props.readOnly}
-            inline
+            display="inline-block"
             width="5.5rem"
-            label={<ScreenReaderContent>Attempts</ScreenReaderContent>}
+            renderLabel={<ScreenReaderContent>Attempts</ScreenReaderContent>}
             min={1}
             value={`${limit}`}
             onChange={this.onChangeAttemptLimit}
@@ -130,7 +132,7 @@ export default class OverrideAttempts extends React.Component {
   renderDetail() {
     return (
       <View display="block" margin="0 0 small 0" data-testid="OverrideAttempts-Detail">
-        <Flex alignItems="end" margin="0 0 small 0" wrapItems>
+        <Flex alignItems="end" margin="0 0 small 0" wrap="wrap">
           {this.renderLimit()}
           {this.renderAttempts()}
         </Flex>

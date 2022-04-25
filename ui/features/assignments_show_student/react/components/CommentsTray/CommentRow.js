@@ -22,11 +22,15 @@ import {Avatar} from '@instructure/ui-avatar'
 import {Button} from '@instructure/ui-buttons'
 import FriendlyDatetime from '@canvas/datetime/react/components/FriendlyDatetime'
 import {getIconByType} from '@canvas/mime/react/mimeClassIconHelper'
-import I18n from 'i18n!assignments_2'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import React from 'react'
 import {ScreenReaderContent} from '@instructure/ui-a11y-content'
 import {SubmissionComment} from '@canvas/assignments/graphql/student/SubmissionComment'
 import {MediaPlayer} from '@instructure/ui-media-player'
+
+import {Link} from '@instructure/ui-link'
+
+const I18n = useI18nScope('assignments_2')
 
 export default function CommentRow(props) {
   const {author, mediaObject, read} = props.comment
@@ -77,15 +81,15 @@ export default function CommentRow(props) {
           {props.comment.comment}
         </Text>
         {props.comment.attachments.map(attachment => (
-          <Button
-            variant="link"
+          <Link
             key={attachment._id}
             href={attachment.url}
-            icon={getIconByType(attachment.mimeClass)}
+            isWithinText={false}
+            renderIcon={getIconByType(attachment.mimeClass)}
             theme={{mediumPaddingHorizontal: '0', mediumHeight: 'normal'}}
           >
             {attachment.displayName}
-          </Button>
+          </Link>
         ))}
         {mediaObject && <MediaPlayer tracks={mediaTracks} sources={mediaObject.mediaSources} />}
       </div>

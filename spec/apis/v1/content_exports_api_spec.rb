@@ -639,7 +639,7 @@ describe ContentExportsApiController, type: :request do
       @cm = @course.context_modules.create!(name: "some module")
       @att = Attachment.create!(filename: "first.txt", uploaded_data: StringIO.new("ohai"), folder: Folder.unfiled_folder(@course), context: @course)
       @wiki = @course.wiki_pages.create!(title: "wiki", body: "ohai")
-      @course.pace_plans.create!
+      @course.course_paces.create!
 
       @quiz = @course.quizzes.create!(title: "quizz")
       @quiz.did_edit
@@ -653,9 +653,9 @@ describe ContentExportsApiController, type: :request do
         { "type" => "assignments", "property" => "select[all_assignments]", "title" => "Assignments", "count" => 1, "sub_items_url" => "http://www.example.com/api/v1/courses/#{@course.id}/content_list?type=assignments" },
         { "type" => "attachments", "property" => "select[all_attachments]", "title" => "Files", "count" => 1, "sub_items_url" => "http://www.example.com/api/v1/courses/#{@course.id}/content_list?type=attachments" },
         { "type" => "context_modules", "property" => "select[all_context_modules]", "title" => "Modules", "count" => 1, "sub_items_url" => "http://www.example.com/api/v1/courses/#{@course.id}/content_list?type=context_modules" },
+        { "type" => "course_paces", "property" => "select[all_course_paces]", "title" => "Course Pace" },
         { "type" => "course_settings", "property" => "select[all_course_settings]", "title" => "Course Settings" },
         { "type" => "discussion_topics", "property" => "select[all_discussion_topics]", "title" => "Discussion Topics", "count" => 1, "sub_items_url" => "http://www.example.com/api/v1/courses/#{@course.id}/content_list?type=discussion_topics" },
-        { "type" => "pace_plans", "property" => "select[all_pace_plans]", "title" => "Pace Plan" },
         { "type" => "quizzes", "property" => "select[all_quizzes]", "title" => "Quizzes", "count" => 1, "sub_items_url" => "http://www.example.com/api/v1/courses/#{@course.id}/content_list?type=quizzes" },
         { "type" => "syllabus_body", "property" => "select[all_syllabus_body]", "title" => "Syllabus Body" },
         { "type" => "wiki_pages", "property" => "select[all_wiki_pages]", "title" => "Pages", "count" => 2, "sub_items_url" => "http://www.example.com/api/v1/courses/#{@course.id}/content_list?type=wiki_pages" }
@@ -764,6 +764,17 @@ describe ContentExportsApiController, type: :request do
         @file2 = attachment_model context: t_course, display_name: "file2.txt", folder: @sub_folder, uploaded_data: stub_file_data("file2.txt", "file2", "text/plain")
         @empty_folder = t_course.folders.create! name: "empty_folder", parent_folder: @sub_folder
         @hiddenfile = attachment_model context: t_course, display_name: "hidden.txt", folder: @root_folder, uploaded_data: stub_file_data("hidden.txt", "hidden", "text/plain"), hidden: true
+      end
+
+      it "applies user time zone to export when present in user settings" do
+        target_time_zone = "America/Denver"
+        t_teacher.update!(time_zone: target_time_zone)
+        json = api_call_as_user(t_teacher, :post, "/api/v1/courses/#{t_course.id}/content_exports?export_type=zip",
+                                { controller: "content_exports_api", action: "create", format: "json", course_id: t_course.to_param, export_type: "zip" })
+        run_jobs
+        export = t_course.content_exports.where(id: json["id"]).first
+        expect(export).to be_present
+        expect(export.settings[:user_time_zone]).to eq(target_time_zone)
       end
 
       it "downloads course files" do

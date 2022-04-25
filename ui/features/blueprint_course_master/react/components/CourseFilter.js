@@ -16,7 +16,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import I18n from 'i18n!blueprint_settingsCourseFilter'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import React from 'react'
 import PropTypes from 'prop-types'
 import {TextInput} from '@instructure/ui-text-input'
@@ -24,6 +24,8 @@ import {ScreenReaderContent} from '@instructure/ui-a11y-content'
 import {Flex} from '@instructure/ui-flex'
 import CanvasSelect from '@canvas/instui-bindings/react/Select'
 import propTypes from '@canvas/blueprint-courses/react/propTypes'
+
+const I18n = useI18nScope('blueprint_settingsCourseFilter')
 
 const {func} = PropTypes
 const MIN_SEACH = 3 // min search term length for API
@@ -131,7 +133,7 @@ export default class CourseFilter extends React.Component {
           this.wrapper = c
         }}
       >
-        <Flex wrapItems>
+        <Flex wrap="wrap">
           <Flex.Item grow padding="0 x-small x-small 0">
             <TextInput
               ref={c => {
@@ -142,7 +144,7 @@ export default class CourseFilter extends React.Component {
               onFocus={this.handleFocus}
               onBlur={this.handleBlur}
               placeholder={I18n.t('Search by title, short name, or SIS ID')}
-              label={<ScreenReaderContent>{I18n.t('Search Courses')}</ScreenReaderContent>}
+              renderLabel={<ScreenReaderContent>{I18n.t('Search Courses')}</ScreenReaderContent>}
             />
           </Flex.Item>
           <Flex.Item padding="0 x-small x-small 0">

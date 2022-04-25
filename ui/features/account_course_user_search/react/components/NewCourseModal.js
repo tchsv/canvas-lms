@@ -24,12 +24,14 @@ import {FormFieldGroup} from '@instructure/ui-form-field'
 import {TextInput} from '@instructure/ui-text-input'
 import {propType as termsPropType} from '../store/TermsStore'
 import SearchableSelect from './SearchableSelect'
-import I18n from 'i18n!account_course_user_search'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import CoursesStore from '../store/CoursesStore'
 import AccountsTreeStore from '../store/AccountsTreeStore'
 import {showFlashAlert, showFlashError} from '@canvas/alerts/react/FlashAlert'
 import preventDefault from 'prevent-default'
 import {flatten} from 'lodash'
+
+const I18n = useI18nScope('account_course_user_search')
 
 const nonBreakingSpace = '\u00a0'
 const renderAccountOptions = (accounts = [], depth = 0) =>
@@ -86,7 +88,7 @@ export default function NewCourseModal({terms, children}) {
   }
 
   function onChange(field) {
-    return function(e, value) {
+    return function (e, value) {
       setData(oldState => ({...oldState, [field]: value.id || value}))
       setErrors({})
     }
@@ -151,7 +153,7 @@ export default function NewCourseModal({terms, children}) {
         </Modal.Body>
         <Modal.Footer>
           <Button onClick={closeModal}>{I18n.t('Cancel')}</Button> &nbsp;
-          <Button type="submit" variant="primary">
+          <Button type="submit" color="primary">
             {I18n.t('Add Course')}
           </Button>
         </Modal.Footer>

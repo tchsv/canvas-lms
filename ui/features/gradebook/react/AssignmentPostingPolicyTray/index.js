@@ -23,11 +23,13 @@ import {Flex} from '@instructure/ui-flex'
 import {TruncateText} from '@instructure/ui-truncate-text'
 import {Heading} from '@instructure/ui-heading'
 import {Tray} from '@instructure/ui-tray'
-import I18n from 'i18n!post_grades_tray'
+import {useScope as useI18nScope} from '@canvas/i18n'
 
 import Layout from './Layout'
 import {setAssignmentPostPolicy} from './Api'
 import {showFlashAlert} from '@canvas/alerts/react/FlashAlert'
+
+const I18n = useI18nScope('post_grades_tray')
 
 export default class AssignmentPostingPolicyTray extends PureComponent {
   constructor(props) {
@@ -108,7 +110,7 @@ export default class AssignmentPostingPolicyTray extends PureComponent {
         <View as="div" padding="small">
           <Flex as="div" alignItems="start" margin="0 0 medium 0">
             <Flex.Item>
-              <CloseButton onClick={this.handleDismiss}>{I18n.t('Close')}</CloseButton>
+              <CloseButton onClick={this.handleDismiss} screenReaderLabel={I18n.t('Close')} />
             </Flex.Item>
 
             <Flex.Item margin="0 0 0 small" shrink>

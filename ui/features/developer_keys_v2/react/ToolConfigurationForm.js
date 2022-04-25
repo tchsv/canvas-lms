@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import I18n from 'i18n!react_developer_keys'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import PropTypes from 'prop-types'
 import React from 'react'
 
@@ -27,6 +27,8 @@ import {Grid} from '@instructure/ui-grid'
 import {View} from '@instructure/ui-view'
 
 import ManualConfigurationForm from './ManualConfigurationForm/index'
+
+const I18n = useI18nScope('react_developer_keys')
 
 const validationMessageInvalidJson = [
   {text: I18n.t('Json is not valid. Please submit properly formatted json.'), type: 'error'}
@@ -108,7 +110,7 @@ export default class ToolConfigurationForm extends React.Component {
         name="tool_configuration_url"
         value={this.props.toolConfigurationUrl}
         onChange={this.updateToolConfigurationUrl}
-        label={I18n.t('JSON URL')}
+        renderLabel={I18n.t('JSON URL')}
         messages={this.props.showRequiredMessages ? validationMessageRequiredField : []}
       />
     )

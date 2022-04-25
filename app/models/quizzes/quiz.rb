@@ -59,6 +59,7 @@ class Quizzes::Quiz < ActiveRecord::Base
   validates :points_possible, numericality: { less_than_or_equal_to: 2_000_000_000, allow_nil: true }
   validate :validate_quiz_type, if: :quiz_type_changed?
   validate :validate_ip_filter, if: :ip_filter_changed?
+  validate :validate_time_limit, if: :time_limit_changed?
   validate :validate_hide_results, if: :hide_results_changed?
   validate :validate_correct_answer_visibility, if: lambda { |quiz|
     quiz.show_correct_answers_at_changed? ||
@@ -440,7 +441,10 @@ class Quizzes::Quiz < ActiveRecord::Base
   def update_assignment
     delay_if_production.set_unpublished_question_count if id
     if !assignment_id && @old_assignment_id
-      context_module_tags.preload(context_module: :content_tags).each(&:confirm_valid_module_requirements)
+      context_module_tags.preload(context_module: :content_tags).find_each do |cmt|
+        cmt.confirm_valid_module_requirements
+        cmt.update_course_pace_module_items
+      end
     end
     if !graded? && (@old_assignment_id || last_assignment_id)
       ::Assignment.where(
@@ -486,6 +490,7 @@ class Quizzes::Quiz < ActiveRecord::Base
       end
       self.assignment_id = a.id
       Quizzes::Quiz.where(id: self).update_all(assignment_id: a.id)
+      context_module_tags.find_each(&:update_course_pace_module_items)
     end
   end
 
@@ -946,6 +951,14 @@ class Quizzes::Quiz < ActiveRecord::Base
       ip_filter.split(",").each { |filter| ::IPAddr.new(filter) }
     rescue
       errors.add(:invalid_ip_filter, t("#quizzes.quiz.errors.invalid_ip_filter", "IP filter is not valid"))
+    end
+  end
+
+  def validate_time_limit
+    return if time_limit.blank?
+
+    unless time_limit > 0
+      errors.add(:time_limit, t("#quizzes.quiz.errors.invalid_time_limit", "Time Limit is not valid"))
     end
   end
 

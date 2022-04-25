@@ -142,7 +142,7 @@ class WikiPagesApiController < ApplicationController
   before_action :require_wiki_page, except: %i[create update update_front_page index]
   before_action :was_front_page, except: [:index]
   before_action only: %i[show update destroy revisions show_revision revert] do
-    check_differentiated_assignments(@page) if @context.feature_enabled?(:conditional_release)
+    check_differentiated_assignments(@page) if @context.conditional_release?
   end
 
   include Api::V1::WikiPage
@@ -330,12 +330,14 @@ class WikiPagesApiController < ApplicationController
       assign_todo_date
       if !update_params.is_a?(Symbol) && @page.update(update_params) && process_front_page
         log_asset_access(@page, "wiki", @wiki, "participate")
-        apply_assignment_parameters(assignment_params, @page) if @context.feature_enabled?(:conditional_release)
+        apply_assignment_parameters(assignment_params, @page) if @context.conditional_release?
         render json: wiki_page_json(@page, @current_user, session)
       else
         render json: @page.errors, status: update_params.is_a?(Symbol) ? update_params : :bad_request
       end
     end
+  rescue Api::Html::UnparsableContentError => e
+    rescue_unparsable_content(e)
   end
 
   # @API Show page
@@ -405,12 +407,14 @@ class WikiPagesApiController < ApplicationController
       if !update_params.is_a?(Symbol) && @page.update(update_params) && process_front_page
         log_asset_access(@page, "wiki", @wiki, "participate")
         @page.context_module_action(@current_user, @context, :contributed)
-        apply_assignment_parameters(assignment_params, @page) if @context.feature_enabled?(:conditional_release)
+        apply_assignment_parameters(assignment_params, @page) if @context.conditional_release?
         render json: wiki_page_json(@page, @current_user, session)
       else
         render json: @page.errors, status: update_params.is_a?(Symbol) ? update_params : :bad_request
       end
     end
+  rescue Api::Html::UnparsableContentError => e
+    rescue_unparsable_content(e)
   end
 
   # @API Delete page
@@ -684,7 +688,7 @@ class WikiPagesApiController < ApplicationController
   def assign_todo_date
     return if params.dig(:wiki_page, :student_todo_at).nil? && params.dig(:wiki_page, :student_planner_checkbox).nil?
 
-    if @page.context.grants_any_right?(@current_user, session, :manage_content)
+    if @page.context.grants_any_right?(@current_user, session, :manage_content, :manage_course_content_edit)
       @page.todo_date = params.dig(:wiki_page, :student_todo_at) if params.dig(:wiki_page, :student_todo_at)
       # Only clear out if the checkbox is explicitly specified in the request
       if params[:wiki_page].key?("student_planner_checkbox") &&
@@ -713,5 +717,13 @@ class WikiPagesApiController < ApplicationController
     @page.set_as_front_page! if !@wiki.has_front_page? && @page.is_front_page? && !@page.deleted?
 
     true
+  end
+
+  private
+
+  def rescue_unparsable_content(error)
+    @page.errors.add(:body, error.message) if @page.present?
+
+    render json: @page&.errors || {}, status: :bad_request
   end
 end

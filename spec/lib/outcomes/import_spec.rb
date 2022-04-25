@@ -171,6 +171,60 @@ RSpec.describe Outcomes::Import do
         expect(deleted_group.workflow_state).to eq "deleted"
         expect(deleted_group.title).not_to eq existing_group.title
       end
+
+      context "with course_id" do
+        let(:account_group_attributes) do
+          {
+            title: "i'm a group",
+            description: "really i'm a group",
+            vendor_guid: group_vendor_guid + "_account",
+            workflow_state: "active",
+          }
+        end
+
+        before do
+          group_attributes[:course_id] = course.id
+        end
+
+        it "creates a group in a given Course" do
+          importer.import_group(group_attributes)
+          new_group = LearningOutcomeGroup.last
+          expect(new_group.title).to eq group_attributes[:title]
+          expect(new_group.context).to eq course
+        end
+
+        it "fails if the given Course is not in the Account" do
+          course.update!(account: other_context)
+          expect do
+            importer.import_group(group_attributes)
+          end.to raise_error(klass::InvalidDataError, /is not a child of current account/)
+        end
+
+        it "fails if the given Course is not a valid Id" do
+          group_attributes[:course_id] = Course.maximum(:id) + 1
+          expect do
+            importer.import_group(group_attributes)
+          end.to raise_error(klass::InvalidDataError, /Course with canvas id (\d+,*)+ not found/)
+        end
+
+        it "creates and links groups from multiple levels" do
+          cgroup = importer.import_group(group_attributes)
+          agroup = importer.import_group(account_group_attributes)
+          outcome = importer.import_outcome(**outcome_attributes, course_id: nil, parent_guids: "#{group_vendor_guid} #{group_vendor_guid}_account")
+          expect(cgroup.context).to eq course
+          expect(agroup.context).to eq root_account
+          expect(cgroup.child_outcome_links.active.map(&:content)).to include outcome
+          expect(agroup.child_outcome_links.active.map(&:content)).to include outcome
+        end
+
+        it "only links groups from multiple levels if file has a course_id column" do
+          importer.import_group(group_attributes)
+          importer.import_group(account_group_attributes)
+          expect do
+            importer.import_outcome(**outcome_attributes, parent_guids: "#{group_vendor_guid} #{group_vendor_guid}_account")
+          end.to raise_error(klass::InvalidDataError, /Parent references not found prior to this row: \["imagroup"\]/)
+        end
+      end
     end
 
     it "updates attributes" do
@@ -414,6 +468,16 @@ RSpec.describe Outcomes::Import do
         end.to raise_error(klass::InvalidDataError, /Parent references not found/)
       end
 
+      # NB: We _could_ add a "does not find parents from another context if allow_indirect" spec here, but
+      # the importer simplifies that by just checking that "outcome_import_id is same" (which is already specced)
+
+      it "finds parents from child context if allow_indirect" do
+        parent1.update! context: other_context
+        importer.import_outcome(**outcome_attributes, course_id: nil, parent_guids: "parent1")
+        expect(parent1.child_outcome_links.active.map(&:content)).to include existing_outcome
+        expect(parent2.child_outcome_links.active.map(&:content)).to be_empty
+      end
+
       it "reassigns parents of existing outcome" do
         parent1.add_outcome(existing_outcome)
         importer.import_outcome(**outcome_attributes, parent_guids: "parent2")
@@ -475,6 +539,26 @@ RSpec.describe Outcomes::Import do
             expect(parent1.child_outcome_links.map(&:content)).to include existing_outcome
           end
         end
+      end
+    end
+
+    context "with friendly_description" do
+      fd = "A friendly description"
+      it "creates an OutcomeFriendlyDescription if the imported outcome has a friendly_description" do
+        expect(OutcomeFriendlyDescription.find_by(description: fd)).to be_nil
+        importer.import_outcome(**outcome_attributes, friendly_description: fd)
+        expect(OutcomeFriendlyDescription.find_by(description: fd).workflow_state).to eq "active"
+      end
+
+      it "removes the friendly_description for an existing outcome if the imported outcome has no friendly_description" do
+        OutcomeFriendlyDescription.create!({
+                                             learning_outcome: existing_outcome,
+                                             context: existing_outcome.context,
+                                             description: fd
+                                           })
+        expect(OutcomeFriendlyDescription.find_by(description: fd).workflow_state).to eq "active"
+        importer.import_outcome(**outcome_attributes)
+        expect(OutcomeFriendlyDescription.find_by(description: fd).workflow_state).to eq "deleted"
       end
     end
 

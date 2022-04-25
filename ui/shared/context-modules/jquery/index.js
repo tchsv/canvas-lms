@@ -29,7 +29,7 @@ import LockIconView from '@canvas/lock-icon'
 import MasterCourseModuleLock from '../backbone/models/MasterCourseModuleLock'
 import ModuleFileDrop from '@canvas/context-module-file-drop'
 import INST from 'browser-sniffer'
-import I18n from 'i18n!context_modulespublic'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import $ from 'jquery'
 import Helper from './context_modules_helper'
 import CyoeHelper from '@canvas/conditional-release-cyoe-helper'
@@ -64,6 +64,8 @@ import DirectShareUserModal from '@canvas/direct-sharing/react/components/Direct
 import mathml from 'mathml'
 import {addDeepLinkingListener} from '@canvas/deep-linking/DeepLinking'
 import ExternalToolModalLauncher from '@canvas/external-tools/react/components/ExternalToolModalLauncher'
+
+const I18n = useI18nScope('context_modulespublic')
 
 function scrollTo($thing, time = 500) {
   if (!$thing || $thing.length === 0) return
@@ -276,7 +278,9 @@ window.modules = (function () {
                   points: I18n.n(info.points_possible)
                 })
               }
-              if (info.todo_date != null) {
+              if (ENV.IN_PACED_COURSE && !ENV.IS_STUDENT) {
+                $context_module_item.find('.due_date_display').remove()
+              } else if (info.todo_date != null) {
                 data.due_date_display = $.dateString(info.todo_date)
               } else if (info.due_date != null) {
                 if (info.past_due != null) {
@@ -472,7 +476,6 @@ window.modules = (function () {
       $module.addClass('dont_remove')
       $form.find('.module_name').toggleClass('lonely_entry', isNew)
       const $toFocus = $('.ig-header-admin .al-trigger', $module)
-      const responsive_misc = !!window.ENV?.FEATURES?.responsive_misc
       const fullSizeModal = window.matchMedia('(min-width: 600px)').matches
       const responsiveWidth = fullSizeModal ? 600 : 320
       $form
@@ -482,7 +485,7 @@ window.modules = (function () {
           title: isNew
             ? I18n.t('titles.add', 'Add Module')
             : I18n.t('titles.edit', 'Edit Module Settings'),
-          width: responsive_misc ? responsiveWidth : 600,
+          width: responsiveWidth,
           height: isNew ? 400 : 600,
           close() {
             modules.hideEditModule(true)
@@ -1229,19 +1232,19 @@ modules.initModuleManagement = function (duplicate) {
         let displayType
         const data = $(this).getTemplateData({textValues: ['id', 'type']})
         data.title = $(this).find('.title').attr('title')
-        if (data.type == 'assignment') {
-          displayType = I18n.t('optgroup.assignments', 'Assignments')
-        } else if (data.type == 'attachment') {
-          displayType = I18n.t('optgroup.files', 'Files')
-        } else if (data.type == 'quiz') {
+        if (data.type === 'quiz' || data.type === 'lti-quiz' || $(this).hasClass('lti-quiz')) {
           displayType = I18n.t('optgroup.quizzes', 'Quizzes')
-        } else if (data.type == 'external_url') {
+        } else if (data.type === 'assignment') {
+          displayType = I18n.t('optgroup.assignments', 'Assignments')
+        } else if (data.type === 'attachment') {
+          displayType = I18n.t('optgroup.files', 'Files')
+        } else if (data.type === 'external_url') {
           displayType = I18n.t('optgroup.external_urls', 'External URLs')
-        } else if (data.type == 'context_external_tool') {
+        } else if (data.type === 'context_external_tool') {
           displayType = I18n.t('optgroup.external_tools', 'External Tools')
-        } else if (data.type == 'discussion_topic') {
+        } else if (data.type === 'discussion_topic') {
           displayType = I18n.t('optgroup.discussion_topics', 'Discussions')
-        } else if (data.type == 'wiki_page') {
+        } else if (data.type === 'wiki_page') {
           displayType = I18n.t('Pages')
         }
         let $group = $optgroups[displayType]
@@ -1784,14 +1787,13 @@ modules.initModuleManagement = function (duplicate) {
       const id = $(this).parents('.context_module').find('.header').attr('id')
       const name = $(this).parents('.context_module').find('.name').attr('title')
       const options = {for_modules: true, context_module_id: id}
-      const responsive_misc = !!window.ENV?.FEATURES?.responsive_misc
       const midSizeModal = window.matchMedia('(min-width: 500px)').matches
       const fullSizeModal = window.matchMedia('(min-width: 770px)').matches
       const responsiveWidth = fullSizeModal ? 770 : midSizeModal ? 500 : 320
       options.select_button_text = I18n.t('buttons.add_item', 'Add Item')
       options.holder_name = name
       options.height = 550
-      options.width = responsive_misc ? responsiveWidth : 770
+      options.width = responsiveWidth
       options.dialog_title = I18n.t('titles.add_item', 'Add Item to %{module}', {module: name})
       options.close = function () {
         $trigger.focus()
@@ -1803,6 +1805,13 @@ modules.initModuleManagement = function (duplicate) {
 
   function generate_submit(id, focusLink = true) {
     return item_data => {
+      // a content item with an assignment_id means that an assignment was already created
+      // on the backend, so no module item should be created now. Reload the page to show
+      // the newly created assignment
+      if (item_data['item[assignment_id]']) {
+        return window.location.reload()
+      }
+
       const $module = $('#context_module_' + id)
       let nextPosition = modules.getNextPosition($module)
       item_data.content_details = ['items']
@@ -2644,7 +2653,13 @@ $(document).ready(function () {
     )
   }
 
-  function setExternalToolModal(tool, launchType, returnFocusTo, isOpen) {
+  function setExternalToolModal({
+    tool,
+    launchType,
+    returnFocusTo,
+    isOpen = true,
+    contextModuleId = null
+  }) {
     if (isOpen) {
       addDeepLinkingListener(() => {
         window.location.reload()
@@ -2652,7 +2667,7 @@ $(document).ready(function () {
     }
 
     const handleDismiss = () => {
-      setExternalToolModal(tool, launchType, returnFocusTo, false)
+      setExternalToolModal({tool, launchType, returnFocusTo, contextModuleId, isOpen: false})
       returnFocusTo.focus()
     }
 
@@ -2665,6 +2680,7 @@ $(document).ready(function () {
         contextId={parseInt(ENV.COURSE_ID, 10)}
         title={tool.name}
         onRequestClose={handleDismiss}
+        contextModuleId={contextModuleId}
       />,
       $('#external-tool-mount-point')[0]
     )
@@ -2679,14 +2695,29 @@ $(document).ready(function () {
       ev.preventDefault()
     }
     const launchType = ev.target.dataset.toolLaunchType
+    // modal placements use ExternalToolModalLauncher which expects a tool in the launch_definition format
+    const idAttribute = launchType.includes('modal') ? 'definition_id' : 'id'
+    const tool = findToolFromEvent(ENV.MODULE_TOOLS[launchType], idAttribute, ev)
+
+    const currentModule = $(ev.target).parents('.context_module')
+    const currentModuleId =
+      currentModule.length > 0 && currentModule.attr('id').substring('context_module_'.length)
 
     if (launchType === 'module_index_menu_modal') {
-      const tool = findToolFromEvent(ENV.MODULE_MENU_TOOLS, 'definition_id', ev)
-      setExternalToolModal(tool, launchType, $('.al-trigger')[0], true)
+      setExternalToolModal({tool, launchType, returnFocusTo: $('.al-trigger')[0]})
       return
     }
 
-    const tool = findToolFromEvent(ENV.MODULE_TRAY_TOOLS[launchType], 'id', ev)
+    if (launchType === 'module_menu_modal') {
+      setExternalToolModal({
+        tool,
+        launchType,
+        returnFocusTo: $('.al-trigger')[0],
+        contextModuleId: currentModuleId
+      })
+      return
+    }
+
     const moduleData = []
     if (launchType == 'module_index_menu') {
       // include all modules
@@ -2696,10 +2727,9 @@ $(document).ready(function () {
       })
     } else if (launchType == 'module_group_menu') {
       // just include the one module whose menu we're on
-      const module = $(ev.target).parents('.context_module')
       moduleData.push({
-        id: module.attr('id').substring('context_module_'.length),
-        name: module.find('.name').attr('title')
+        id: currentModuleId,
+        name: currentModule.find('.name').attr('title')
       })
     }
     setExternalToolTray(tool, moduleData, launchType == 'module_index_menu', $('.al-trigger')[0])

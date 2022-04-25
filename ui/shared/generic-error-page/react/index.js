@@ -16,7 +16,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import I18n from 'i18n!generic_error_page'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import React from 'react'
 
 import {Button} from '@instructure/ui-buttons'
@@ -28,6 +28,8 @@ import {string} from 'prop-types'
 
 import ErrorTextInputForm from './ErrorTextInputForm'
 import ErrorPageHeader from './ErrorPageHeader'
+
+const I18n = useI18nScope('generic_error_page')
 
 /*
  * A component that can be used to render an error page
@@ -41,7 +43,8 @@ export default class GenericErrorPage extends React.Component {
   static propTypes = {
     errorSubject: string,
     errorCategory: string,
-    imageUrl: string.isRequired
+    imageUrl: string.isRequired,
+    stack: string
   }
 
   static defaultProps = {
@@ -80,7 +83,8 @@ export default class GenericErrorPage extends React.Component {
         category: this.props.errorCategory,
         url: window.location.href,
         comments: this.state.textAreaComment,
-        email: this.state.email
+        email: this.state.email,
+        backtrace: this.props.stack
       }
     }
     this.setState({submitLoading: true, showingCommentBox: false})
@@ -118,7 +122,7 @@ export default class GenericErrorPage extends React.Component {
                 <Text margin="0">{I18n.t('Help us improve by telling us what happened')}</Text>
               </View>
               <View margin="small" display="block">
-                <Button margin="0" variant="primary" onClick={this.handleOpenCommentBox}>
+                <Button margin="0" color="primary" onClick={this.handleOpenCommentBox}>
                   {I18n.t('Report Issue')}
                 </Button>
               </View>

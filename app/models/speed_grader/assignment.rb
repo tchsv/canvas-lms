@@ -73,16 +73,15 @@ module SpeedGrader
 
       res[:context][:rep_for_student] = {}
 
-      # If we're working with anonymous IDs, skip students who don't have a
-      # valid submission object, which means no inactive or concluded students
-      # even if the user has elected to show them in gradebook
-      includes = assignment.anonymize_students? ? [] : gradebook_includes(user: current_user, course: course)
+      includes = gradebook_includes(user: current_user, course: course)
       students = assignment.representatives(user: current_user, includes: includes, group_id: group_id_filter, section_id: section_id_filter) do |rep, others|
         others.each { |s| res[:context][:rep_for_student][s.id] = rep.id }
       end
 
-      # Ensure that any test students are sorted last
-      students = students.partition { |r| r.preferences[:fake_student] != true }.flatten
+      unless assignment.anonymize_students?
+        # Ensure that any test students are sorted last
+        students = students.sort_by { |r| r.preferences[:fake_student] == true ? 1 : 0 }
+      end
 
       enrollments = course.apply_enrollment_visibility(
         gradebook_enrollment_scope(user: current_user, course: course),
@@ -110,6 +109,9 @@ module SpeedGrader
         if anonymous_students?(current_user: current_user, assignment: assignment)
           anonymous_ids = student_ids_to_anonymous_ids(current_user: current_user, assignment: assignment, course: course, submissions: submissions)
           json[:anonymous_id] = anonymous_ids[student.id.to_s]
+          identity = assignment.anonymous_student_identities.fetch(student.id, {})
+          json[:anonymous_name] = identity[:name]
+          json[:anonymous_name_position] = identity[:position]
         end
         json[:needs_provisional_grade] = assignment.can_be_moderated_grader?(current_user) if provisional_grader_or_moderator?
         json[:rubric_assessments] = rubric_assessments_to_json(
@@ -170,9 +172,10 @@ module SpeedGrader
         end
       end
 
+      word_count_enabled = assignment.root_account.feature_enabled?(:word_count_in_speed_grader)
       res[:submissions] = submissions.map do |sub|
         submission_methods = %i[submission_history late external_tool_url entered_score entered_grade seconds_late missing]
-        submission_methods << :word_count if assignment.root_account.feature_enabled?(:word_count_in_speed_grader)
+        submission_methods << :word_count if word_count_enabled
         json = sub.as_json(
           include_root: false,
           methods: submission_methods,
@@ -225,7 +228,7 @@ module SpeedGrader
             # to avoid a call to the DB in Submission#missing?
             version.assignment = sub.assignment
             version_methods = %i[versioned_attachments late missing external_tool_url]
-            version_methods << :word_count if assignment.root_account.feature_enabled?(:word_count_in_speed_grader)
+            version_methods << :word_count if word_count_enabled
             version.as_json(only: submission_json_fields, methods: version_methods).tap do |version_json|
               version_json["submission"]["has_originality_report"] = version.has_originality_report?
               version_json["submission"]["has_plagiarism_tool"] = version.assignment.assignment_configuration_tool_lookup_ids.present?
@@ -261,6 +264,10 @@ module SpeedGrader
                         upload_status: AttachmentUploadStatus.upload_status(a),
                       }
                     )
+                    if word_count_enabled
+                      a.set_word_count if a.word_count.nil? && a.word_count_supported?
+                      attachment_json[:attachment][:word_count] = a.word_count
+                    end
                   end
                 end
               end

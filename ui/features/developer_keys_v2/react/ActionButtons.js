@@ -16,7 +16,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import I18n from 'i18n!react_developer_keys'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import React from 'react'
 import PropTypes from 'prop-types'
 
@@ -24,6 +24,8 @@ import {Button} from '@instructure/ui-buttons'
 import {Tooltip} from '@instructure/ui-tooltip'
 import {ScreenReaderContent} from '@instructure/ui-a11y-content'
 import {IconEditLine, IconEyeLine, IconOffLine, IconTrashLine} from '@instructure/ui-icons'
+
+const I18n = useI18nScope('react_developer_keys')
 
 class DeveloperKeyActionButtons extends React.Component {
   makeVisibleLinkHandler = event => {
@@ -92,7 +94,7 @@ class DeveloperKeyActionButtons extends React.Component {
     }
     if (visible) {
       return (
-        <Tooltip tip={I18n.t('Make key invisible')}>
+        <Tooltip renderTip={I18n.t('Make key invisible')}>
           <Button variant="icon" margin="0" size="small" onClick={this.makeInvisibleLinkHandler}>
             <ScreenReaderContent>
               {I18n.t('Make key %{developerName} invisible', {developerName})}
@@ -104,7 +106,7 @@ class DeveloperKeyActionButtons extends React.Component {
     }
 
     return (
-      <Tooltip tip={I18n.t('Make key visible')}>
+      <Tooltip renderTip={I18n.t('Make key visible')}>
         <Button variant="icon" margin="0" size="small" onClick={this.makeVisibleLinkHandler}>
           <ScreenReaderContent>
             {I18n.t('Make key %{developerName} visible', {developerName})}
@@ -119,7 +121,7 @@ class DeveloperKeyActionButtons extends React.Component {
     const {developerName} = this.props
 
     return (
-      <Tooltip tip={I18n.t('Edit this key')}>
+      <Tooltip renderTip={I18n.t('Edit this key')}>
         <Button variant="icon" margin="0" size="small" onClick={this.editLinkHandler}>
           <ScreenReaderContent>
             {I18n.t('Edit key %{developerName}', {developerName})}
@@ -137,13 +139,13 @@ class DeveloperKeyActionButtons extends React.Component {
       <div>
         {this.renderEditButton()}
         {this.renderVisibilityIcon()}
-        <Tooltip tip={I18n.t('Delete this key')}>
+        <Tooltip renderTip={I18n.t('Delete this key')}>
           <Button
             variant="icon"
             margin="0"
             size="small"
             onClick={this.deleteLinkHandler}
-            buttonRef={this.refDeleteLink}
+            elementRef={this.refDeleteLink}
           >
             <ScreenReaderContent>
               {I18n.t('Delete key %{developerName}', {developerName})}

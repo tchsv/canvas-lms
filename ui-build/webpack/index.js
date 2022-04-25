@@ -26,7 +26,6 @@ const glob = require('glob')
 const webpack = require('webpack')
 const {CleanWebpackPlugin} = require('clean-webpack-plugin')
 const StatsWriterPlugin = require('webpack-stats-plugin').StatsWriterPlugin
-const I18nPlugin = require('./i18nPlugin')
 const WebpackHooks = require('./webpackHooks')
 const SourceFileExtensionsPlugin = require('./SourceFileExtensionsPlugin')
 const EncapsulationPlugin = require('webpack-encapsulation-plugin')
@@ -170,23 +169,6 @@ module.exports = {
   resolve: {
     alias: {
       d3: 'd3/d3',
-
-      // this is to make instUI themeable work with real es `class`es
-      // it is a change that was backported and is fixed in instUI 6
-      // the file is the same as the on published to npm but we added a
-      // `require('newless')` to make it work
-      './themeable$': path.resolve(
-        canvasDir,
-        'ui/ext/@instructure/ui-themeable/es/themeable-with-newless.js'
-      ),
-      '../themeable$': path.resolve(
-        canvasDir,
-        'ui/ext/@instructure/ui-themeable/es/themeable-with-newless.js'
-      ),
-      '@instructure/ui-themeable/es/themeable$': path.resolve(
-        canvasDir,
-        'ui/ext/@instructure/ui-themeable/es/themeable-with-newless.js'
-      ),
       'node_modules-version-of-backbone$': require.resolve('backbone'),
       'node_modules-version-of-react-modal$': require.resolve('react-modal')
     },
@@ -232,7 +214,41 @@ module.exports = {
         use: {
           loader: 'babel-loader',
           options: {
-            cacheDirectory: process.env.NODE_ENV !== 'production'
+            configFile: false,
+            cacheDirectory: process.env.NODE_ENV !== 'production',
+            assumptions: {
+              setPublicClassFields: true
+            },
+            env: {
+              development: {
+                plugins: ['babel-plugin-typescript-to-proptypes']
+              },
+              production: {
+                plugins: [
+                  ['@babel/plugin-transform-runtime', {
+                    helpers: true,
+                    corejs: 3,
+                    useESModules: true
+                  }],
+                  'transform-react-remove-prop-types',
+                  '@babel/plugin-transform-react-inline-elements',
+                  '@babel/plugin-transform-react-constant-elements'
+                ]
+              }
+            },
+            presets: [
+              ['@babel/preset-typescript'],
+              ['@babel/preset-env', {
+                useBuiltIns: 'entry',
+                corejs: '3.20',
+                modules: false
+              }],
+              ['@babel/preset-react', { useBuiltIns: true }]
+            ],
+            targets: {
+              browsers: 'last 2 versions',
+              esmodules: true
+            }
           }
         }
       },
@@ -298,9 +314,6 @@ module.exports = {
       endYear: new Date().getFullYear() + 15
     }),
 
-    // handles our custom i18n stuff
-    I18nPlugin,
-
     // allow plugins to extend source files
     new SourceFileExtensionsPlugin({
       context: canvasDir,
@@ -325,7 +338,7 @@ module.exports = {
         path.resolve(canvasDir, 'public/javascripts'),
         path.resolve(canvasDir, 'gems/plugins')
       ],
-      exclude: [/\/node_modules\//, path.resolve(canvasDir, 'ui/shims/dummyI18nResource.js')],
+      exclude: [/\/node_modules\//],
       formatter: require('./encapsulation/ErrorFormatter'),
       rules: require('./encapsulation/moduleAccessRules')
     }),

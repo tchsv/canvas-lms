@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License along
 // with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import I18n from 'i18n!quizzes.index'
+import {useScope as useI18nScope} from '@canvas/i18n'
 
 import $ from 'jquery'
 import _ from 'underscore'
@@ -33,6 +33,8 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import DirectShareCourseTray from '@canvas/direct-sharing/react/components/DirectShareCourseTray'
 import DirectShareUserModal from '@canvas/direct-sharing/react/components/DirectShareUserModal'
+
+const I18n = useI18nScope('quizzes.index')
 
 export default class ItemView extends Backbone.View {
   static initClass() {
@@ -345,8 +347,12 @@ export default class ItemView extends Backbone.View {
     base.failedToDuplicate = this.model.get('workflow_state') === 'failed_to_duplicate'
     base.isMigrating = this.model.get('workflow_state') === 'migrating'
     base.failedToMigrate = this.model.get('workflow_state') === 'failed_to_migrate'
-    base.showAvailability = this.model.multipleDueDates() || !this.model.defaultDates().available()
-    base.showDueDate = this.model.multipleDueDates() || this.model.singleSectionDueDate()
+    base.showAvailability =
+      !(this.model.get('in_paced_course') && this.canManage()) &&
+      (this.model.multipleDueDates() || !this.model.defaultDates().available())
+    base.showDueDate =
+      !(this.model.get('in_paced_course') && this.canManage()) &&
+      (this.model.multipleDueDates() || this.model.singleSectionDueDate())
     base.name = this.model.name()
     base.isQuizzesNext = this.model.isQuizzesNext()
     base.useQuizzesNextIcon = this.model.isQuizzesNext() || this.isStudent()

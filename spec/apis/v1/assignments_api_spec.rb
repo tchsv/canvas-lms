@@ -19,7 +19,7 @@
 #
 
 require_relative "../api_spec_helper"
-require_relative "../locked_spec"
+require_relative "../locked_examples"
 require_relative "../../lti_spec_helper"
 require_relative "../../lti2_spec_helper"
 
@@ -279,6 +279,60 @@ describe AssignmentsApiController, type: :request do
                                     due_at: 3.months.from_now)
 
           DueDateCacher.recompute_course(@course, run_immediately: true)
+        end
+
+        describe "sharding" do
+          specs_require_sharding
+
+          before do
+            @shard1.activate do
+              account = Account.create!
+              @cs_course = Course.create!(account: account)
+              @cs_course.workflow_state = "available"
+              @cs_course.save!
+              @cs_course.assignments.create name: "assignment1"
+            end
+          end
+
+          it "returns assignments in the contexts' shard as a teacher" do
+            @shard1.activate do
+              @cs_course.enroll_user(@user, "TeacherEnrollment", enrollment_state: "active")
+            end
+
+            json = api_get_assignments_index_from_course(@cs_course, order_by: "due_at")
+
+            expect(json.map { |a| a["name"] }).to eq %w[assignment1]
+          end
+
+          it "returns assignments in the contexts' shard as a student" do
+            @shard1.activate do
+              @cs_course.enroll_user(@user, "StudentEnrollment", enrollment_state: "active")
+            end
+
+            json = api_get_assignments_index_from_course(@cs_course, order_by: "due_at")
+
+            expect(json.map { |a| a["name"] }).to eq %w[assignment1]
+          end
+
+          it "returns user assignments in the contexts' shard as a teacher" do
+            @shard1.activate do
+              @cs_course.enroll_user(@user, "TeacherEnrollment", enrollment_state: "active")
+            end
+
+            json = api_get_assignments_user_index(@user, @cs_course, @user, order_by: "due_at")
+
+            expect(json.map { |a| a["name"] }).to eq %w[assignment1]
+          end
+
+          it "returns user assignments in the contexts' shard as a student" do
+            @shard1.activate do
+              @cs_course.enroll_user(@user, "StudentEnrollment", enrollment_state: "active")
+            end
+
+            json = api_get_assignments_user_index(@user, @cs_course, @user, order_by: "due_at")
+
+            expect(json.map { |a| a["name"] }).to eq %w[assignment1]
+          end
         end
 
         it "sorts the returned list of assignments by latest due date for teachers (nulls last)" do
@@ -6177,6 +6231,7 @@ describe AssignmentsApiController, type: :request do
         "posted_at" => @submission.posted_at.as_json,
         "grader_id" => @teacher.id,
         "id" => @submission.id,
+        "redo_request" => false,
         "score" => 99.0,
         "entered_score" => 99.0,
         "submission_type" => nil,
@@ -6219,6 +6274,7 @@ describe AssignmentsApiController, type: :request do
         "posted_at" => @submission.posted_at.as_json,
         "grader_id" => @teacher.id,
         "id" => @submission.id,
+        "redo_request" => false,
         "score" => 99.0,
         "entered_score" => 99.0,
         "submission_type" => nil,

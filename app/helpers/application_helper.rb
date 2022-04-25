@@ -291,10 +291,9 @@ module ApplicationHelper
   end
 
   def css_variant(opts = {})
-    variant = use_responsive_layout? ? "responsive_layout" : "new_styles"
     use_high_contrast =
       @current_user&.prefers_high_contrast? || opts[:force_high_contrast]
-    variant + (use_high_contrast ? "_high_contrast" : "_normal_contrast") +
+    "new_styles" + + (use_high_contrast ? "_high_contrast" : "_normal_contrast") +
       (I18n.rtl? ? "_rtl" : "")
   end
 
@@ -777,7 +776,8 @@ module ApplicationHelper
         # to start from a blank slate.
         brand_config =
           if session.key?(:brand_config_md5)
-            BrandConfig.where(md5: session[:brand_config_md5]).first
+            BrandConfig.shard(@domain_root_account.account_chain(include_site_admin: true).pluck(:shard).uniq)
+                       .where(md5: session[:brand_config_md5]).first
           else
             account = brand_config_account(opts)
             if opts[:ignore_parents]
@@ -973,19 +973,16 @@ module ApplicationHelper
   end
 
   def add_uri_scheme_name(uri)
-    noSchemeName = !uri.match(%r{^(.+)://(.+)})
-    uri = "http://" + uri if noSchemeName
+    no_scheme_name = !uri.match(%r{^(.+)://(.+)})
+    uri = "http://" + uri if no_scheme_name
     uri
   end
 
   def agree_to_terms
     # may be overridden by a plugin
     @agree_to_terms ||
-      t(
-        "I agree to the *terms of use*.",
-        wrapper: {
-          "*" => link_to('\1', "#", class: "terms_of_service_link")
-        }
+      I18n.t(
+        "I agree to the *terms of use*.", wrapper: '<span class="terms_of_service_link">\1</span>'
       )
   end
 
@@ -1175,12 +1172,12 @@ module ApplicationHelper
   def link_to_parent_signup(auth_type)
     data = reg_link_data(auth_type)
     link_to(
-      t("Parents sign up here"),
+      I18n.t("Parents sign up here"),
       "#",
       id: "signup_parent",
       class: "signup_link",
       data: data,
-      title: t("Parent Signup")
+      title: I18n.t("Parent Signup")
     )
   end
 
@@ -1201,7 +1198,8 @@ module ApplicationHelper
 
   def planner_enabled?
     !!@current_user&.has_student_enrollment? ||
-      (Account.site_admin.feature_enabled?(:k5_parent_support) && @current_user&.roles(@domain_root_account)&.include?("observer") && k5_user?)
+      (@current_user&.roles(@domain_root_account)&.include?("observer") && k5_user?) ||
+      (!!@current_user&.roles(@domain_root_account)&.include?("observer") && Account.site_admin.feature_enabled?(:observer_picker)) # TODO: ensure observee is a student?
   end
 
   def will_paginate(collection, options = {})
@@ -1440,8 +1438,6 @@ module ApplicationHelper
     if @domain_root_account.feature_enabled?(:account_level_mastery_scales)
       js_env(
         ACCOUNT_LEVEL_MASTERY_SCALES: true,
-        IMPROVED_OUTCOMES_MANAGEMENT:
-          @domain_root_account.feature_enabled?(:improved_outcomes_management),
         MASTERY_SCALE: {
           outcome_proficiency: @context.resolved_outcome_proficiency&.as_json,
           outcome_calculation_method: @context.resolved_outcome_calculation_method&.as_json
@@ -1456,13 +1452,13 @@ module ApplicationHelper
       !@current_user.fake_student? && !@current_user.used_feature?(:cc_prefs) && !k5_student
   end
 
-  def individual_outcome_rating_and_calculation_js_env
-    if @domain_root_account.feature_enabled?(:individual_outcome_rating_and_calculation) && !@domain_root_account.feature_enabled?(:account_level_mastery_scales)
-      js_env(
-        INDIVIDUAL_OUTCOME_RATING_AND_CALCULATION: true,
-        IMPROVED_OUTCOMES_MANAGEMENT:
-          @domain_root_account.feature_enabled?(:improved_outcomes_management)
-      )
-    end
+  def improved_outcomes_management_js_env
+    js_env(
+      IMPROVED_OUTCOMES_MANAGEMENT: @domain_root_account.feature_enabled?(:improved_outcomes_management)
+    )
+  end
+
+  def append_default_due_time_js_env(context, hash)
+    hash[:DEFAULT_DUE_TIME] = context.default_due_time if context&.default_due_time.present? && context.root_account.feature_enabled?(:default_due_time)
   end
 end

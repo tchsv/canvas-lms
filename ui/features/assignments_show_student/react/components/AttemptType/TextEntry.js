@@ -22,6 +22,7 @@ import CanvasRce from '@canvas/rce/react/CanvasRce'
 import TinyMCEContentItem from '@canvas/tinymce-external-tools/TinyMCEContentItem'
 import {Submission} from '@canvas/assignments/graphql/student/Submission'
 import apiUserContent from '@canvas/util/jquery/apiUserContent'
+import theme from '@instructure/canvas-theme'
 import StudentViewContext from '../Context'
 
 // This is how long we wait to see that changes have stopped before actually
@@ -49,7 +50,7 @@ export default class TextEntry extends React.Component {
 
   handleMessage = e => {
     const editor = this._rceRef.current
-    if (editor == null || e.data.messageType !== 'A2ExternalContentReady') {
+    if (editor == null || e.data.subject !== 'A2ExternalContentReady') {
       return
     }
 
@@ -197,7 +198,10 @@ export default class TextEntry extends React.Component {
 
   renderRCE(context) {
     return (
-      <div data-testid="text-editor">
+      <div
+        data-testid="text-editor"
+        style={{padding: `${theme.variables.spacing.small} ${theme.variables.spacing.xLarge}`}}
+      >
         <CanvasRce
           ref={this._rceRef}
           autosave={false}

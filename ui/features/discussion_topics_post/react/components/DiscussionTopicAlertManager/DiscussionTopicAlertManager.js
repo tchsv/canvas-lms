@@ -19,13 +19,15 @@
 import DateHelper from '../../../../../shared/datetime/dateHelper'
 import {Discussion} from '../../../graphql/Discussion'
 import {responsiveQuerySizes} from '../../utils'
-import I18n from 'i18n!discussion_posts'
+import {useScope as useI18nScope} from '@canvas/i18n'
 
 import React from 'react'
 
 import {Alert} from '@instructure/ui-alerts'
 import {Text} from '@instructure/ui-text'
 import {Responsive} from '@instructure/ui-responsive/lib/Responsive'
+
+const I18n = useI18nScope('discussion_posts')
 
 export const DiscussionTopicAlertManager = props => {
   const getAnonymousAlertText = () => {
@@ -35,16 +37,25 @@ export const DiscussionTopicAlertManager = props => {
     const studentFullAnonAlert = I18n.t(
       'This is an anonymous Discussion, Your name and profile picture will be hidden from other course members.'
     )
+    const observerFullAnonAlert = I18n.t(
+      'This is an anonymous Discussion. Student names and profile pictures are hidden.'
+    )
     const teacherPartialAnonAlert = I18n.t(
       'When creating a reply, students will have the option to show their name and profile picture or remain anonymous. Your name and profile picture will be visible to all course members.'
     )
     const studentPartialAnonAlert = I18n.t(
       'When creating a reply, you will have the option to show your name and profile picture to other course members or remain anonymous.'
     )
+    const observerPartialAnonAlert = I18n.t(
+      'Students have the option to reply anonymously. Some names and profile pictures may be hidden.'
+    )
+    const isObserver = ENV.current_user_roles?.includes('observer')
 
     if (props.discussionTopic.anonymousState === 'full_anonymity') {
+      if (isObserver) return observerFullAnonAlert
       return props.discussionTopic.canReplyAnonymously ? studentFullAnonAlert : teacherFullAnonAlert
     } else {
+      if (isObserver) return observerPartialAnonAlert
       return props.discussionTopic.canReplyAnonymously
         ? studentPartialAnonAlert
         : teacherPartialAnonAlert

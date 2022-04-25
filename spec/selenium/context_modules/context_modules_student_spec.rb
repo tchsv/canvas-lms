@@ -408,7 +408,7 @@ describe "context modules" do
         expect(prog).to be_completed
       end
 
-      it "doesn'ts show the mark done button on locked pages" do
+      it "doesn't show the mark done button on locked pages" do
         mod = create_context_module("Mark Done Module")
         assmt = @course.assignments.create!(title: "assmt")
         page = @course.wiki_pages.create!(title: "page", body: "hi")
@@ -521,14 +521,6 @@ describe "context modules" do
         go_to_modules
         navigate_to_module_item(0, @assignment_1.title)
         validate_context_module_item_icon(@tag_1.id, @completed_icon)
-      end
-
-      it "shows a tooltip when hovering over a completed icon", priority: "1" do
-        skip "flaky, LS-1297 (8/23/2020)"
-        go_to_modules
-        navigate_to_module_item(0, @assignment_1.title)
-        driver.action.move_to(f(".ig-header-admin .completion_status .icon-check"), 0, 0).perform
-        expect(fj(".ui-tooltip:visible")).to include_text("Completed")
       end
 
       it "shows an incomplete circle icon when module item is requirement but not complete", priority: "1" do

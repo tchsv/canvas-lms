@@ -18,13 +18,15 @@
 
 import React from 'react'
 import PropTypes from 'prop-types'
-import I18n from 'i18n!dashboard'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import axios from '@canvas/axios'
 
 import {ScreenReaderContent} from '@instructure/ui-a11y-content'
 import {Menu} from '@instructure/ui-menu'
-import {Button} from '@instructure/ui-buttons'
+import {Button, IconButton} from '@instructure/ui-buttons'
 import {IconMoreLine} from '@instructure/ui-icons'
+
+const I18n = useI18nScope('dashboard')
 
 export default class DashboardOptionsMenu extends React.Component {
   static propTypes = {
@@ -83,9 +85,13 @@ export default class DashboardOptionsMenu extends React.Component {
     return (
       <Menu
         trigger={
-          <Button variant="icon" icon={IconMoreLine} buttonRef={this.props.menuButtonRef}>
-            <ScreenReaderContent>{I18n.t('Dashboard Options')}</ScreenReaderContent>
-          </Button>
+          <IconButton
+            renderIcon={IconMoreLine}
+            withBackground={false}
+            withBorder={false}
+            elementRef={this.props.menuButtonRef}
+            screenReaderLabel={I18n.t('Dashboard Options')}
+          />
         }
         contentRef={el => (this.menuContentRef = el)}
       >

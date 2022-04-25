@@ -16,44 +16,57 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {ADD_CONVERSATION_MESSAGE, CREATE_CONVERSATION} from '../../../graphql/Mutations'
+import {
+  ADD_CONVERSATION_MESSAGE,
+  CREATE_CONVERSATION,
+  CREATE_SUBMISSION_COMMENT
+} from '../../../graphql/Mutations'
 import {AlertManagerContext} from '@canvas/alerts/react/AlertManager'
 import ComposeModalContainer from './ComposeModalContainer'
 import {Conversation} from '../../../graphql/Conversation'
 import {ConversationMessage} from '../../../graphql/ConversationMessage'
 import {
-  CONVERSATIONS_QUERY,
+  CONVERSATION_MESSAGES_QUERY,
   COURSES_QUERY,
-  REPLY_CONVERSATION_QUERY
+  REPLY_CONVERSATION_QUERY,
+  SUBMISSION_COMMENTS_QUERY,
+  VIEWABLE_SUBMISSIONS_QUERY
 } from '../../../graphql/Queries'
-import I18n from 'i18n!conversations_2'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import ModalSpinner from './ModalSpinner'
 import PropTypes from 'prop-types'
 import React, {useContext, useState} from 'react'
 import {useMutation, useQuery} from 'react-apollo'
+import {ConversationContext} from '../../../util/constants'
+
+const I18n = useI18nScope('conversations_2')
 
 const ComposeModalManager = props => {
   const {setOnFailure, setOnSuccess} = useContext(AlertManagerContext)
   const [sendingMessage, setSendingMessage] = useState(false)
+  const {isSubmissionCommentsType} = useContext(ConversationContext)
+  const [modalError, setModalError] = useState(null)
 
   const coursesQuery = useQuery(COURSES_QUERY, {
     variables: {
       userID: ENV.current_user_id?.toString()
     },
-    skip: props.isReply || props.isReplyAll
+    skip: props.isReply || props.isReplyAll || props.isForward
   })
 
   const getParticipants = () => {
+    if (isSubmissionCommentsType) return
+
     const lastAuthorId = props.conversationMessage
       ? props.conversationMessage?.author._id.toString()
-      : props.conversation?.conversationMessagesConnection.nodes[0].author._id.toString()
+      : props.conversation?.messages[0].author._id.toString()
 
     if (props.isReply && lastAuthorId !== ENV.current_user_id.toString()) {
       return [lastAuthorId]
     } else {
       const recipients = props.conversationMessage
         ? props.conversationMessage?.recipients
-        : props.conversation?.conversationMessagesConnection?.nodes[0]?.recipients
+        : props.conversation?.messages[0]?.recipients
       return recipients?.map(r => r._id.toString())
     }
   }
@@ -64,22 +77,14 @@ const ComposeModalManager = props => {
       participants: getParticipants(),
       ...(props.conversationMessage && {createdBefore: props.conversationMessage.createdAt})
     },
-    skip: !(props.isReply || props.isReplyAll)
+    skip: !(props.isReply || props.isReplyAll || props.isForward) || isSubmissionCommentsType
   })
 
   const updateConversationsCache = (cache, result) => {
     let legacyNode
     try {
       const queryResult = JSON.parse(
-        JSON.stringify(
-          cache.readQuery({
-            query: CONVERSATIONS_QUERY,
-            variables: {
-              scope: props.isReply || props.isReplyAll ? 'inbox' : 'sent',
-              userID: ENV.current_user_id?.toString()
-            }
-          })
-        )
+        JSON.stringify(cache.readQuery(props.conversationsQueryOption))
       )
       legacyNode = queryResult.legacyNode
     } catch (e) {
@@ -88,7 +93,7 @@ const ComposeModalManager = props => {
       return
     }
 
-    if (props.isReply || props.isReplyAll) {
+    if (props.isReply || props.isReplyAll || props.isForward) {
       legacyNode.conversationsConnection.nodes
         .find(c => c.conversation._id === props.conversation._id)
         .conversation.conversationMessagesConnection.nodes.unshift(
@@ -101,17 +106,13 @@ const ComposeModalManager = props => {
     }
 
     cache.writeQuery({
-      query: CONVERSATIONS_QUERY,
-      variables: {
-        scope: props.isReply || props.isReplyAll ? 'inbox' : 'sent',
-        userID: ENV.current_user_id?.toString()
-      },
+      ...props.conversationsQueryOption,
       data: {legacyNode}
     })
   }
 
   const updateReplyConversationsCache = (cache, result) => {
-    if (props.isReply || props.isReplyAll) {
+    if (props.isReply || props.isReplyAll || props.isForward) {
       const replyQueryResult = JSON.parse(
         JSON.stringify(
           cache.readQuery({
@@ -141,28 +142,96 @@ const ComposeModalManager = props => {
     }
   }
 
-  const updateCache = (cache, result) => {
-    if (props.isReply || props.isReplyAll) {
-      if (result.data.addConversationMessage.errors) {
-        setOnFailure(I18n.t('Error occurred while adding message to conversation'))
-        return
+  const updateConversationMessagesCache = (cache, result) => {
+    if (props?.conversation) {
+      const querytoUpdate = {
+        query: CONVERSATION_MESSAGES_QUERY,
+        variables: {
+          conversationID: props.conversation._id
+        }
       }
-    } else if (result.data.createConversation.errors) {
-      setOnFailure(I18n.t('Error occurred while creating conversation message'))
-      return
+      const data = JSON.parse(JSON.stringify(cache.readQuery(querytoUpdate)))
+
+      data.legacyNode.conversationMessagesConnection.nodes = [
+        result.data.addConversationMessage.conversationMessage,
+        ...data.legacyNode.conversationMessagesConnection.nodes
+      ]
+
+      cache.writeQuery({...querytoUpdate, data})
+    }
+  }
+
+  const updateSubmissionCommentsCache = (cache, result) => {
+    if (props?.conversation) {
+      const queryToUpdate = {
+        query: SUBMISSION_COMMENTS_QUERY,
+        variables: {
+          submissionID: props.conversation._id,
+          sort: 'desc'
+        }
+      }
+      const data = JSON.parse(JSON.stringify(cache.readQuery(queryToUpdate)))
+
+      data.legacyNode.commentsConnection.nodes.unshift(
+        result.data.createSubmissionComment.submissionComment
+      )
+      cache.writeQuery({...queryToUpdate, data})
     }
 
-    updateConversationsCache(cache, result)
-    updateReplyConversationsCache(cache, result)
+    const queryToUpdate = {
+      query: VIEWABLE_SUBMISSIONS_QUERY,
+      variables: {
+        userID: ENV.current_user_id?.toString(),
+        sort: 'desc'
+      }
+    }
+    const data = JSON.parse(JSON.stringify(cache.readQuery(queryToUpdate)))
+    const submissionToUpdate = data.legacyNode.viewableSubmissionsConnection.nodes.find(
+      c => c._id === props.conversation._id
+    )
+    submissionToUpdate.commentsConnection.nodes.unshift(
+      result.data.createSubmissionComment.submissionComment
+    )
+
+    cache.writeQuery({...queryToUpdate, data})
+  }
+
+  const updateCache = (cache, result) => {
+    const submissionFail = result?.data?.createSubmissionComment?.errors
+    const addConversationFail = result?.data?.addConversationMessage?.errors
+    const createConversationFail = result?.data?.createConversation?.errors
+    if (submissionFail || addConversationFail || createConversationFail) {
+      // Error messages get set in the onConversationCreateComplete function
+      // This just prevents a cacheUpdate when there is an error
+      return
+    }
+    if (isSubmissionCommentsType) {
+      updateSubmissionCommentsCache(cache, result)
+    } else {
+      updateConversationMessagesCache(cache, result)
+      updateConversationsCache(cache, result)
+      updateReplyConversationsCache(cache, result)
+    }
   }
 
   const onConversationCreateComplete = success => {
     setSendingMessage(false)
 
     if (success) {
-      setOnSuccess(I18n.t('Message sent successfully'))
+      props.onDismiss()
+      setOnSuccess(I18n.t('Message sent!'), false)
     } else {
-      setOnFailure(I18n.t('Error creating conversation'))
+      if (isSubmissionCommentsType) {
+        setModalError(I18n.t('Error creating Submission Comment'))
+      } else if (props.isReply || props.isReplyAll || props.isForward) {
+        setModalError(I18n.t('Error occurred while adding message to conversation'))
+      } else {
+        setModalError(I18n.t('Error occurred while creating conversation message'))
+      }
+
+      setTimeout(() => {
+        setModalError(null)
+      }, 2500)
     }
   }
 
@@ -175,6 +244,12 @@ const ComposeModalManager = props => {
   const [addConversationMessage] = useMutation(ADD_CONVERSATION_MESSAGE, {
     update: updateCache,
     onCompleted: data => onConversationCreateComplete(!data.addConversationMessage.errors),
+    onError: () => onConversationCreateComplete(false)
+  })
+
+  const [createSubmissionComment] = useMutation(CREATE_SUBMISSION_COMMENT, {
+    update: updateCache,
+    onCompleted: data => onConversationCreateComplete(!data.createSubmissionComment.errors),
     onError: () => onConversationCreateComplete(false)
   })
 
@@ -204,18 +279,31 @@ const ComposeModalManager = props => {
           variables: {
             ...data.variables,
             conversationId: props.conversation?._id,
-            recipients: getParticipants()
+            recipients: data.variables.recipients ? data.variables.recipients : getParticipants()
+          }
+        })
+      }}
+      createSubmissionComment={data => {
+        createSubmissionComment({
+          variables: {
+            ...data.variables,
+            submissionId: props?.conversation?._id
           }
         })
       }}
       courses={coursesQuery?.data?.legacyNode}
       createConversation={createConversation}
       isReply={props.isReply || props.isReplyAll}
+      isForward={props.isForward}
       onDismiss={props.onDismiss}
       open={props.open}
       pastConversation={replyConversationQuery?.data?.legacyNode}
       sendingMessage={sendingMessage}
       setSendingMessage={setSendingMessage}
+      onSelectedIdsChange={props.onSelectedIdsChange}
+      selectedIds={props.selectedIds}
+      submissionCommentsHeader={isSubmissionCommentsType ? props?.conversation?.subject : null}
+      modalError={modalError}
     />
   )
 }
@@ -225,8 +313,12 @@ ComposeModalManager.propTypes = {
   conversationMessage: ConversationMessage.shape,
   isReply: PropTypes.bool,
   isReplyAll: PropTypes.bool,
+  isForward: PropTypes.bool,
   onDismiss: PropTypes.func,
-  open: PropTypes.bool
+  open: PropTypes.bool,
+  conversationsQueryOption: PropTypes.object,
+  onSelectedIdsChange: PropTypes.func,
+  selectedIds: PropTypes.array
 }
 
 export default ComposeModalManager

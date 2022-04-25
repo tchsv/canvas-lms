@@ -18,13 +18,15 @@
 
 import React from 'react'
 import PropTypes from 'prop-types'
-import I18n from 'i18n!student_context_traySubmissionProgressBars'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import classnames from 'classnames'
 import {Link} from '@instructure/ui-link'
 import {Text} from '@instructure/ui-text'
-import {Progress} from '@instructure/ui-progress'
+import {ProgressBar} from '@instructure/ui-progress'
 import {Heading} from '@instructure/ui-heading'
 import {Tooltip} from '@instructure/ui-tooltip'
+
+const I18n = useI18nScope('student_context_traySubmissionProgressBars')
 
 function scoreInPoints(score, pointsPossible) {
   const formattedScore = I18n.n(score, {precision: 2, strip_insignificant_zeros: true})
@@ -116,22 +118,20 @@ class SubmissionProgressBars extends React.Component {
           {submissions.map(submission => {
             return (
               <div key={submission.id} className="StudentContextTray-Progress__Bar">
-                <Tooltip tip={submission.assignment.name} placement="top">
+                <Tooltip renderTip={submission.assignment.name} placement="top">
                   <Link
                     href={`${submission.assignment.html_url}/submissions/${submission.user._id}`}
                     theme={{textDecoration: 'none'}}
                     display="block"
                   >
-                    <Progress
+                    <ProgressBar
                       size="small"
                       successColor={false}
                       label={I18n.t('Grade')}
                       valueMax={submission.assignment.points_possible}
                       valueNow={submission.score || 0}
-                      formatValueText={() =>
-                        SubmissionProgressBars.displayScreenreaderGrade(submission)
-                      }
-                      formatDisplayedValue={() => (
+                      screenReaderLabel={SubmissionProgressBars.displayScreenreaderGrade(submission)}
+                      renderValue={() => (
                         <Text size="x-small" color="secondary">
                           {SubmissionProgressBars.displayGrade(submission)}
                         </Text>

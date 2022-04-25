@@ -23,9 +23,11 @@ import {PresentationContent, ScreenReaderContent} from '@instructure/ui-a11y-con
 import {Text} from '@instructure/ui-text'
 import {NumberInput} from '@instructure/ui-number-input'
 import {Flex} from '@instructure/ui-flex'
-import I18n from 'i18n!speed_grader'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import round from 'round'
 import NumberHelper from '@canvas/i18n/numberHelper'
+
+const I18n = useI18nScope('speed_grader')
 
 function defaultDurationLate(interval, secondsLate) {
   let durationLate = secondsLate / 3600
@@ -80,7 +82,7 @@ export default function TimeLateInput(props) {
           <NumberInput
             value={numberInputValue.toString()}
             disabled={props.disabled}
-            inline
+            display="inline-block"
             renderLabel={<ScreenReaderContent>{numberInputLabel}</ScreenReaderContent>}
             locale={props.locale}
             min="0"

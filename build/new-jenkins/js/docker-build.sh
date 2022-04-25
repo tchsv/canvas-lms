@@ -7,7 +7,7 @@ CRYSTALBALL_MAP=${CRYSTALBALL_MAP:-0}
 
 echo "CRYSTALBALL_MAP VALUE ${CRYSTALBALL_MAP}"
 
-export CACHE_VERSION="2020-02-02.1"
+export CACHE_VERSION="2022-03-24.1"
 
 source ./build/new-jenkins/docker-build-helpers.sh
 
@@ -43,7 +43,6 @@ tag_many $KARMA_BUILDER_SELECTED_TAG local/karma-builder ${KARMA_BUILDER_TAGS[SA
 
 docker build \
   --build-arg PATCHSET_TAG="$PATCHSET_TAG" \
-  --build-arg RAILS_LOAD_ALL_LOCALES="$RAILS_LOAD_ALL_LOCALES" \
   --file Dockerfile.jenkins.karma-runner \
   --label "KARMA_BUILDER_SELECTED_TAG=$KARMA_BUILDER_SELECTED_TAG" \
   --label "PATCHSET_TAG=$PATCHSET_TAG" \

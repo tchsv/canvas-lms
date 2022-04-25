@@ -22,16 +22,19 @@ import {Query} from 'react-apollo'
 import {Spinner} from '@instructure/ui-spinner'
 import {View} from '@instructure/ui-view'
 
-import I18n from 'i18n!assignments_2'
+import {useScope as useI18nScope} from '@canvas/i18n'
 
 import {TEACHER_QUERY} from '../assignmentData'
 import TeacherView from './TeacherView'
 
+const I18n = useI18nScope('assignments_2')
+
 TeacherQuery.propTypes = {
-  assignmentLid: string
+  assignmentLid: string,
+  messageAttachmentUploadFolderId: string
 }
 
-export default function TeacherQuery({assignmentLid}) {
+export default function TeacherQuery({assignmentLid, messageAttachmentUploadFolderId}) {
   return (
     <Query query={TEACHER_QUERY} variables={{assignmentLid}}>
       {({loading, error, data}) => {
@@ -44,7 +47,12 @@ export default function TeacherQuery({assignmentLid}) {
         } else if (error) {
           return <pre>Error: {JSON.stringify(error, null, 2)}</pre>
         }
-        return <TeacherView assignment={data.assignment} />
+        return (
+          <TeacherView
+            assignment={data.assignment}
+            messageAttachmentUploadFolderId={messageAttachmentUploadFolderId}
+          />
+        )
       }}
     </Query>
   )

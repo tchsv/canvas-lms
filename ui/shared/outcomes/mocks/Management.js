@@ -28,15 +28,14 @@ import {
   IMPORT_OUTCOMES,
   CREATE_LEARNING_OUTCOME_GROUP
 } from '../graphql/Management'
-import {defaultOutcomesManagementRatings} from '../react/hooks/useRatings'
+import {defaultRatings, defaultMasteryPoints} from '../react/hooks/useRatings'
 import {pick, uniq, flattenDeep} from 'lodash'
 
-const ratingsWithTypename = ratings =>
-  ratings
-    .map(rating => pick(rating, ['description', 'points', 'mastery']))
-    .map(r => ({...r, __typename: 'ProficiencyRating'}))
+const testRatings = defaultRatings.map(rating => pick(rating, ['description', 'points']))
 
-const getMasteryPoints = ratings => ratings.filter(rating => rating.mastery)[0].points
+const ratingsWithTypename = ratings => ratings.map(r => ({...r, __typename: 'ProficiencyRating'}))
+
+const maxPoints = ratings => ratings.sort((a, b) => b.points - a.points)[0].points
 
 export const accountMocks = ({childGroupsCount = 10, accountId = '1'} = {}) => [
   {
@@ -182,7 +181,8 @@ export const treeGroupMocks = ({
   groupOutcomesNotImportedCount = [],
   importedOutcomes = [],
   outcomesGroupContextId = contextId,
-  outcomesGroupContextType = contextType
+  outcomesGroupContextType = contextType,
+  withGroupDetailsRefetch = false
 }) => {
   const toString = arg => arg.toString()
 
@@ -237,62 +237,67 @@ export const treeGroupMocks = ({
     const childrenOutcomes = (detailsStructure[gid] || []).map(toString)
     const calculationMethod = 'decaying_average'
     const calculationInt = 65
-    const masteryPoints = getMasteryPoints(defaultOutcomesManagementRatings)
-    const ratings = ratingsWithTypename(defaultOutcomesManagementRatings)
+    const masteryPoints = defaultMasteryPoints
+    const ratings = ratingsWithTypename(testRatings)
 
-    return {
-      request: {
-        query: FIND_GROUP_OUTCOMES,
-        variables: {
-          id: gid,
-          outcomeIsImported: true,
-          outcomesContextId: contextId,
-          outcomesContextType: contextType,
-          targetGroupId: findOutcomesTargetGroupId
-        }
-      },
-      result: {
-        data: {
-          group: {
-            _id: gid,
-            title: `Group ${gid}`,
-            contextType: outcomesGroupContextType,
-            contextId: outcomesGroupContextId,
-            outcomesCount: childrenOutcomes.length,
-            notImportedOutcomesCount: groupOutcomesNotImportedCount[gid] || null,
-            outcomes: {
-              pageInfo: {
-                hasNextPage: false,
-                endCursor: 'Mw',
-                __typename: 'PageInfo'
-              },
-              edges: childrenOutcomes.map(oid => ({
-                _id: oid,
-                node: {
-                  _id: oid,
-                  description: `Description for Outcome ${oid}`,
-                  isImported: stringImportedOutcomes.includes(oid),
-                  title: `Outcome ${oid}`,
-                  calculationMethod,
-                  calculationInt,
-                  masteryPoints,
-                  ratings,
-                  __typename: 'LearningOutcome',
-                  friendlyDescription: {
-                    _id: oid,
-                    description: `Outcome ${oid} - friendly description`,
-                    __typename: 'FriendlyDescription'
-                  }
-                },
-                __typename: 'ContentTag'
-              })),
-              __typename: 'ContentTagConnection'
-            },
-            __typename: 'LearningOutcomeGroup'
-          }
-        }
+    const request = {
+      query: FIND_GROUP_OUTCOMES,
+      variables: {
+        id: gid,
+        outcomeIsImported: true,
+        outcomesContextId: contextId,
+        outcomesContextType: contextType,
+        targetGroupId: findOutcomesTargetGroupId
       }
     }
+
+    const data = (withRefetch = false) => ({
+      data: {
+        group: {
+          _id: gid,
+          title: `${withRefetch && 'Refetched '}Group ${gid}`,
+          contextType: outcomesGroupContextType,
+          contextId: outcomesGroupContextId,
+          outcomesCount: childrenOutcomes.length,
+          notImportedOutcomesCount: groupOutcomesNotImportedCount[gid] || null,
+          outcomes: {
+            pageInfo: {
+              hasNextPage: false,
+              endCursor: 'Mw',
+              __typename: 'PageInfo'
+            },
+            edges: childrenOutcomes.map(oid => ({
+              _id: oid,
+              node: {
+                _id: oid,
+                description: `Description for Outcome ${oid}`,
+                isImported: stringImportedOutcomes.includes(oid),
+                title: `${withRefetch && 'Refetched '}Outcome ${oid}`,
+                calculationMethod,
+                calculationInt,
+                masteryPoints,
+                ratings,
+                __typename: 'LearningOutcome',
+                friendlyDescription: {
+                  _id: oid,
+                  description: `Outcome ${oid} - friendly description`,
+                  __typename: 'FriendlyDescription'
+                }
+              },
+              __typename: 'ContentTag'
+            })),
+            __typename: 'ContentTagConnection'
+          },
+          __typename: 'LearningOutcomeGroup'
+        }
+      }
+    })
+
+    const response = {request, result: data()}
+
+    if (withGroupDetailsRefetch) response.newData = () => data(withGroupDetailsRefetch)
+
+    return response
   })
 
   return [treeBrowserMocks, findModalGroupDetailsMocks].flat()
@@ -484,8 +489,8 @@ const createSearchGroupOutcomesOutcomeMocks = (
 ) => {
   const calculationMethod = 'decaying_average'
   const calculationInt = 65
-  const masteryPoints = getMasteryPoints(defaultOutcomesManagementRatings)
-  const ratings = ratingsWithTypename(defaultOutcomesManagementRatings)
+  const masteryPoints = defaultMasteryPoints
+  const ratings = ratingsWithTypename(testRatings)
 
   // Tech Debt - see OUT-4776 - need to switch this over to a dynamic array like the below code
   // for now too many tests are dependant on the number of outcomes and the order
@@ -594,8 +599,8 @@ export const groupDetailMocks = ({
 } = {}) => {
   const calculationMethod = 'decaying_average'
   const calculationInt = 65
-  const masteryPoints = getMasteryPoints(defaultOutcomesManagementRatings)
-  const ratings = ratingsWithTypename(defaultOutcomesManagementRatings)
+  const masteryPoints = defaultMasteryPoints
+  const ratings = ratingsWithTypename(testRatings)
 
   return [
     {
@@ -1137,8 +1142,8 @@ export const groupDetailMocksFetchMore = ({
 } = {}) => {
   const calculationMethod = 'decaying_average'
   const calculationInt = 65
-  const masteryPoints = getMasteryPoints(defaultOutcomesManagementRatings)
-  const ratings = ratingsWithTypename(defaultOutcomesManagementRatings)
+  const masteryPoints = defaultMasteryPoints
+  const ratings = ratingsWithTypename(testRatings)
 
   return [
     {
@@ -1324,12 +1329,82 @@ export const findOutcomesMocks = ({
   searchQuery = 'mathematics',
   outcomesCount = 25,
   targetGroupId = '0',
-  notImportedOutcomesCount = 1
+  notImportedOutcomesCount = 1,
+  withFindGroupRefetch = false
 } = {}) => {
   const calculationMethod = 'decaying_average'
   const calculationInt = 65
-  const masteryPoints = getMasteryPoints(defaultOutcomesManagementRatings)
-  const ratings = ratingsWithTypename(defaultOutcomesManagementRatings)
+  const masteryPoints = defaultMasteryPoints
+  const ratings = ratingsWithTypename(testRatings)
+
+  const data = ({numOutcomes = outcomesCount, withRefetch = false} = {}) => ({
+    data: {
+      group: {
+        _id: groupId,
+        title: `Group ${groupId}`,
+        contextType: outcomesGroupContextType,
+        contextId: outcomesGroupContextId,
+        outcomesCount: numOutcomes,
+        notImportedOutcomesCount,
+        outcomes: {
+          pageInfo: {
+            hasNextPage: false,
+            endCursor: 'Mw',
+            __typename: 'PageInfo'
+          },
+          edges: [
+            {
+              _id: '5',
+              node: {
+                _id: '5',
+                description: '',
+                isImported,
+                title: `${withRefetch && 'Refetched '}Outcome 5 - Group ${groupId}`,
+                calculationMethod,
+                calculationInt,
+                masteryPoints,
+                ratings,
+                __typename: 'LearningOutcome',
+                friendlyDescription: {
+                  _id: '5',
+                  description: 'Outcome 5 - friendly description',
+                  __typename: 'FriendlyDescription'
+                }
+              },
+              __typename: 'ContentTag'
+            },
+            {
+              _id: '6',
+              node: {
+                _id: '6',
+                description: '',
+                isImported,
+                title: `${withRefetch && 'Refetched '}Outcome 6 - Group ${groupId}`,
+                calculationMethod,
+                calculationInt,
+                masteryPoints,
+                ratings,
+                __typename: 'LearningOutcome',
+                friendlyDescription: {
+                  _id: '6',
+                  description: 'Outcome 6 - friendly description',
+                  __typename: 'FriendlyDescription'
+                }
+              },
+              __typename: 'ContentTag'
+            }
+          ],
+          __typename: 'ContentTagConnection'
+        },
+        __typename: 'LearningOutcomeGroup'
+      }
+    }
+  })
+
+  const firstResponse = {result: data()}
+  if (withFindGroupRefetch) firstResponse.newData = () => data({withRefetch: withFindGroupRefetch})
+
+  const secondResponse = {result: data({numOutcomes: 15, withRefetch: withFindGroupRefetch})}
 
   return [
     {
@@ -1343,69 +1418,7 @@ export const findOutcomesMocks = ({
           targetGroupId
         }
       },
-      result: {
-        data: {
-          group: {
-            _id: groupId,
-            title: `Group ${groupId}`,
-            contextType: outcomesGroupContextType,
-            contextId: outcomesGroupContextId,
-            outcomesCount,
-            notImportedOutcomesCount,
-            outcomes: {
-              pageInfo: {
-                hasNextPage: false,
-                endCursor: 'Mw',
-                __typename: 'PageInfo'
-              },
-              edges: [
-                {
-                  _id: '5',
-                  node: {
-                    _id: '5',
-                    description: '',
-                    isImported,
-                    title: `Outcome 5 - Group ${groupId}`,
-                    calculationMethod,
-                    calculationInt,
-                    masteryPoints,
-                    ratings,
-                    __typename: 'LearningOutcome',
-                    friendlyDescription: {
-                      _id: '5',
-                      description: 'Outcome 5 - friendly description',
-                      __typename: 'FriendlyDescription'
-                    }
-                  },
-                  __typename: 'ContentTag'
-                },
-                {
-                  _id: '6',
-                  node: {
-                    _id: '6',
-                    description: '',
-                    isImported,
-                    title: `Outcome 6 - Group ${groupId}`,
-                    calculationMethod,
-                    calculationInt,
-                    masteryPoints,
-                    ratings,
-                    __typename: 'LearningOutcome',
-                    friendlyDescription: {
-                      _id: '6',
-                      description: 'Outcome 6 - friendly description',
-                      __typename: 'FriendlyDescription'
-                    }
-                  },
-                  __typename: 'ContentTag'
-                }
-              ],
-              __typename: 'ContentTagConnection'
-            },
-            __typename: 'LearningOutcomeGroup'
-          }
-        }
-      }
+      ...firstResponse
     },
     {
       request: {
@@ -1419,69 +1432,7 @@ export const findOutcomesMocks = ({
           targetGroupId
         }
       },
-      result: {
-        data: {
-          group: {
-            _id: groupId,
-            title: `Group ${groupId}`,
-            contextType: outcomesGroupContextType,
-            contextId: outcomesGroupContextId,
-            outcomesCount: 15,
-            notImportedOutcomesCount,
-            outcomes: {
-              pageInfo: {
-                hasNextPage: false,
-                endCursor: 'Mw',
-                __typename: 'PageInfo'
-              },
-              edges: [
-                {
-                  _id: '5',
-                  node: {
-                    _id: '5',
-                    description: '',
-                    isImported,
-                    title: `Outcome 5 - Group ${groupId}`,
-                    calculationMethod,
-                    calculationInt,
-                    masteryPoints,
-                    ratings,
-                    __typename: 'LearningOutcome',
-                    friendlyDescription: {
-                      _id: '5',
-                      description: 'Outcome 5 - friendly description',
-                      __typename: 'FriendlyDescription'
-                    }
-                  },
-                  __typename: 'ContentTag'
-                },
-                {
-                  _id: '6',
-                  node: {
-                    _id: '6',
-                    description: '',
-                    isImported,
-                    title: `Outcome 6 - Group ${groupId}`,
-                    calculationMethod,
-                    calculationInt,
-                    masteryPoints,
-                    ratings,
-                    __typename: 'LearningOutcome',
-                    friendlyDescription: {
-                      _id: '6',
-                      description: 'Outcome 6 - friendly description',
-                      __typename: 'FriendlyDescription'
-                    }
-                  },
-                  __typename: 'ContentTag'
-                }
-              ],
-              __typename: 'ContentTagConnection'
-            },
-            __typename: 'LearningOutcomeGroup'
-          }
-        }
-      }
+      ...secondResponse
     }
   ]
 }
@@ -1545,13 +1496,12 @@ export const createLearningOutcomeMock = ({
   calculationMethod = 'decaying_average',
   calculationInt = 65,
   individualCalculation = false,
-  masteryPoints = 3,
-  ratings = defaultOutcomesManagementRatings,
+  masteryPoints = defaultMasteryPoints,
+  ratings = testRatings,
   individualRatings = false
 } = {}) => {
-  const inputRatings = ratings.map(rating => pick(rating, ['description', 'points']))
-  const pointsPossible = ratings.sort((a, b) => b.points - a.points)[0].points
-  const outputRatings = inputRatings.map(r => ({...r, __typename: 'ProficiencyRating'}))
+  const pointsPossible = maxPoints(ratings)
+  const outputRatings = ratingsWithTypename(ratings)
 
   const successfulResponse = {
     data: {
@@ -1621,7 +1571,7 @@ export const createLearningOutcomeMock = ({
   }
   if (individualRatings) {
     input.masteryPoints = masteryPoints
-    input.ratings = inputRatings
+    input.ratings = ratings
   }
 
   return {
@@ -1643,13 +1593,12 @@ export const updateLearningOutcomeMocks = ({
   calculationMethod = 'decaying_average',
   calculationInt = 65,
   individualCalculation = false,
-  masteryPoints = 3,
-  ratings = defaultOutcomesManagementRatings,
+  masteryPoints = defaultMasteryPoints,
+  ratings = testRatings,
   individualRatings = false
 } = {}) => {
-  const inputRatings = ratings.map(rating => pick(rating, ['description', 'points']))
-  const pointsPossible = ratings.sort((a, b) => b.points - a.points)[0].points
-  const outputRatings = inputRatings.map(r => ({...r, __typename: 'ProficiencyRating'}))
+  const pointsPossible = maxPoints(ratings)
+  const outputRatings = ratingsWithTypename(ratings)
 
   const input = {
     title,
@@ -1662,7 +1611,7 @@ export const updateLearningOutcomeMocks = ({
   }
   if (individualRatings) {
     input.masteryPoints = masteryPoints
-    input.ratings = inputRatings
+    input.ratings = ratings
   }
   const output = {
     ...input,

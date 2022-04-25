@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-import I18n from 'i18n!react_developer_keys'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import PropTypes from 'prop-types'
 import React from 'react'
 import $ from 'jquery'
@@ -26,6 +26,8 @@ import {TextArea} from '@instructure/ui-text-area'
 import {TextInput} from '@instructure/ui-text-input'
 import {PresentationContent} from '@instructure/ui-a11y-content'
 import {Grid} from '@instructure/ui-grid'
+
+const I18n = useI18nScope('react_developer_keys')
 
 const validationMessage = [{text: I18n.t('Field cannot be blank.'), type: 'error'}]
 
@@ -165,7 +167,7 @@ export default class RequiredValues extends React.Component {
       return (
         <TextInput
           name="public_jwk_url"
-          label={I18n.t('Public JWK URL')}
+          renderLabel={I18n.t('Public JWK URL')}
           value={toolConfiguration.public_jwk_url}
           onChange={this.handlePublicJwkUrlChange}
           messages={
@@ -193,7 +195,7 @@ export default class RequiredValues extends React.Component {
               <TextInput
                 name="title"
                 value={toolConfiguration.title}
-                label={I18n.t('* Title')}
+                renderLabel={I18n.t('* Title')}
                 onChange={this.handleTitleChange}
                 messages={showMessages && !toolConfiguration.title ? validationMessage : []}
               />
@@ -214,7 +216,7 @@ export default class RequiredValues extends React.Component {
               <TextInput
                 name="target_link_uri"
                 value={toolConfiguration.target_link_uri}
-                label={I18n.t('* Target Link URI')}
+                renderLabel={I18n.t('* Target Link URI')}
                 onChange={this.handleTargetLinkUriChange}
                 messages={
                   showMessages && !toolConfiguration.target_link_uri ? validationMessage : []
@@ -225,7 +227,7 @@ export default class RequiredValues extends React.Component {
               <TextInput
                 name="oidc_initiation_url"
                 value={toolConfiguration.oidc_initiation_url}
-                label={I18n.t('* OpenID Connect Initiation Url')}
+                renderLabel={I18n.t('* OpenID Connect Initiation Url')}
                 onChange={this.handleOidcInitiationUrlChange}
                 messages={
                   showMessages && !toolConfiguration.oidc_initiation_url ? validationMessage : []

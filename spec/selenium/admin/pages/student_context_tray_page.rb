@@ -21,7 +21,6 @@ require_relative "../../common"
 
 module StudentContextTray
   #------------------------------ Selectors -----------------------------
-
   #------------------------------ Elements ------------------------------
   def student_tray_header
     f(".StudentContextTray-Header")

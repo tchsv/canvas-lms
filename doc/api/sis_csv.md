@@ -282,6 +282,14 @@ recommended to omit this field over using fake email addresses for testing.</td>
 student, student_other, or teacher. Can pass "&lt;delete>" to remove the
 declared user type from the user.</td>
 </tr>
+<td>canvas_password_notification</td>
+<td>boolean</td>
+<td></td>
+<td></td>
+<td>Defaults to false. When true, user is notified for password setup if
+the authentication_provider_id is canvas</td>
+</tr>
+<tr>
 <tr>
 <td>status</td>
 <td>enum</td>
@@ -567,6 +575,13 @@ To remove the Blueprint Course link you can pass 'dissociate' in place of the id
 <td></td>
 <td></td>
 <td>Whether the course is a homeroom course. Requires the courses to be associated with a "Canvas for Elementary"-enabled account.</td>
+</tr>
+<tr>
+<td>friendly_name</td>
+<td>text</td>
+<td></td>
+<td></td>
+<td>Friendly name for course, will be shown only for the Elementary account</td>
 </tr>
 </table>
 

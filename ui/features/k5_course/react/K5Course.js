@@ -18,7 +18,7 @@
 
 import React, {forwardRef, useEffect, useLayoutEffect, useRef, useState} from 'react'
 import {connect, Provider} from 'react-redux'
-import I18n from 'i18n!k5_course'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import PropTypes from 'prop-types'
 
 import {store} from '@instructure/canvas-planner'
@@ -54,7 +54,8 @@ import {
   parseAnnouncementDetails,
   dropCourse,
   DEFAULT_COURSE_COLOR,
-  TAB_IDS
+  TAB_IDS,
+  MOBILE_NAV_BREAKPOINT_PX
 } from '@canvas/k5/react/utils'
 import {theme} from '@canvas/k5/react/k5-theme'
 import EmptyCourse from './EmptyCourse'
@@ -66,7 +67,7 @@ import ResourcesPage from '@canvas/k5/react/ResourcesPage'
 import EmptyModules from './EmptyModules'
 import EmptyHome from './EmptyHome'
 import ObserverOptions, {
-  ObserverListShape,
+  ObservedUsersListShape,
   shouldShowObserverOptions
 } from '@canvas/observer-picker'
 import GroupsPage from '@canvas/k5/react/GroupsPage'
@@ -74,9 +75,10 @@ import Modal from '@canvas/instui-bindings/react/InstuiModal'
 import {showFlashError} from '@canvas/alerts/react/FlashAlert'
 import {savedObservedId} from '@canvas/observer-picker/ObserverGetObservee'
 
+const I18n = useI18nScope('k5_course')
+
 const HERO_ASPECT_RATIO = 5
 const HERO_STICKY_HEIGHT_PX = 64
-const MOBILE_NAV_BREAKPOINT_PX = 768
 const STICKY_HERO_CUTOFF_BUFFER_PX = 80
 
 const COURSE_TABS = [
@@ -310,7 +312,7 @@ export const CourseHeaderOptions = forwardRef(
       studentViewPath,
       canReadAsAdmin,
       courseContext,
-      observerList,
+      observedUsersList,
       currentUser,
       handleChangeObservedUser,
       showingMobileNav,
@@ -320,85 +322,64 @@ export const CourseHeaderOptions = forwardRef(
     },
     ref
   ) => {
-    const buttonProps = {
-      id: 'manage-subject-btn',
-      'data-testid': 'manage-button',
-      href: settingsPath,
-      renderIcon: <IconEditSolid />
-    }
-    const altText = I18n.t('Manage Subject: %{courseContext}', {courseContext})
-
-    const collapseManageButton = showingMobileNav && showObserverOptions
-    const sideItemsWidth = '200px'
-    const isFullWidthBody = document.body.classList?.contains('full-width')
-    let studentViewBtnPosition = 'end'
-    if (isMasterCourse) {
-      if (isFullWidthBody || windowWidth < 1480) {
-        studentViewBtnPosition = 'start'
-      } else if (windowWidth < 1500) {
-        studentViewBtnPosition = 'center'
+    const ManageButton = () => {
+      const buttonProps = {
+        id: 'manage-subject-btn',
+        'data-testid': 'manage-button',
+        href: settingsPath,
+        renderIcon: <IconEditSolid />
       }
-    }
-    const manageButton = (
-      <Flex.Item
-        size={collapseManageButton ? undefined : sideItemsWidth}
-        key="course-header-manage"
-      >
-        {collapseManageButton ? (
-          <IconButton {...buttonProps} screenReaderLabel={altText} margin="0 small 0 0" />
-        ) : (
+      const altText = I18n.t('Manage Subject: %{courseContext}', {courseContext})
+      if (showingMobileNav && showObserverOptions) {
+        return <IconButton {...buttonProps} screenReaderLabel={altText} margin="0 small 0 0" />
+      } else {
+        return (
           <Button {...buttonProps}>
             <AccessibleContent alt={altText}>{I18n.t('Manage Subject')}</AccessibleContent>
           </Button>
-        )}
-      </Flex.Item>
+        )
+      }
+    }
+
+    const ObserverOptionsContainer = () => (
+      <View as="div" display="inline-block" width={showingMobileNav ? '100%' : '16em'}>
+        <ScreenReaderContent>
+          <Heading as="h1">{courseContext}</Heading>
+        </ScreenReaderContent>
+        <ObserverOptions
+          observedUsersList={observedUsersList}
+          currentUser={currentUser}
+          handleChangeObservedUser={handleChangeObservedUser}
+          canAddObservee={false}
+        />
+      </View>
     )
 
-    const observerOptions = (
-      <Flex.Item shouldGrow textAlign="center" key="course-header-observer-options">
-        <View as="div" display="inline-block" width={showingMobileNav ? '100%' : '16em'}>
-          <ScreenReaderContent>
-            <Heading as="h1">{courseContext}</Heading>
-          </ScreenReaderContent>
-          <ObserverOptions
-            observerList={observerList}
-            currentUser={currentUser}
-            handleChangeObservedUser={handleChangeObservedUser}
-            canAddObservee={false}
-          />
-        </View>
-      </Flex.Item>
-    )
-
-    const studentViewButton = (
-      <Flex.Item
-        textAlign={studentViewBtnPosition}
-        size={sideItemsWidth}
-        key="course-header-student-view"
+    const StudentViewButton = () => (
+      <Button
+        id="student-view-btn"
+        href={studentViewPath}
+        data-method="post"
+        renderIcon={<IconStudentViewLine />}
+        margin="0 0 0 x-small"
       >
-        <Button
-          id="student-view-btn"
-          href={studentViewPath}
-          data-method="post"
-          renderIcon={<IconStudentViewLine />}
-        >
-          {I18n.t('Student View')}
-        </Button>
-      </Flex.Item>
+        {I18n.t('Student View')}
+      </Button>
     )
 
-    const headerItems = []
-    if (canReadAsAdmin) {
-      headerItems.push(manageButton)
-    }
-    if (showObserverOptions) {
-      headerItems.push(observerOptions)
-    }
-    if (showStudentView && !showingMobileNav) {
-      headerItems.push(studentViewButton)
+    const isFullWidthBody = document.body.classList?.contains('full-width')
+    let rightOptionsMargin = '0'
+    if (isMasterCourse) {
+      if (isFullWidthBody || windowWidth < 1480) {
+        rightOptionsMargin = 'x-large'
+      } else if (windowWidth < 1500) {
+        rightOptionsMargin = 'small'
+      }
     }
 
-    return headerItems.length > 0 ? (
+    const showManageButton = canReadAsAdmin
+    const showStudentViewButton = showStudentView && !showingMobileNav
+    return showManageButton || showObserverOptions || showStudentViewButton ? (
       <div ref={ref}>
         <View
           id="k5-course-header-options"
@@ -408,7 +389,11 @@ export const CourseHeaderOptions = forwardRef(
           margin="0 0 medium 0"
         >
           <Flex alignItems="center" justifyItems="space-between">
-            {headerItems}
+            <Flex.Item>{showManageButton && <ManageButton />}</Flex.Item>
+            <Flex.Item textAlign="end" shouldGrow margin={`0 ${rightOptionsMargin} 0 0`}>
+              {showObserverOptions && <ObserverOptionsContainer />}
+              {showStudentViewButton && <StudentViewButton />}
+            </Flex.Item>
           </Flex>
         </View>
       </div>
@@ -422,7 +407,7 @@ CourseHeaderOptions.propTypes = {
   studentViewPath: PropTypes.string.isRequired,
   canReadAsAdmin: PropTypes.bool.isRequired,
   courseContext: PropTypes.string.isRequired,
-  observerList: ObserverListShape.isRequired,
+  observedUsersList: ObservedUsersListShape.isRequired,
   handleChangeObservedUser: PropTypes.func.isRequired,
   currentUser: PropTypes.object.isRequired,
   showingMobileNav: PropTypes.bool.isRequired,
@@ -462,15 +447,15 @@ export function K5Course({
   pagesPath,
   hasWikiPages,
   hasSyllabusBody,
-  parentSupportEnabled,
-  observerList,
+  observedUsersList,
   selfEnrollment,
   tabContentOnly,
-  isMasterCourse
+  isMasterCourse,
+  showImmersiveReader
 }) {
-  const initialObservedId = observerList.find(o => o.id === savedObservedId(currentUser.id))
+  const initialObservedId = observedUsersList.find(o => o.id === savedObservedId(currentUser.id))
     ? savedObservedId(currentUser.id)
-    : undefined
+    : null
 
   const renderTabs = toRenderTabs(tabs, hasSyllabusBody)
   const {activeTab, currentTab, handleTabChange} = useTabState(defaultTab, renderTabs)
@@ -483,8 +468,8 @@ export function K5Course({
     singleCourse: true,
     observedUserId,
     isObserver:
-      observerList.length > 1 ||
-      (observerList.length === 1 && observerList[0].id !== currentUser.id)
+      observedUsersList.length > 1 ||
+      (observedUsersList.length === 1 && observedUsersList[0].id !== currentUser.id)
   })
 
   /* Rails renders the modules partial into #k5-modules-container. After the first render, we hide that div and
@@ -497,8 +482,7 @@ export function K5Course({
   const tabsPaddingRef = useRef(null)
   const [modulesExist, setModulesExist] = useState(true)
   const [windowSize, setWindowSize] = useState(() => getWindowSize())
-  const showObserverOptions =
-    parentSupportEnabled && shouldShowObserverOptions(observerList, currentUser)
+  const showObserverOptions = shouldShowObserverOptions(observedUsersList, currentUser)
   const showingMobileNav = windowSize.width < MOBILE_NAV_BREAKPOINT_PX
   useEffect(() => {
     modulesRef.current = document.getElementById('k5-modules-container')
@@ -627,8 +611,7 @@ export function K5Course({
           showStudentView={showStudentView}
           studentViewPath={`${studentViewPath + window.location.hash}`}
           courseContext={name}
-          parentSupportEnabled={parentSupportEnabled}
-          observerList={observerList}
+          observedUsersList={observedUsersList}
           currentUser={currentUser}
           handleChangeObservedUser={setObservedUserId}
           showingMobileNav={showingMobileNav}
@@ -652,6 +635,7 @@ export function K5Course({
               content={courseOverview.body}
               url={`/courses/${id}/pages/${courseOverview.url}/edit`}
               canEdit={courseOverview.canEdit}
+              showImmersiveReader={showImmersiveReader}
             />
           ) : (
             <EmptyHome
@@ -740,11 +724,11 @@ K5Course.propTypes = {
   pagesPath: PropTypes.string.isRequired,
   hasWikiPages: PropTypes.bool.isRequired,
   hasSyllabusBody: PropTypes.bool.isRequired,
-  parentSupportEnabled: PropTypes.bool.isRequired,
-  observerList: ObserverListShape.isRequired,
+  observedUsersList: ObservedUsersListShape.isRequired,
   selfEnrollment: PropTypes.object,
   tabContentOnly: PropTypes.bool,
-  isMasterCourse: PropTypes.bool.isRequired
+  isMasterCourse: PropTypes.bool.isRequired,
+  showImmersiveReader: PropTypes.bool.isRequired
 }
 
 const WrappedK5Course = connect(mapStateToProps)(K5Course)

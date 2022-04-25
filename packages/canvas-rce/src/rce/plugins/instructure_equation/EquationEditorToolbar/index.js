@@ -23,8 +23,7 @@ import {Tabs} from '@instructure/ui-tabs'
 import {ScreenReaderContent} from '@instructure/ui-a11y-content'
 import {Button} from '@instructure/ui-buttons'
 import buttons from './buttons'
-
-import {convertLatexToMarkup} from '../mathlive'
+import MathIcon from '../MathIcon'
 
 const buttonContainerStyle = {
   display: 'inline-block',
@@ -32,7 +31,7 @@ const buttonContainerStyle = {
   paddingRight: '5px'
 }
 
-export default function EquationEditorToolbar(props) {
+function EquationEditorToolbar(props) {
   const [selectedTab, setSelectedTab] = useState('Basic')
 
   const handleTabChange = (event, {index}) => {
@@ -46,13 +45,9 @@ export default function EquationEditorToolbar(props) {
       renderTitle={section.name}
       isSelected={selectedTab === section.name}
     >
-      {section.commands.map(({displayName, command, advancedCommand}) => {
+      {section.commands.map(({displayName, command, advancedCommand, label}) => {
         const name = displayName || command
-        const icon = (
-          <span
-            dangerouslySetInnerHTML={{__html: convertLatexToMarkup(name, {mathstyle: 'textstyle'})}}
-          />
-        )
+        const icon = <MathIcon command={command} />
 
         // I'm inlining styles here because for some reason the RCE plugin plays
         // poorly with the way webpack is compiling styles, causing rules from a
@@ -61,7 +56,9 @@ export default function EquationEditorToolbar(props) {
         return (
           <div style={buttonContainerStyle} key={name}>
             <Button onClick={() => props.executeCommand(command, advancedCommand)} icon={icon}>
-              <ScreenReaderContent>LaTeX: {name}</ScreenReaderContent>
+              <ScreenReaderContent>
+                {label}, LaTeX: {name}
+              </ScreenReaderContent>
             </Button>
           </div>
         )
@@ -79,3 +76,6 @@ export default function EquationEditorToolbar(props) {
 EquationEditorToolbar.propTypes = {
   executeCommand: PropTypes.func.isRequired
 }
+
+const MemoizedEquationEditorToolbar = React.memo(EquationEditorToolbar)
+export default MemoizedEquationEditorToolbar

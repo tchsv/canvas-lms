@@ -160,11 +160,13 @@ module PostgreSQLAdapterExtensions
     end
   end
 
-  def index_exists?(_table_name, columns, _options = {})
+  def index_exists?(table_name, columns, options = {})
+    # This makes up for a rails bug where column as an option does not work correctly with `if_exists` on `remove_index`
+    columns ||= options[:column]
     raise ArgumentError, "if you're identifying an index by name only, you should use index_name_exists?" if columns.is_a?(Hash) && columns[:name]
-    raise ArgumentError, "columns should be a string, a symbol, or an array of those " unless columns.is_a?(String) || columns.is_a?(Symbol) || columns.is_a?(Array)
+    raise ArgumentError, "columns should be a string, a symbol, or an array of those " unless columns.nil? || columns.is_a?(String) || columns.is_a?(Symbol) || columns.is_a?(Array)
 
-    super
+    super(table_name, columns, options)
   end
 
   # some migration specs test migrations that add concurrent indexes; detect that, and strip the concurrent
@@ -175,7 +177,7 @@ module PostgreSQLAdapterExtensions
     [index_name, index_type, index_columns, index_options, algorithm, using]
   end
 
-  if CANVAS_RAILS6_0
+  if Rails.version < "6.1"
     def remove_index(table_name, options = {})
       table = ActiveRecord::ConnectionAdapters::PostgreSQL::Utils.extract_schema_qualified_name(table_name.to_s)
 
@@ -212,40 +214,42 @@ module PostgreSQLAdapterExtensions
     end
   end
 
-  def index_name_for_remove(table_name, options = {})
-    return options[:name] if can_remove_index_by_name?(options)
+  if Rails.version < "6.1"
+    def index_name_for_remove(table_name, options = {})
+      return options[:name] if can_remove_index_by_name?(options)
 
-    checks = []
+      checks = []
 
-    if options.is_a?(Hash)
-      checks << ->(i) { i.name == options[:name].to_s } if options.key?(:name)
-      column_names = index_column_names(options[:column])
-    else
-      column_names = index_column_names(options)
+      if options.is_a?(Hash)
+        checks << ->(i) { i.name == options[:name].to_s } if options.key?(:name)
+        column_names = index_column_names(options[:column])
+      else
+        column_names = index_column_names(options)
+      end
+
+      if column_names.present?
+        checks << ->(i) { index_name(table_name, i.columns) == index_name(table_name, column_names) }
+      end
+
+      raise ArgumentError, "No name or columns specified" if checks.none?
+
+      matching_indexes = indexes(table_name).select { |i| checks.all? { |check| check[i] } }
+
+      if matching_indexes.count > 1
+        raise ArgumentError, "Multiple indexes found on #{table_name} columns #{column_names}. " \
+                             "Specify an index name from #{matching_indexes.map(&:name).join(", ")}"
+      elsif matching_indexes.none?
+        return if options.is_a?(Hash) && options[:if_exists]
+
+        raise ArgumentError, "No indexes found on #{table_name} with the options provided."
+      else
+        matching_indexes.first.name
+      end
     end
 
-    if column_names.present?
-      checks << ->(i) { index_name(table_name, i.columns) == index_name(table_name, column_names) }
+    def can_remove_index_by_name?(options)
+      options.is_a?(Hash) && options.key?(:name) && options.except(:name, :algorithm, :if_exists).empty?
     end
-
-    raise ArgumentError, "No name or columns specified" if checks.none?
-
-    matching_indexes = indexes(table_name).select { |i| checks.all? { |check| check[i] } }
-
-    if matching_indexes.count > 1
-      raise ArgumentError, "Multiple indexes found on #{table_name} columns #{column_names}. " \
-                           "Specify an index name from #{matching_indexes.map(&:name).join(", ")}"
-    elsif matching_indexes.none?
-      return if options.is_a?(Hash) && options[:if_exists]
-
-      raise ArgumentError, "No indexes found on #{table_name} with the options provided."
-    else
-      matching_indexes.first.name
-    end
-  end
-
-  def can_remove_index_by_name?(options)
-    options.is_a?(Hash) && options.key?(:name) && options.except(:name, :algorithm, :if_exists).empty?
   end
 
   def add_column(table_name, column_name, type, if_not_exists: false, **options)
@@ -412,7 +416,7 @@ module ReferenceDefinitionExtensions
     end
 
     if index
-      if CANVAS_RAILS6_0
+      if Rails.version < "6.1"
         table.index(column_names, index_options)
       else
         table.index(column_names, **index_options(table.name))
@@ -441,7 +445,7 @@ module SchemaStatementsExtensions
   end
 end
 
-if CANVAS_RAILS6_0
+if Rails.version < "6.1"
   ActiveRecord::ConnectionAdapters::PostgreSQLAdapter::SchemaCreation.prepend(SchemaCreationExtensions)
 else
   ActiveRecord::ConnectionAdapters::PostgreSQL::SchemaCreation.prepend(SchemaCreationExtensions)

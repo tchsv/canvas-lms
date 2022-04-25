@@ -92,8 +92,8 @@
     "apply_781a2546": {
         "message": "Bruk"
     },
-    "apply_changes_to_all_instances_of_this_button_and__3a3bea34": {
-        "message": "Bruk endringer på alle forekomster av denne Knappen og Ikonet i emnet"
+    "apply_changes_to_all_instances_of_this_icon_maker__2642f466": {
+        "message": "Bruk endringer på alle forekomster av denne Ikonskaper-ikonet i emnet"
     },
     "apps_54d24a47": {
         "message": "Apper"
@@ -103,6 +103,9 @@
     },
     "arrows_464a3e54": {
         "message": "Piler"
+    },
+    "art_icon_8e1daad": {
+        "message": "Kunstikon"
     },
     "aspect_ratio_will_be_preserved_cb5fdfb8": {
         "message": "Dimensjonene vil bli bevart"
@@ -176,26 +179,17 @@
     "below_is_an_example_of_how_students_will_see_their_8f7e7971": {
         "message": "Nedenfor er et eksempel på hvordan studenter vil se timeplanen sin"
     },
+    "black_4cb01371": {
+        "message": "Svart"
+    },
+    "blue_daf8fea9": {
+        "message": "Blå"
+    },
     "bottom_third_5f5fec1d": {
         "message": "Nedre tredjedel"
     },
-    "button_color_608a0242": {
-        "message": "Knappefarge"
-    },
-    "button_outline_cf14f071": {
-        "message": "Knappeomriss"
-    },
-    "button_outline_size_cc1d1df7": {
-        "message": "Knappeomriss størrelse"
-    },
-    "button_shape_dbecb573": {
-        "message": "Knappeform"
-    },
-    "button_size_20f5fce1": {
-        "message": "Knappestørrelse"
-    },
-    "buttons_and_icons_e66ee12c": {
-        "message": "Knapper og ikoner"
+    "brick_f2656265": {
+        "message": "Blokk"
     },
     "c_2001_acme_inc_283f7f80": {
         "message": "(c) 2001 Acme Inc."
@@ -226,6 +220,9 @@
     },
     "clear_2084585f": {
         "message": "Tøm"
+    },
+    "clear_image_3213fe62": {
+        "message": "Fjern bilde"
     },
     "clear_selected_file_82388e50": {
         "message": "Fjern valgt fil"
@@ -269,8 +266,11 @@
     "collapse_to_hide_types_1ab46d2e": {
         "message": "Kollaps for å skjule { types }"
     },
-    "color_color_eb64b08": {
-        "message": "Farge { color }"
+    "color_picker_6b359edf": {
+        "message": "Fargevelger"
+    },
+    "color_picker_colorname_selected_ad4cf400": {
+        "message": "Fargevelger ({ colorName } valgt)"
     },
     "computer_1d7dfa6f": {
         "message": "Datamaskin"
@@ -335,11 +335,17 @@
     "course_to_do_bcbbab54": {
         "message": "{ course } GJØREMÅL"
     },
-    "create_button_and_icon_5c089934": {
-        "message": "Opprett knapp og ikon"
+    "create_icon_110d6463": {
+        "message": "Opprett ikon"
+    },
+    "create_icon_maker_icon_c716bffe": {
+        "message": "Opprett Ikonskaper-ikon"
     },
     "creative_commons_license_725584ae": {
         "message": "Creative Commons-lisens:"
+    },
+    "crop_image_41bf940c": {
+        "message": "Beskjær bilde"
     },
     "crop_image_807ebb08": {
         "message": "Beskjær bilde"
@@ -349,6 +355,9 @@
     },
     "custom_6979cd81": {
         "message": "Tilpasset"
+    },
+    "cyan_c1d5f68a": {
+        "message": "Cyan"
     },
     "date_added_ed5ad465": {
         "message": "Lagt til dato"
@@ -373,6 +382,9 @@
     },
     "decrease_indent_de6343ab": {
         "message": "Reduser innrykk"
+    },
+    "deep_purple_bb3e2907": {
+        "message": "Mørkelilla"
     },
     "default_bulleted_unordered_list_47079da8": {
         "message": "standard punkt-uordnet liste"
@@ -400,9 +412,6 @@
     },
     "diamond_b8dfe7ae": {
         "message": "Diamant"
-    },
-    "dimension_type_55c83e4e": {
-        "message": "Dimensjonstype"
     },
     "dimensions_45ddb7b7": {
         "message": "Dimensjoner"
@@ -479,6 +488,9 @@
     "edit_existing_button_icon_3d0277bd": {
         "message": "Rediger eksisterende knapp/ikon"
     },
+    "edit_icon_2c6b0e91": {
+        "message": "Rediger ikon"
+    },
     "edit_link_7f53bebb": {
         "message": "Rediger lenke"
     },
@@ -497,17 +509,17 @@
     "embed_image_1080badc": {
         "message": "Bygg inn bilde"
     },
-    "embed_options_tray_901cfd19": {
-        "message": "Legg ved valgbrett"
-    },
-    "embed_preview_2d741e1f": {
-        "message": "Legg ved forhåndsvisning"
-    },
     "embed_video_a97a64af": {
         "message": "Legg ved video"
     },
     "embedded_content_aaeb4d3d": {
         "message": "inkludert innhold"
+    },
+    "engineering_icon_f8f3cf43": {
+        "message": "Ingeniør-ikon"
+    },
+    "english_icon_25bfe845": {
+        "message": "Engelsk-ikon"
     },
     "enter_at_least_3_characters_to_search_4f037ee0": {
         "message": "Skriv inn minst tre tegn for å søke"
@@ -553,6 +565,12 @@
     },
     "extra_small_9ae33252": {
         "message": "Ekstra liten"
+    },
+    "extracurricular_icon_67c8ca42": {
+        "message": "Utenomfaglig-ikon"
+    },
+    "failed_getting_course_list_49846a93": {
+        "message": "Kunne ikke hente emneliste"
     },
     "failed_peeking_into_your_future_e95b9306": {
         "message": "Kunne ikke kikke inn i fremtiden"
@@ -653,6 +671,12 @@
     "greek_65c5b3f7": {
         "message": "Gresk"
     },
+    "green_15af4778": {
+        "message": "Grønn"
+    },
+    "grey_a55dceff": {
+        "message": "Grå"
+    },
     "group_documents_8bfd6ae6": {
         "message": "Gruppedokumenter"
     },
@@ -683,6 +707,9 @@
     "heading_4_b2e74be7": {
         "message": "Overskrift 4"
     },
+    "health_icon_8d292eb5": {
+        "message": "Helse-ikon"
+    },
     "height_69b03e15": {
         "message": "Høyde"
     },
@@ -710,6 +737,24 @@
     "i_hold_the_copyright_71ee91b1": {
         "message": "Jeg har opphavsretten"
     },
+    "icon_color_b86dd6d6": {
+        "message": "Ikonfarge"
+    },
+    "icon_maker_icons_cc560f7e": {
+        "message": "Ikonskaper-ikoner"
+    },
+    "icon_outline_e978dc0c": {
+        "message": "Ikonomriss"
+    },
+    "icon_outline_size_33f39b86": {
+        "message": "Ikonomriss størrelse"
+    },
+    "icon_shape_30b61e7": {
+        "message": "Ikonform"
+    },
+    "icon_size_9353edea": {
+        "message": "Ikonstørrelse"
+    },
     "if_you_do_not_select_usage_rights_now_this_file_wi_14e07ab5": {
         "message": "Dersom du ikke velger bruksrettigheter nå, vil denne filen være upublisert når den lastes opp."
     },
@@ -722,11 +767,17 @@
     "image_options_tray_90a46006": {
         "message": "Brett for bilde-alternativer"
     },
+    "image_to_crop_3a34487d": {
+        "message": "Bilde som skal beskjæres"
+    },
     "images_7ce26570": {
         "message": "Bilder"
     },
     "increase_indent_6d550a4a": {
         "message": "Øk innrykk"
+    },
+    "indigo_2035fc55": {
+        "message": "Indigo"
     },
     "insert_593145ef": {
         "message": "Sett inn"
@@ -773,6 +824,12 @@
     "language_arts_35b79a8b": {
         "message": "Språkkunst"
     },
+    "language_arts_icon_a798b0f8": {
+        "message": "Språkkunst-ikon"
+    },
+    "languages_icon_9d20539": {
+        "message": "Språk-ikon"
+    },
     "large_9c5e80e7": {
         "message": "Stor"
     },
@@ -781,6 +838,12 @@
     },
     "left_to_right_e9b4fd06": {
         "message": "Venstre-til-høyre"
+    },
+    "library_icon_ae1e54cf": {
+        "message": "Bibliotek-ikon"
+    },
+    "light_blue_5374f600": {
+        "message": "Lyseblå"
     },
     "link_7262adec": {
         "message": "Lenke"
@@ -848,11 +911,20 @@
     "looks_like_there_isn_t_anything_here_d9bcef49": {
         "message": "Ser ikke ut til at det er noe her"
     },
+    "magenta_4a65993c": {
+        "message": "Magenta"
+    },
     "math_ede93050": {
         "message": "Matte"
     },
+    "math_icon_ad4e9d03": {
+        "message": "Matte-ikon"
+    },
     "media_af190855": {
         "message": "Medie"
+    },
+    "media_file_is_processing_please_try_again_later_58a6d49": {
+        "message": "Mediefilen behandles. Prøv igjen senere."
     },
     "medium_5a8e9ead": {
         "message": "Medium"
@@ -878,6 +950,9 @@
     "multi_color_image_63d7372f": {
         "message": "Bilde i flere farger"
     },
+    "music_icon_4db5c972": {
+        "message": "Musikk-ikon"
+    },
     "must_be_at_least_percentage_22e373b6": {
         "message": "Må være minst { percentage }%"
     },
@@ -892,6 +967,9 @@
     },
     "name_1aed4a1b": {
         "message": "Navn"
+    },
+    "name_color_ceec76ff": {
+        "message": "{ name } ({ color })"
     },
     "navigate_through_the_menu_or_toolbar_415a4e50": {
         "message": "Navigere gjennom menyen eller verktøylinjen"
@@ -974,6 +1052,9 @@
     "octagon_e48be9f": {
         "message": "Åttekant"
     },
+    "olive_6a3e4d6b": {
+        "message": "Oliven"
+    },
     "only_most_recent_grading_period_shown_f1ad6458": {
         "message": "*Bare den nyeste vurderingsperioden vises."
     },
@@ -992,8 +1073,8 @@
     "optional_add_course_ef0d70fc": {
         "message": "Valgfri: Legg til emne"
     },
-    "options_3ab0ea65": {
-        "message": "Valg"
+    "orange_81386a62": {
+        "message": "Oransje"
     },
     "ordered_and_unordered_lists_cfadfc38": {
         "message": "Ordnede og uordnede lister"
@@ -1030,6 +1111,15 @@
     },
     "percentage_must_be_a_number_8033c341": {
         "message": "Prosent må være et tall"
+    },
+    "performing_arts_icon_f3497486": {
+        "message": "Scenekunst-ikon"
+    },
+    "physical_education_icon_d7dffd3e": {
+        "message": "Gymnastikk-ikon"
+    },
+    "pink_68ad45cb": {
+        "message": "Rosa"
     },
     "pixels_52ece7d1": {
         "message": "Piksler"
@@ -1076,6 +1166,12 @@
     "published_when_302d8e23": {
         "message": "Publisert: { when }"
     },
+    "pumpkin_904428d5": {
+        "message": "Gresskar"
+    },
+    "purple_7678a9fc": {
+        "message": "Lilla"
+    },
     "quiz_e0dcce8f": {
         "message": "Quiz"
     },
@@ -1091,11 +1187,17 @@
     "record_upload_media_5fdce166": {
         "message": "Gjør opptak/last opp media"
     },
+    "red_8258edf3": {
+        "message": "Rød"
+    },
     "redo_363c58b7": {
         "message": "Gjør om"
     },
     "relationships_6602af70": {
         "message": "Forbindelser"
+    },
+    "religion_icon_246e0be1": {
+        "message": "Religion-ikon"
     },
     "reminder_date_4564d12d": {
         "message": "Påminnelse: { date }"
@@ -1115,6 +1217,9 @@
     "rich_content_editor_2708ef21": {
         "message": "Rich teksteditor"
     },
+    "rich_text_area_press_alt_0_for_rich_content_editor_9d23437f": {
+        "message": "Rikt tekstområde Trykk Alt+0 for Rich teksteditor-snarveier."
+    },
     "right_to_left_9cfb092a": {
         "message": "Høyre-til-venstre"
     },
@@ -1124,8 +1229,8 @@
     "save_11a80ec3": {
         "message": "Lagre"
     },
-    "saved_buttons_and_icons_8278eed2": {
-        "message": "Lagrede knapper og ikoner"
+    "saved_icon_maker_icons_df86e2a1": {
+        "message": "Lagrede Ikonskaper-ikoner"
     },
     "schedule_preview_3bcda153": {
         "message": "Planlegg forhåndsvisning"
@@ -1163,9 +1268,6 @@
     "show_audio_options_b489926b": {
         "message": "Vis lydalternativer"
     },
-    "show_embed_options_ef8d7ef": {
-        "message": "Vis valg for å legge til"
-    },
     "show_image_options_1e2ecc6b": {
         "message": "Vis bildemuligheter"
     },
@@ -1180,6 +1282,9 @@
     },
     "single_color_image_4e5d4dbc": {
         "message": "Enkeltfargebilde"
+    },
+    "single_color_image_color_95fa9a87": {
+        "message": "Enkeltfargebilde-farge"
     },
     "size_b30e1077": {
         "message": "Størrelse"
@@ -1199,17 +1304,8 @@
     "something_went_wrong_and_i_don_t_know_what_to_show_e0c54ec8": {
         "message": "Noe gikk galt og jeg vet ikke hva jeg skal vise deg."
     },
-    "something_went_wrong_check_your_connection_and_try_2a7b2d13": {
-        "message": "Noe gikk galt, sjekk forbindelsen din og forsøk igjen."
-    },
     "something_went_wrong_d238c551": {
         "message": "Noe gikk galt"
-    },
-    "something_went_wrong_try_again_after_refreshing_th_e094eb8d": {
-        "message": "Noe gikk galt, prøv igjen etter å ha oppdatert siden"
-    },
-    "something_went_wrong_uploading_check_your_connecti_aa201f15": {
-        "message": "Noe gikk galt under opplasting, sjekk forbindelsen din og forsøk igjen."
     },
     "sort_by_e75f9e3e": {
         "message": "Sortert på"
@@ -1234,6 +1330,9 @@
     },
     "starttime_to_endtime_d7cc249d": {
         "message": "{ startTime } til { endTime }"
+    },
+    "steel_blue_14296f08": {
+        "message": "Stålblå"
     },
     "styles_2aa721ef": {
         "message": "Stiler"
@@ -1270,6 +1369,9 @@
     },
     "task_16b0ef38": {
         "message": "Oppgave"
+    },
+    "teal_f729a294": {
+        "message": "Blågrønn"
     },
     "text_7f4593da": {
         "message": "Tekst"
@@ -1400,9 +1502,6 @@
     "uploading_19e8a4e7": {
         "message": "Laster opp"
     },
-    "uploading_closed_captions_subtitles_failed_bc093f3": {
-        "message": "Opplasting at teksting/underteksting mislyktes."
-    },
     "uppercase_alphabetic_ordered_list_3f5aa6b2": {
         "message": "stor bokstav alfabetisert organisert liste"
     },
@@ -1490,6 +1589,9 @@
     "weekly_schedule_navigation_6b042645": {
         "message": "Ukentlig tidsplannavigasjon"
     },
+    "white_87fa64fd": {
+        "message": "Hvit"
+    },
     "width_492fec76": {
         "message": "Bredd"
     },
@@ -1522,5 +1624,11 @@
     },
     "you_ve_scrolled_back_to_your_very_first_to_do_29374681": {
         "message": "Du har rullet tilbake til din aller første gjøremålliste!"
+    },
+    "zoom_in_image_bb97d4f": {
+        "message": "Zoom inn bildet"
+    },
+    "zoom_out_image_d0a0a2ec": {
+        "message": "Zoom ut bildet"
     }
 }

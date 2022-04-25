@@ -20,7 +20,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import {View} from '@instructure/ui-view'
 import {Menu} from '@instructure/ui-menu'
-import {Button} from '@instructure/ui-buttons'
+import {Button, IconButton} from '@instructure/ui-buttons'
 import {
   IconMoreLine,
   IconEditLine,
@@ -31,8 +31,10 @@ import {
   IconImportLine
 } from '@instructure/ui-icons'
 import {ScreenReaderContent} from '@instructure/ui-a11y-content'
-import I18n from 'i18n!OutcomeManagement'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import {stripHtmlTags} from '@canvas/outcomes/stripHtmlTags'
+
+const I18n = useI18nScope('OutcomeManagement')
 
 const OutcomeKebabMenu = ({
   menuTitle,
@@ -48,9 +50,12 @@ const OutcomeKebabMenu = ({
   return (
     <Menu
       trigger={
-        <Button variant="icon" icon={IconMoreLine}>
-          <ScreenReaderContent>{menuTitle || I18n.t('Menu')}</ScreenReaderContent>
-        </Button>
+        <IconButton
+          renderIcon={IconMoreLine}
+          withBackground={false}
+          withBorder={false}
+          screenReaderLabel={menuTitle || I18n.t('Menu')}
+        />
       }
       onSelect={onMenuHandler}
     >

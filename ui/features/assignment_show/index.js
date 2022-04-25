@@ -17,7 +17,7 @@
  */
 
 import INST from 'browser-sniffer'
-import I18n from 'i18n!assignment'
+import {useScope as useI18nScope} from '@canvas/i18n'
 import $ from 'jquery'
 import React from 'react'
 import ReactDOM from 'react-dom'
@@ -39,9 +39,12 @@ import DirectShareCourseTray from '@canvas/direct-sharing/react/components/Direc
 import {setupSubmitHandler} from '@canvas/assignments/jquery/reuploadSubmissionsHelper'
 import ready from '@instructure/ready'
 
+const I18n = useI18nScope('assignment')
+
 ready(() => {
   const lockManager = new LockManager()
   lockManager.init({itemType: 'assignment', page: 'show'})
+  renderCoursePacingNotice()
 })
 
 let studentGroupSelectionRequestTrackers = []
@@ -106,6 +109,22 @@ function renderStudentGroupFilter() {
       />,
       $mountPoint
     )
+  }
+}
+
+function renderCoursePacingNotice() {
+  const $mountPoint = document.getElementById('course_paces_due_date_notice')
+
+  if ($mountPoint) {
+    import('@canvas/due-dates/react/CoursePacingNotice')
+      .then(CoursePacingNoticeModule => {
+        const renderNotice = CoursePacingNoticeModule.renderCoursePacingNotice
+        renderNotice($mountPoint, ENV.COURSE_ID)
+      })
+      .catch(ex => {
+        // eslint-disable-next-line no-console
+        console.error('Falied loading CoursePacingNotice', ex)
+      })
   }
 }
 

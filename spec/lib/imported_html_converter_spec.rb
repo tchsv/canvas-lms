@@ -47,6 +47,26 @@ describe ImportedHtmlConverter do
       expect(convert_and_replace(test_string)).to eq %(<a href="#{@path}pages/test-wiki-page?query=blah">Test Wiki Page</a>)
     end
 
+    context "when course attachments exist" do
+      subject { convert_and_replace(test_string) }
+
+      let_once(:attachment) { attachment_model(context: course, migration_id: migration_id) }
+      let(:course) { @course }
+      let(:migration_id) { "migration-id-123" }
+
+      context "and a data-download-url attribute references a button and icon" do
+        let(:test_string) do
+          %(<img src="$CANVAS_COURSE_REFERENCE$/file_ref/#{migration_id}/download?download_frd=1" alt="" data-inst-icon-maker-icon="true" data-download-url="$CANVAS_COURSE_REFERENCE$/file_ref/#{migration_id}/download?download_frd=1&icon_maker_icon=1">)
+        end
+
+        it "converst data-download-url for files without appending a context" do
+          expect(subject).to eq(
+            "<img src=\"/courses/#{course.id}/files/#{attachment.id}/download?download_frd=1\" alt=\"\" data-inst-icon-maker-icon=\"true\" data-download-url=\"/files/#{attachment.id}/download?download_frd=1&icon_maker_icon=1\">"
+          )
+        end
+      end
+    end
+
     it "converts a wiki reference without $ escaped" do
       test_string = %(<a href="$WIKI_REFERENCE$/wiki/test-wiki-page?query=blah">Test Wiki Page</a>)
       @course.wiki_pages.create!(title: "Test Wiki Page", body: "stuff")
@@ -198,6 +218,21 @@ describe ImportedHtmlConverter do
       test_string = %(<iframe style="width: 400px; height: 225px; display: inline-block;" title="this is a media comment" data-media-type="video" src="%24IMS_CC_FILEBASE%24/#" allowfullscreen="allowfullscreen" allow="fullscreen" data-media-id="m-abcde"></iframe>)
       repaired_string = %(<iframe style="width: 400px; height: 225px; display: inline-block;" title="this is a media comment" data-media-type="video" src="/media_objects_iframe/m-abcde?type=video" allowfullscreen="allowfullscreen" allow="fullscreen" data-media-id="m-abcde"></iframe>)
       expect(convert_and_replace(test_string)).to eq repaired_string
+    end
+
+    it "converts source tags to RCE media iframes" do
+      test_string = %(<video style="width: 400px; height: 225px; display: inline-block;" title="this is a media comment" data-media-type="video" allowfullscreen="allowfullscreen" allow="fullscreen" data-media-id="0_l4l5n0wt"><source src="/media_objects_iframe/0_l4l5n0wt?type=video" data-media-id="0_l4l5n0wt" data-media-type="video"></video>)
+      converted_string = %(<iframe style="width: 400px; height: 225px; display: inline-block;" title="this is a media comment" data-media-type="video" allowfullscreen="allowfullscreen" allow="fullscreen" data-media-id="0_l4l5n0wt" src="/media_objects_iframe/0_l4l5n0wt?type=video"></iframe>)
+      expect(convert_and_replace(test_string)).to eq converted_string
+
+      test_string = %(<audio style="width: 400px; height: 225px; display: inline-block;" title="this is a media comment" data-media-type="audio" data-media-id="0_l4l5n0wt"><source src="/media_objects_iframe/0_l4l5n0wt?type=audio" data-media-id="0_l4l5n0wt" data-media-type="audio"></audio>)
+      converted_string = %(<iframe style="width: 400px; height: 225px; display: inline-block;" title="this is a media comment" data-media-type="audio" data-media-id="0_l4l5n0wt" src="/media_objects_iframe/0_l4l5n0wt?type=audio"></iframe>)
+      expect(convert_and_replace(test_string)).to eq converted_string
+    end
+
+    it "leaves source tags without data-media-id alone" do
+      test_string = %(<video style="width: 400px; height: 225px; display: inline-block;" title="this is a non-canvas video" allowfullscreen="allowfullscreen" allow="fullscreen"><source src="http://www.example.com/video.mov"></video>)
+      expect(convert_and_replace(test_string)).to eq test_string
     end
 
     it "only converts url params" do
